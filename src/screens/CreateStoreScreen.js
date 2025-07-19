@@ -31,7 +31,7 @@ export default function CreateStoreScreen({ navigation }) {
       }
 
       // Validate form data
-      if (!storeName.trim() || !address.trim()) {
+      if (!storeName.trim() || !address.trim() || !hours.trim() || !contact.trim() || !description.trim()) {
         Alert.alert('Error', 'Please fill in all required fields');
         return;
       }
@@ -53,7 +53,13 @@ export default function CreateStoreScreen({ navigation }) {
       console.log('✅ Store created with ID:', docRef.id);
       
       Alert.alert('Success', 'Store created successfully!', [
-        { text: 'OK', onPress: () => navigation.goBack() }
+        { 
+          text: 'OK', 
+          onPress: () => {
+            // Navigate back to MyStore tab and refresh
+            navigation.navigate('MyStoreMain');
+          }
+        }
       ]);
 
     } catch (error) {

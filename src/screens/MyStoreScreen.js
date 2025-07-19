@@ -6,25 +6,31 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  FlatList
+  FlatList,
+  RefreshControl
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
+import { useFocusEffect } from '@react-navigation/native';
 import ProductCard from '../components/ProductCard';
 
 export default function MyStoreScreen({ navigation }) {
   const [myStore, setMyStore] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const { currentUser } = useAuth();
 
-  useEffect(() => {
-    if (currentUser) {
-      fetchMyStore();
-    }
-  }, [currentUser]);
+  // Refresh store data whenever the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      if (currentUser) {
+        fetchMyStore();
+      }
+    }, [currentUser])
+  );
 
   useEffect(() => {
     if (myStore) {
@@ -35,15 +41,24 @@ export default function MyStoreScreen({ navigation }) {
   const fetchMyStore = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Fetching store for user:', currentUser.uid);
+      
       const storesQuery = query(
         collection(db, 'stores'),
         where('ownerId', '==', currentUser.uid)
       );
       const querySnapshot = await getDocs(storesQuery);
       
+      console.log('📊 Query result:', querySnapshot.size, 'stores found');
+      
       if (!querySnapshot.empty) {
         const storeDoc = querySnapshot.docs[0];
-        setMyStore({ id: storeDoc.id, ...storeDoc.data() });
+        const storeData = { id: storeDoc.id, ...storeDoc.data() };
+        console.log('✅ Store found:', storeData.name);
+        setMyStore(storeData);
+      } else {
+        console.log('❌ No store found for user');
+        setMyStore(null);
       }
     } catch (error) {
       Alert.alert('Error', 'Failed to fetch store information');
@@ -66,11 +81,20 @@ export default function MyStoreScreen({ navigation }) {
         productsData.push({ id: doc.id, ...doc.data() });
       });
       
+      console.log('📦 Products found:', productsData.length);
       setProducts(productsData);
     } catch (error) {
       Alert.alert('Error', 'Failed to fetch products');
       console.error('Error fetching products:', error);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    if (currentUser) {
+      await fetchMyStore();
+    }
+    setRefreshing(false);
   };
 
   const renderProduct = ({ item }) => (
@@ -103,12 +127,28 @@ export default function MyStoreScreen({ navigation }) {
         >
           <Text style={styles.createStoreButtonText}>Create Store</Text>
         </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.refreshButton}
+          onPress={onRefresh}
+          disabled={refreshing}
+        >
+          <Ionicons name="refresh" size={20} color="#3498db" />
+          <Text style={styles.refreshButtonText}>
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <View style={styles.storeHeader}>
         <Text style={styles.storeName}>{myStore.name}</Text>
         <TouchableOpacity
@@ -198,6 +238,20 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  refreshButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ecf0f1',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 15,
+  },
+  refreshButtonText: {
+    color: '#3498db',
+    marginLeft: 5,
+    fontWeight: '600',
   },
   storeHeader: {
     flexDirection: 'row',
