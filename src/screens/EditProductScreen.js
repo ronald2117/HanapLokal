@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
+import ImageUploader from '../components/ImageUploader';
 
 export default function EditProductScreen({ route, navigation }) {
   const { product, storeId } = route.params;
@@ -20,6 +21,8 @@ export default function EditProductScreen({ route, navigation }) {
   const [price, setPrice] = useState(product.price.toString());
   const [description, setDescription] = useState(product.description);
   const [inStock, setInStock] = useState(product.inStock);
+  const [imageUrl, setImageUrl] = useState(product.imageUrl);
+  const [imagePublicId, setImagePublicId] = useState(product.imagePublicId || '');
   const [loading, setLoading] = useState(false);
 
   const handleUpdateProduct = async () => {
@@ -41,6 +44,8 @@ export default function EditProductScreen({ route, navigation }) {
         price: parseFloat(price),
         description: description,
         inStock: inStock,
+        imageUrl: imageUrl,
+        imagePublicId: imagePublicId,
         updatedAt: new Date()
       });
 
@@ -83,6 +88,11 @@ export default function EditProductScreen({ route, navigation }) {
     );
   };
 
+  const handleImageUploaded = (url, publicId) => {
+    setImageUrl(url);
+    setImagePublicId(publicId);
+  };
+
   return (
     <KeyboardAvoidingView 
       style={styles.container}
@@ -94,6 +104,12 @@ export default function EditProductScreen({ route, navigation }) {
           <Text style={styles.subtitle}>
             Update product information
           </Text>
+
+          <ImageUploader
+            onImageUploaded={handleImageUploaded}
+            currentImageUrl={imageUrl}
+            placeholder="Update Product Image"
+          />
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Product Name *</Text>

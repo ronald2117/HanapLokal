@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
+import ImageUploader from '../components/ImageUploader';
 
 export default function AddProductScreen({ route, navigation }) {
   const { storeId } = route.params;
@@ -20,6 +21,8 @@ export default function AddProductScreen({ route, navigation }) {
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
   const [inStock, setInStock] = useState(true);
+  const [imageUrl, setImageUrl] = useState('');
+  const [imagePublicId, setImagePublicId] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleAddProduct = async () => {
@@ -41,7 +44,8 @@ export default function AddProductScreen({ route, navigation }) {
         description: description,
         inStock: inStock,
         storeId: storeId,
-        imageUrl: 'https://via.placeholder.com/300x300?text=Product+Image', // Placeholder image
+        imageUrl: imageUrl || 'https://via.placeholder.com/300x300?text=No+Image', // Fallback to placeholder
+        imagePublicId: imagePublicId || null,
         createdAt: new Date()
       });
 
@@ -56,6 +60,11 @@ export default function AddProductScreen({ route, navigation }) {
     }
   };
 
+  const handleImageUploaded = (url, publicId) => {
+    setImageUrl(url);
+    setImagePublicId(publicId);
+  };
+
   return (
     <KeyboardAvoidingView 
       style={styles.container}
@@ -67,6 +76,11 @@ export default function AddProductScreen({ route, navigation }) {
           <Text style={styles.subtitle}>
             Add a product to your store inventory
           </Text>
+
+          <ImageUploader
+            onImageUploaded={handleImageUploaded}
+            placeholder="Add Product Image"
+          />
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Product Name *</Text>
@@ -109,13 +123,6 @@ export default function AddProductScreen({ route, navigation }) {
               trackColor={{ false: '#e0e0e0', true: '#27ae60' }}
               thumbColor={inStock ? '#fff' : '#f4f3f4'}
             />
-          </View>
-
-          <View style={styles.imageNote}>
-            <Text style={styles.noteText}>
-              📷 Note: Product images will use placeholder URLs in this MVP. 
-              Image upload functionality will be added in future updates.
-            </Text>
           </View>
 
           <TouchableOpacity
@@ -186,18 +193,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
-  },
-  imageNote: {
-    backgroundColor: '#fff3cd',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 20,
-    borderLeftWidth: 4,
-    borderLeftColor: '#ffc107',
-  },
-  noteText: {
-    fontSize: 14,
-    color: '#856404',
   },
   button: {
     backgroundColor: '#27ae60',

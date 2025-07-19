@@ -16,6 +16,7 @@ A React Native mobile application that connects local stores with nearby custome
 - **Store Creation**: Easy store profile setup
 - **Store Management**: Edit store information and details
 - **Product Management**: Add, update, and manage product inventory
+- **Image Upload**: Upload product images using camera or gallery
 - **Inventory Status**: Track product availability (in stock/out of stock)
 
 ### Authentication
@@ -29,6 +30,7 @@ A React Native mobile application that connects local stores with nearby custome
 - **Backend**: Google Firebase
   - Firestore for real-time database
   - Authentication for user management
+- **Image Storage**: Cloudinary for image upload and optimization
 - **Navigation**: React Navigation v6
 - **State Management**: React Context API
 - **Location Services**: Expo Location
@@ -59,9 +61,15 @@ A React Native mobile application that connects local stores with nearby custome
    - Create a Firebase project at https://console.firebase.google.com
    - Enable Firestore Database and Authentication
    - Copy your Firebase configuration
-   - Update `src/services/firebaseConfig.js` with your Firebase credentials
+   - Update `.env` file with your Firebase credentials
 
-4. Start the development server:
+4. Configure Cloudinary:
+   - Create a Cloudinary account at https://cloudinary.com
+   - Create an unsigned upload preset
+   - Update `.env` file with your Cloudinary credentials
+   - See `CLOUDINARY_SETUP.md` for detailed instructions
+
+5. Start the development server:
    ```bash
    npm start
    ```
@@ -143,7 +151,6 @@ src/
 
 This is a Minimum Viable Product (MVP) with the following intentional limitations:
 
-- **Image Uploads**: Products use placeholder image URLs
 - **Payment Processing**: No transaction or payment functionality
 - **Advanced Geolocation**: Basic location detection without precise distance calculations
 - **Order Management**: No order fulfillment system
@@ -151,7 +158,6 @@ This is a Minimum Viable Product (MVP) with the following intentional limitation
 
 ## Future Enhancements
 
-- Image upload and management
 - Payment processing integration
 - Advanced location-based filtering
 - Real-time messaging between customers and store owners

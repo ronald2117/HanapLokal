@@ -8,14 +8,23 @@ import {
   Dimensions
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { getOptimizedImageUrl } from '../services/cloudinaryService';
 
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 60) / 2; // Accounting for padding and margins
 
 export default function ProductCard({ product, onPress, showEditIcon = false }) {
+  // Get optimized image URL for better performance
+  const optimizedImageUrl = getOptimizedImageUrl(product.imageUrl, {
+    width: 200,
+    height: 200,
+    quality: 'auto',
+    format: 'auto'
+  });
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
-      <Image source={{ uri: product.imageUrl }} style={styles.productImage} />
+      <Image source={{ uri: optimizedImageUrl }} style={styles.productImage} />
       
       <View style={styles.content}>
         <Text style={styles.productName} numberOfLines={2}>
