@@ -24,29 +24,41 @@ export default function CreateStoreScreen({ navigation }) {
   const { currentUser } = useAuth();
 
   const handleCreateStore = async () => {
-    if (!storeName || !address || !hours || !contact || !description) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
     try {
-      setLoading(true);
-      await addDoc(collection(db, 'stores'), {
-        name: storeName,
-        address: address,
-        hours: hours,
-        contact: contact,
-        description: description,
-        ownerId: currentUser.uid,
-        createdAt: new Date()
-      });
+      if (!currentUser) {
+        Alert.alert('Error', 'You must be logged in to create a store');
+        return;
+      }
 
+      // Validate form data
+      if (!storeName.trim() || !address.trim()) {
+        Alert.alert('Error', 'Please fill in all required fields');
+        return;
+      }
+
+      setLoading(true);
+
+      const storeData = {
+        name: storeName.trim(),
+        address: address.trim(),
+        hours: hours.trim(),
+        contact: contact.trim(),
+        description: description.trim(),
+        ownerId: currentUser.uid,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      const docRef = await addDoc(collection(db, 'stores'), storeData);
+      console.log('✅ Store created with ID:', docRef.id);
+      
       Alert.alert('Success', 'Store created successfully!', [
         { text: 'OK', onPress: () => navigation.goBack() }
       ]);
+
     } catch (error) {
-      Alert.alert('Error', 'Failed to create store');
-      console.error('Error creating store:', error);
+      console.error('❌ Error creating store:', error);
+      Alert.alert('Error', `Failed to create store: ${error.message}`);
     } finally {
       setLoading(false);
     }
