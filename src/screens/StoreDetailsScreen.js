@@ -88,7 +88,11 @@ export default function StoreDetailsScreen({ route, navigation }) {
   );
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Cover Photo */}
       {store.coverImage ? (
         <Image source={{ uri: store.coverImage }} style={styles.coverImage} />
@@ -162,6 +166,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   coverImage: {
     width: '100%',

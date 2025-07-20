@@ -272,7 +272,12 @@ export default function CreateStoreScreen({ navigation }) {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView style={styles.scrollView}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={true}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.form}>
           <Text style={styles.title}>Create Your Store</Text>
           <Text style={styles.subtitle}>
@@ -554,6 +559,10 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 100,
+  },
   form: {
     padding: 20,
   },
@@ -690,7 +699,8 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 30,
+    marginBottom: 20,
   },
   buttonDisabled: {
     backgroundColor: '#95a5a6',

@@ -11,7 +11,11 @@ export default function ProductDetailsScreen({ route }) {
   const { product } = route.params;
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+    >
       <Image source={{ uri: product.imageUrl }} style={styles.productImage} />
       
       <View style={styles.content}>
@@ -40,6 +44,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   productImage: {
     width: '100%',
