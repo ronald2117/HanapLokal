@@ -5,6 +5,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
+// Theme
+import { Colors } from './src/styles/theme';
+
 // Contexts
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { LocationProvider } from './src/contexts/LocationContext';
@@ -45,21 +48,28 @@ function AuthStack() {
 
 function HomeStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: Colors.primary,
+        },
+        headerTintColor: Colors.text.white,
+      }}
+    >
       <Stack.Screen 
         name="HomeMain" 
         component={HomeScreen}
-        options={{ title: 'LokalFinds' }}
+        options={{ headerShown: false }} // We handle header in the component
       />
       <Stack.Screen 
         name="StoreDetails" 
         component={StoreDetailsScreen}
-        options={{ title: 'Store Details' }}
+        options={{ title: 'Detalye ng Tindahan' }}
       />
       <Stack.Screen 
         name="ProductDetails" 
         component={ProductDetailsScreen}
-        options={{ title: 'Product Details' }}
+        options={{ title: 'Detalye ng Produkto' }}
       />
     </Stack.Navigator>
   );
@@ -67,31 +77,38 @@ function HomeStack() {
 
 function MyStoreStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: Colors.primary,
+        },
+        headerTintColor: Colors.text.white,
+      }}
+    >
       <Stack.Screen 
         name="MyStoreMain" 
         component={MyStoreScreen}
-        options={{ title: 'My Store' }}
+        options={{ title: 'Aking Tindahan' }}
       />
       <Stack.Screen 
         name="CreateStore" 
         component={CreateStoreScreen}
-        options={{ title: 'Create Store' }}
+        options={{ title: 'Gumawa ng Tindahan' }}
       />
       <Stack.Screen 
         name="EditStore" 
         component={EditStoreScreen}
-        options={{ title: 'Edit Store' }}
+        options={{ title: 'I-edit ang Tindahan' }}
       />
       <Stack.Screen 
         name="AddProduct" 
         component={AddProductScreen}
-        options={{ title: 'Add Product' }}
+        options={{ title: 'Magdagdag ng Produkto' }}
       />
       <Stack.Screen 
         name="EditProduct" 
         component={EditProductScreen}
-        options={{ title: 'Edit Product' }}
+        options={{ title: 'I-edit ang Produkto' }}
       />
     </Stack.Navigator>
   );
@@ -99,21 +116,28 @@ function MyStoreStack() {
 
 function FavoritesStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: Colors.primary,
+        },
+        headerTintColor: Colors.text.white,
+      }}
+    >
       <Stack.Screen 
         name="FavoritesMain" 
         component={FavoritesScreen}
-        options={{ title: 'Favorites' }}
+        options={{ title: 'Mga Paborito' }}
       />
       <Stack.Screen 
         name="StoreDetails" 
         component={StoreDetailsScreen}
-        options={{ title: 'Store Details' }}
+        options={{ title: 'Detalye ng Tindahan' }}
       />
       <Stack.Screen 
         name="ProductDetails" 
         component={ProductDetailsScreen}
-        options={{ title: 'Product Details' }}
+        options={{ title: 'Detalye ng Produkto' }}
       />
     </Stack.Navigator>
   );
@@ -121,7 +145,14 @@ function FavoritesStack() {
 
 function ProfileStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: Colors.primary,
+        },
+        headerTintColor: Colors.text.white,
+      }}
+    >
       <Stack.Screen 
         name="ProfileMain" 
         component={ProfileScreen}
@@ -150,15 +181,47 @@ function MainTabs() {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#3498db',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: Colors.text.secondary,
+        tabBarStyle: {
+          backgroundColor: Colors.background.card,
+          borderTopWidth: 0,
+          elevation: 20,
+          shadowColor: Colors.text.primary,
+          shadowOffset: { width: 0, height: -5 },
+          shadowOpacity: 0.1,
+          shadowRadius: 10,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          marginTop: 2,
+        },
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeStack} />
-      <Tab.Screen name="MyStore" component={MyStoreStack} />
-      <Tab.Screen name="Favorites" component={FavoritesStack} />
-      <Tab.Screen name="Profile" component={ProfileStack} />
+      <Tab.Screen 
+        name="Home" 
+        component={HomeStack}
+        options={{ title: 'Simula' }}
+      />
+      <Tab.Screen 
+        name="MyStore" 
+        component={MyStoreStack}
+        options={{ title: 'Aking Tindahan' }}
+      />
+      <Tab.Screen 
+        name="Favorites" 
+        component={FavoritesStack}
+        options={{ title: 'Paborito' }}
+      />
+      <Tab.Screen 
+        name="Profile" 
+        component={ProfileStack}
+        options={{ title: 'Profile' }}
+      />
     </Tab.Navigator>
   );
 }
@@ -178,7 +241,7 @@ export default function App() {
     <AuthProvider>
       <LocationProvider>
         <AppNavigator />
-        <StatusBar style="auto" />
+        <StatusBar style="light" backgroundColor={Colors.primary} />
       </LocationProvider>
     </AuthProvider>
   );

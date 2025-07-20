@@ -2,15 +2,20 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   Alert,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
+  StatusBar
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
+import ModernInput from '../components/ModernInput';
+import ModernButton from '../components/ModernButton';
+import { Colors, Typography, Spacing, BorderRadius } from '../styles/theme';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -20,7 +25,7 @@ export default function LoginScreen({ navigation }) {
 
   async function handleSubmit() {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert('Oops!', 'Kumpletuhin po lahat ng fields');
       return;
     }
 
@@ -28,7 +33,7 @@ export default function LoginScreen({ navigation }) {
       setLoading(true);
       await login(email, password);
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert('Hindi makapasok', error.message);
     } finally {
       setLoading(false);
     }
@@ -46,132 +51,222 @@ export default function LoginScreen({ navigation }) {
   }
 
   return (
-    <KeyboardAvoidingView 
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.content}>
-          <Text style={styles.title}>LokalFinds</Text>
-          <Text style={styles.subtitle}>Discover Local Stores</Text>
+    <>
+      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
+      <KeyboardAvoidingView 
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <LinearGradient
+          colors={[Colors.primary, Colors.primaryDark, Colors.secondary]}
+          style={styles.gradientBackground}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <View style={styles.content}>
+              {/* Header Section */}
+              <View style={styles.header}>
+                <View style={styles.logoContainer}>
+                  <Text style={styles.logoEmoji}>🏪</Text>
+                  <Text style={styles.title}>LokalFinds</Text>
+                </View>
+                <Text style={styles.subtitle}>Tuklasin ang mga lokal na tindahan</Text>
+                <Text style={styles.tagline}>Suportahan ang ating mga kababayan!</Text>
+              </View>
 
-          <View style={styles.form}>
-            <TextInput
-              style={styles.input}
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
+              {/* Form Section */}
+              <View style={styles.formContainer}>
+                <View style={styles.form}>
+                  <Text style={styles.formTitle}>Mag-login para magsimula</Text>
+                  
+                  <ModernInput
+                    label="Email Address"
+                    placeholder="Ilagay ang inyong email"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    icon="mail-outline"
+                  />
+                  
+                  <ModernInput
+                    label="Password"
+                    placeholder="Ilagay ang password"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    icon="lock-closed-outline"
+                  />
 
-            <TouchableOpacity
-              style={[styles.button, styles.primaryButton]}
-              onPress={handleSubmit}
-              disabled={loading}
-            >
-              <Text style={styles.primaryButtonText}>
-                {loading ? 'Signing In...' : 'Sign In'}
-              </Text>
-            </TouchableOpacity>
+                  <ModernButton
+                    title={loading ? 'Pumapasok...' : 'Mag-login'}
+                    onPress={handleSubmit}
+                    disabled={loading}
+                    loading={loading}
+                    variant="primary"
+                    size="large"
+                    style={styles.loginButton}
+                  />
 
-            <TouchableOpacity
-              style={[styles.button, styles.secondaryButton]}
-              onPress={handleAnonymousLogin}
-              disabled={loading}
-            >
-              <Text style={styles.secondaryButtonText}>
-                Continue as Guest
-              </Text>
-            </TouchableOpacity>
+                  <View style={styles.divider}>
+                    <View style={styles.dividerLine} />
+                    <Text style={styles.dividerText}>o</Text>
+                    <View style={styles.dividerLine} />
+                  </View>
 
-            <TouchableOpacity
-              style={styles.linkButton}
-              onPress={() => navigation.navigate('Signup')}
-            >
-              <Text style={styles.linkText}>
-                Don't have an account? Sign Up
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+                  <ModernButton
+                    title="Magpatuloy bilang Bisita"
+                    onPress={handleAnonymousLogin}
+                    disabled={loading}
+                    variant="outline"
+                    size="large"
+                    icon={<Ionicons name="person-outline" size={20} color={Colors.primary} />}
+                  />
+
+                  <TouchableOpacity
+                    style={styles.linkButton}
+                    onPress={() => navigation.navigate('Signup')}
+                  >
+                    <Text style={styles.linkText}>
+                      Wala pang account? <Text style={styles.linkTextBold}>Mag-signup dito</Text>
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </ScrollView>
+        </LinearGradient>
+      </KeyboardAvoidingView>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
   },
+  
+  gradientBackground: {
+    flex: 1,
+  },
+  
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 20,
+    minHeight: '100%',
   },
+  
   content: {
-    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing['2xl'],
   },
+  
+  header: {
+    alignItems: 'center',
+    marginTop: Spacing['4xl'],
+  },
+  
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+  },
+  
+  logoEmoji: {
+    fontSize: 60,
+    marginBottom: Spacing.md,
+  },
+  
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 8,
+    fontSize: Typography.fontSize['4xl'],
+    fontWeight: Typography.fontWeight.extrabold,
+    color: Colors.text.white,
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
   },
+  
   subtitle: {
-    fontSize: 16,
-    color: '#7f8c8d',
-    marginBottom: 40,
+    fontSize: Typography.fontSize.lg,
+    color: Colors.text.white,
+    textAlign: 'center',
+    opacity: 0.9,
+    marginBottom: Spacing.xs,
   },
+  
+  tagline: {
+    fontSize: Typography.fontSize.base,
+    color: Colors.accent,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    fontWeight: Typography.fontWeight.medium,
+  },
+  
+  formContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    marginTop: Spacing['2xl'],
+  },
+  
   form: {
-    width: '100%',
-    maxWidth: 400,
+    backgroundColor: Colors.background.card,
+    borderRadius: BorderRadius['2xl'],
+    padding: Spacing['2xl'],
+    marginHorizontal: Spacing.sm,
+    shadowColor: Colors.text.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 15,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 15,
-    backgroundColor: '#fff',
-    fontSize: 16,
+  
+  formTitle: {
+    fontSize: Typography.fontSize.xl,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.primary,
+    textAlign: 'center',
+    marginBottom: Spacing.xl,
   },
-  button: {
-    padding: 15,
-    borderRadius: 8,
+  
+  loginButton: {
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.lg,
+  },
+  
+  divider: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    marginVertical: Spacing.lg,
   },
-  primaryButton: {
-    backgroundColor: '#3498db',
+  
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.border.light,
   },
-  primaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+  
+  dividerText: {
+    marginHorizontal: Spacing.lg,
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.secondary,
+    fontWeight: Typography.fontWeight.medium,
   },
-  secondaryButton: {
-    backgroundColor: '#95a5a6',
-  },
-  secondaryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  
   linkButton: {
     alignItems: 'center',
-    padding: 10,
+    paddingVertical: Spacing.lg,
+    marginTop: Spacing.md,
   },
+  
   linkText: {
-    color: '#3498db',
-    fontSize: 16,
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.secondary,
+    textAlign: 'center',
+  },
+  
+  linkTextBold: {
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.primary,
   },
 });

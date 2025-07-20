@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getOptimizedImageUrl } from '../services/cloudinaryService';
+import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
 
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 60) / 2; // Accounting for padding and margins
@@ -22,33 +23,56 @@ export default function ProductCard({ product, onPress, showEditIcon = false }) 
     format: 'auto'
   });
 
+  const formatPrice = (price) => {
+    return `₱${parseFloat(price).toFixed(2)}`;
+  };
+
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
-      <Image source={{ uri: optimizedImageUrl }} style={styles.productImage} />
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+      <View style={styles.imageContainer}>
+        <Image source={{ uri: optimizedImageUrl }} style={styles.productImage} />
+        <View style={styles.imageOverlay}>
+          {product.inStock ? (
+            <View style={styles.stockBadge}>
+              <Text style={styles.stockBadgeText}>Available</Text>
+            </View>
+          ) : (
+            <View style={[styles.stockBadge, styles.outOfStockBadge]}>
+              <Text style={[styles.stockBadgeText, styles.outOfStockText]}>Ubos na</Text>
+            </View>
+          )}
+        </View>
+      </View>
       
       <View style={styles.content}>
         <Text style={styles.productName} numberOfLines={2}>
           {product.name}
         </Text>
         
-        <Text style={styles.productPrice}>${product.price}</Text>
+        <View style={styles.priceRow}>
+          <Text style={styles.productPrice}>{formatPrice(product.price)}</Text>
+          <Text style={styles.priceLabel}>lang</Text>
+        </View>
         
         <View style={styles.footer}>
           <View style={styles.stockStatus}>
-            <View style={[
-              styles.stockIndicator,
-              { backgroundColor: product.inStock ? '#27ae60' : '#e74c3c' }
-            ]} />
+            <Ionicons 
+              name={product.inStock ? 'checkmark-circle' : 'close-circle'} 
+              size={14} 
+              color={product.inStock ? Colors.success : Colors.error} 
+            />
             <Text style={[
               styles.stockText,
-              { color: product.inStock ? '#27ae60' : '#e74c3c' }
+              { color: product.inStock ? Colors.success : Colors.error }
             ]}>
-              {product.inStock ? 'In Stock' : 'Out of Stock'}
+              {product.inStock ? 'Meron' : 'Wala'}
             </Text>
           </View>
           
           {showEditIcon && (
-            <Ionicons name="pencil" size={16} color="#3498db" />
+            <TouchableOpacity style={styles.editButton}>
+              <Ionicons name="pencil" size={14} color={Colors.primary} />
+            </TouchableOpacity>
           )}
         </View>
       </View>
@@ -58,62 +82,104 @@ export default function ProductCard({ product, onPress, showEditIcon = false }) 
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    backgroundColor: Colors.background.card,
+    borderRadius: BorderRadius.xl,
     width: cardWidth,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#ecf0f1',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    marginBottom: Spacing.base,
+    overflow: 'hidden',
+    ...Shadows.base,
   },
+  
+  imageContainer: {
+    position: 'relative',
+  },
+  
   productImage: {
     width: '100%',
-    height: 120,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    backgroundColor: '#f8f9fa',
+    height: 140,
+    backgroundColor: Colors.background.secondary,
   },
+  
+  imageOverlay: {
+    position: 'absolute',
+    top: Spacing.sm,
+    right: Spacing.sm,
+  },
+  
+  stockBadge: {
+    backgroundColor: Colors.success,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.full,
+  },
+  
+  outOfStockBadge: {
+    backgroundColor: Colors.error,
+  },
+  
+  stockBadgeText: {
+    color: Colors.text.white,
+    fontSize: Typography.fontSize.xs,
+    fontWeight: Typography.fontWeight.semibold,
+  },
+  
+  outOfStockText: {
+    color: Colors.text.white,
+  },
+  
   content: {
-    padding: 12,
+    padding: Spacing.md,
   },
+  
   productName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 6,
-    height: 34, // Fixed height for 2 lines
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.text.primary,
+    marginBottom: Spacing.sm,
+    minHeight: 36, // Fixed height for 2 lines
+    lineHeight: Typography.lineHeight.tight * Typography.fontSize.sm,
   },
+  
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: Spacing.sm,
+  },
+  
   productPrice: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#3498db',
-    marginBottom: 8,
+    fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.primary,
   },
+  
+  priceLabel: {
+    fontSize: Typography.fontSize.xs,
+    color: Colors.text.secondary,
+    marginLeft: Spacing.xs,
+    fontStyle: 'italic',
+  },
+  
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  
   stockStatus: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
   },
-  stockIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
+  
   stockText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: Typography.fontSize.xs,
+    fontWeight: Typography.fontWeight.medium,
+    marginLeft: Spacing.xs,
+  },
+  
+  editButton: {
+    padding: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: Colors.background.secondary,
   },
 });

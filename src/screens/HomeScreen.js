@@ -7,13 +7,17 @@ import {
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
-  Alert
+  Alert,
+  StatusBar,
+  ScrollView
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import { useLocation } from '../contexts/LocationContext';
 import StoreCard from '../components/StoreCard';
+import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
 
 export default function HomeScreen({ navigation }) {
   const [stores, setStores] = useState([]);
@@ -44,7 +48,7 @@ export default function HomeScreen({ navigation }) {
       
       setStores(storesData);
     } catch (error) {
-      Alert.alert('Error', 'Failed to fetch stores');
+      Alert.alert('Hindi mahanap', 'Hindi makuha ang mga tindahan');
       console.error('Error fetching stores:', error);
     } finally {
       setLoading(false);
@@ -79,108 +83,289 @@ export default function HomeScreen({ navigation }) {
     />
   );
 
+  const categories = [
+    { id: 1, name: 'Sari-Sari', icon: '🏪', color: Colors.primary },
+    { id: 2, name: 'Kainan', icon: '🍽️', color: Colors.accent },
+    { id: 3, name: 'Repair', icon: '🔧', color: Colors.secondary },
+    { id: 4, name: 'Lahat', icon: '🌟', color: Colors.success },
+  ];
+
+  const renderCategory = ({ item }) => (
+    <TouchableOpacity style={[styles.categoryItem, { borderColor: item.color }]} activeOpacity={0.7}>
+      <Text style={styles.categoryIcon}>{item.icon}</Text>
+      <Text style={[styles.categoryText, { color: item.color }]}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Discover Local Stores</Text>
-        {location && (
-          <Text style={styles.locationText}>
-            📍 Location detected
-          </Text>
-        )}
-      </View>
+    <>
+      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
+      <View style={styles.container}>
+        {/* Header Section */}
+        <LinearGradient
+          colors={[Colors.primary, Colors.primaryLight]}
+          style={styles.headerGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={styles.header}>
+            <View style={styles.greetingContainer}>
+              <Text style={styles.greeting}>Kumusta!</Text>
+              <Text style={styles.headerTitle}>Hanap tayo ng magandang tindahan</Text>
+            </View>
+            {location && (
+              <View style={styles.locationContainer}>
+                <Ionicons name="location" size={16} color={Colors.text.white} />
+                <Text style={styles.locationText}>Malapit sa iyo</Text>
+              </View>
+            )}
+          </View>
+        </LinearGradient>
 
-      <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#7f8c8d" style={styles.searchIcon} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search stores or products..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-      </View>
+        {/* Search Section */}
+        <View style={styles.searchSection}>
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={20} color={Colors.text.secondary} style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Hanapin ang tindahan o produkto..."
+              placeholderTextColor={Colors.text.light}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery ? (
+              <TouchableOpacity onPress={() => setSearchQuery('')} style={styles.clearButton}>
+                <Ionicons name="close-circle" size={20} color={Colors.text.secondary} />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+        </View>
 
-      <FlatList
-        data={filteredStores}
-        renderItem={renderStore}
-        keyExtractor={(item) => item.id}
-        style={styles.storesList}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        ListEmptyComponent={() => (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="storefront-outline" size={64} color="#bdc3c7" />
-            <Text style={styles.emptyText}>
-              {loading ? 'Loading stores...' : 'No stores found'}
-            </Text>
-            <Text style={styles.emptySubtext}>
-              {searchQuery ? 'Try a different search term' : 'Stores will appear here when available'}
+        {/* Categories Section */}
+        <View style={styles.categoriesSection}>
+          <Text style={styles.sectionTitle}>Mga Kategorya</Text>
+          <FlatList
+            data={categories}
+            renderItem={renderCategory}
+            keyExtractor={(item) => item.id.toString()}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesList}
+          />
+        </View>
+
+        {/* Stores Section */}
+        <View style={styles.storesSection}>
+          <View style={styles.storesSectionHeader}>
+            <Text style={styles.sectionTitle}>Mga Lokal na Tindahan</Text>
+            <Text style={styles.storesCount}>
+              {filteredStores.length} {filteredStores.length === 1 ? 'tindahan' : 'mga tindahan'}
             </Text>
           </View>
-        )}
-      />
-    </View>
+          
+          <FlatList
+            data={filteredStores}
+            renderItem={renderStore}
+            keyExtractor={(item) => item.id}
+            style={styles.storesList}
+            contentContainerStyle={styles.storesListContent}
+            refreshControl={
+              <RefreshControl 
+                refreshing={refreshing} 
+                onRefresh={onRefresh}
+                colors={[Colors.primary]}
+                tintColor={Colors.primary}
+              />
+            }
+            ListEmptyComponent={() => (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyIcon}>🏪</Text>
+                <Text style={styles.emptyText}>
+                  {loading ? 'Hinahanap ang mga tindahan...' : 'Walang nakitang tindahan'}
+                </Text>
+                <Text style={styles.emptySubtext}>
+                  {searchQuery ? 'Subukan ang ibang keyword' : 'Mag-antay lang, darating din ang mga tindahan dito'}
+                </Text>
+              </View>
+            )}
+          />
+        </View>
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: Colors.background.secondary,
   },
+  
+  headerGradient: {
+    borderBottomLeftRadius: BorderRadius['2xl'],
+    borderBottomRightRadius: BorderRadius['2xl'],
+  },
+  
   header: {
-    padding: 20,
-    paddingTop: 10,
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing['2xl'],
   },
+  
+  greetingContainer: {
+    marginBottom: Spacing.md,
+  },
+  
+  greeting: {
+    fontSize: Typography.fontSize.lg,
+    color: Colors.text.white,
+    opacity: 0.9,
+    marginBottom: Spacing.xs,
+  },
+  
   headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-    marginBottom: 5,
+    fontSize: Typography.fontSize['2xl'],
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.white,
+    lineHeight: Typography.lineHeight.tight * Typography.fontSize['2xl'],
   },
+  
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    alignSelf: 'flex-start',
+  },
+  
   locationText: {
-    fontSize: 14,
-    color: '#27ae60',
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.white,
+    marginLeft: Spacing.xs,
+    fontWeight: Typography.fontWeight.medium,
   },
+  
+  searchSection: {
+    paddingHorizontal: Spacing.xl,
+    marginTop: -Spacing.xl,
+    marginBottom: Spacing.lg,
+  },
+  
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    margin: 20,
-    marginTop: 0,
-    paddingHorizontal: 15,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    backgroundColor: Colors.background.card,
+    borderRadius: BorderRadius.xl,
+    paddingHorizontal: Spacing.lg,
+    ...Shadows.lg,
   },
+  
   searchIcon: {
-    marginRight: 10,
+    marginRight: Spacing.md,
   },
+  
   searchInput: {
     flex: 1,
-    padding: 15,
-    fontSize: 16,
+    paddingVertical: Spacing.lg,
+    fontSize: Typography.fontSize.base,
+    color: Colors.text.primary,
   },
+  
+  clearButton: {
+    padding: Spacing.xs,
+  },
+  
+  categoriesSection: {
+    marginBottom: Spacing.lg,
+  },
+  
+  sectionTitle: {
+    fontSize: Typography.fontSize.xl,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.primary,
+    marginHorizontal: Spacing.xl,
+    marginBottom: Spacing.lg,
+  },
+  
+  categoriesList: {
+    paddingHorizontal: Spacing.lg,
+  },
+  
+  categoryItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.background.card,
+    borderWidth: 2,
+    borderRadius: BorderRadius.xl,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    marginHorizontal: Spacing.sm,
+    minWidth: 80,
+    ...Shadows.base,
+  },
+  
+  categoryIcon: {
+    fontSize: 24,
+    marginBottom: Spacing.xs,
+  },
+  
+  categoryText: {
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.semibold,
+  },
+  
+  storesSection: {
+    flex: 1,
+  },
+  
+  storesSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginHorizontal: Spacing.xl,
+    marginBottom: Spacing.lg,
+  },
+  
+  storesCount: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.secondary,
+    fontWeight: Typography.fontWeight.medium,
+  },
+  
   storesList: {
     flex: 1,
-    paddingHorizontal: 20,
   },
+  
+  storesListContent: {
+    paddingBottom: Spacing['2xl'],
+  },
+  
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
+    paddingVertical: Spacing['4xl'],
+    paddingHorizontal: Spacing.xl,
   },
+  
+  emptyIcon: {
+    fontSize: 64,
+    marginBottom: Spacing.lg,
+  },
+  
   emptyText: {
-    fontSize: 18,
-    color: '#7f8c8d',
-    marginTop: 15,
-    fontWeight: '600',
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#95a5a6',
-    marginTop: 5,
+    fontSize: Typography.fontSize.lg,
+    color: Colors.text.secondary,
+    fontWeight: Typography.fontWeight.semibold,
     textAlign: 'center',
+    marginBottom: Spacing.sm,
+  },
+  
+  emptySubtext: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.light,
+    textAlign: 'center',
+    lineHeight: Typography.lineHeight.relaxed * Typography.fontSize.sm,
   },
 });

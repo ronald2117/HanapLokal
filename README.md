@@ -1,28 +1,59 @@
-# LokalFinds
+# 🏪 LokalFinds
 
-A React Native mobile application that connects local stores with nearby customers, making it easier for customers to discover local businesses and for small businesses to gain an online presence.
+**Tuklasin at Suportahan ang mga Lokal na Negosyo** 🇵🇭
 
-## Features
+A modern, Filipino-inspired React Native mobile application that connects local stores with nearby customers. Built with love for the Filipino community to support local businesses and strengthen neighborhood commerce.
 
-### Customer Experience
-- **Store Discovery**: Find local stores based on location
-- **Search Functionality**: Search for specific stores or products
-- **Store Profiles**: View detailed store information including hours, contact, and description
-- **Product Browsing**: Browse products with pricing and availability
-- **Product Details**: View detailed product information
-- **Favorites**: Mark and manage favorite stores
+## ✨ Features
 
-### Seller Experience
-- **Store Creation**: Easy store profile setup
-- **Store Management**: Edit store information and details
-- **Product Management**: Add, update, and manage product inventory
-- **Image Upload**: Upload product images using camera or gallery
-- **Inventory Status**: Track product availability (in stock/out of stock)
+### 👥 For Customers (Mga Mamimili)
+- **🗺️ Store Discovery**: Hanapin ang mga malapit na tindahan
+- **🔍 Smart Search**: Maghanap ng tindahan o produkto gamit ang Tagalog at English
+- **📍 Location-based**: Makita ang distansya at direksyon
+- **❤️ Favorites (Paborito)**: I-save ang mga paboritong tindahan
+- **📱 Modern UI**: Filipino-inspired design na madaling gamitin
+- **🛒 Product Browsing**: Tingnan ang mga produkto at presyo
 
-### Authentication
-- Email/password registration and login
-- Anonymous guest access for quick browsing
-- Secure Firebase authentication
+### 🏪 For Store Owners (Mga Negosyante)
+- **🆕 Easy Setup**: Madaling gumawa ng tindahan profile
+- **📝 Store Management**: I-edit ang impormasyon ng tindahan
+- **📦 Product Management**: Magdagdag at mag-update ng mga produkto
+- **📸 Image Upload**: Mag-upload ng mga larawan gamit ang camera o gallery
+- **📊 Inventory Tracking**: Bantayan kung meron o wala sa stock
+- **💰 Pricing in Pesos**: Presyo sa Pilipinong piso (₱)
+
+### 🔐 Authentication & Security
+- **📧 Email/Password**: Secure na pag-register at login
+- **👤 Guest Access**: Mag-browse bilang bisita
+- **🔒 Firebase Security**: Protected na user data
+- **🌐 Offline Support**: Makakagamit kahit mahina ang internet
+
+## 🎨 Modern Filipino Design
+
+- **🌅 Sunset Colors**: Inspired by Manila Bay sunset (orange, gold, blue)
+- **🏝️ Cultural Elements**: Filipino emojis and cultural references
+- **📱 Modern Interface**: Clean, intuitive design
+- **🇵🇭 Tagalog Language**: Filipino-first user interface
+- **⚡ Smooth Animations**: Engaging user experience
+- **📐 Responsive Layout**: Works on all screen sizes
+
+## 🖼️ Screenshots & Design
+
+### Design Philosophy
+Our design celebrates Filipino culture while maintaining modern UX standards:
+
+- **Color Palette**: Warm sunset oranges (#FF6B35), ocean blues (#1976D2), and golden yellows (#FFC107)
+- **Typography**: Clear, readable fonts with proper hierarchy
+- **Cultural Touch**: Filipino greetings, Tagalog interface, local business types
+- **Modern Components**: Cards, gradients, smooth shadows, and intuitive navigation
+
+### Key Design Elements
+- 🏪 **Store Icons**: Sari-sari store, kainan, repair shops with appropriate emojis
+- 💰 **Philippine Peso**: Prices displayed in ₱ with "lang" suffix for friendly pricing
+- 🗣️ **Filipino Language**: "Kumusta!", "Meron/Wala", "Paborito", etc.
+- 🎯 **Local Context**: Categories like "Sari-Sari", "Kainan", "Repair"
+
+*Screenshots will be added once the app is deployed and tested on physical devices*
 
 ## Technology Stack
 
