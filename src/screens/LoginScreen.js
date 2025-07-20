@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   ScrollView,
   StatusBar
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,6 +23,24 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, loginAnonymously } = useAuth();
+
+  // Check if user wants to go to signup after logout
+  useEffect(() => {
+    const checkPendingSignup = async () => {
+      try {
+        const pendingSignup = await AsyncStorage.getItem('pendingSignup');
+        if (pendingSignup === 'true') {
+          // Clear the flag and navigate to signup
+          await AsyncStorage.removeItem('pendingSignup');
+          navigation.navigate('Signup');
+        }
+      } catch (error) {
+        console.error('Error checking pending signup:', error);
+      }
+    };
+
+    checkPendingSignup();
+  }, [navigation]);
 
   async function handleSubmit() {
     if (!email || !password) {

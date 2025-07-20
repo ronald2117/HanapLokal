@@ -9,6 +9,7 @@ import {
   FlatList,
   RefreshControl
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
@@ -21,7 +22,7 @@ export default function MyStoreScreen({ navigation }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const { currentUser, isGuestUser } = useAuth();
+  const { currentUser, isGuestUser, logoutGuestAndSignup } = useAuth();
 
   // Refresh store data whenever the screen comes into focus
   useFocusEffect(
@@ -146,7 +147,12 @@ export default function MyStoreScreen({ navigation }) {
 
           <TouchableOpacity
             style={styles.signupButton}
-            onPress={() => navigation.navigate('Auth', { screen: 'Signup' })}
+            onPress={async () => {
+              // Set a flag to remember user wants to signup
+              await AsyncStorage.setItem('pendingSignup', 'true');
+              // Logout guest session - this will trigger navigation to AuthStack
+              await logoutGuestAndSignup();
+            }}
           >
             <Text style={styles.signupButtonText}>Mag-register para sa Store</Text>
           </TouchableOpacity>

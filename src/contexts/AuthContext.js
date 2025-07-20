@@ -39,6 +39,17 @@ export function AuthProvider({ children }) {
     return currentUser && currentUser.isAnonymous;
   }
 
+  // Helper function to logout guest and prepare for signup
+  async function logoutGuestAndSignup() {
+    try {
+      await signOut(auth);
+      return true;
+    } catch (error) {
+      console.error('Error logging out guest:', error);
+      return false;
+    }
+  }
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -54,7 +65,8 @@ export function AuthProvider({ children }) {
     login,
     logout,
     loginAnonymously,
-    isGuestUser
+    isGuestUser,
+    logoutGuestAndSignup
   };
 
   return (
