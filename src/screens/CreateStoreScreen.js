@@ -10,9 +10,12 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
+import { Colors, Typography, Spacing, BorderRadius } from '../styles/theme';
 
 export default function CreateStoreScreen({ navigation }) {
   const [storeName, setStoreName] = useState('');
@@ -23,32 +26,87 @@ export default function CreateStoreScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const { currentUser, isGuestUser } = useAuth();
 
+  // If user is a guest, show the guest restriction screen
+  if (isGuestUser()) {
+    return (
+      <View style={styles.container}>
+        <LinearGradient
+          colors={[Colors.primary, Colors.primaryDark, Colors.secondary]}
+          style={styles.gradientBackground}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <ScrollView contentContainerStyle={styles.guestScrollContainer}>
+            <View style={styles.guestContainer}>
+              {/* Header */}
+              <View style={styles.guestHeader}>
+                <View style={styles.iconContainer}>
+                  <Ionicons name="storefront" size={80} color={Colors.accent} />
+                </View>
+                <Text style={styles.guestTitle}>Gusto mo bang magkaroon ng sariling tindahan?</Text>
+                <Text style={styles.guestSubtitle}>
+                  Mga guest user ay hindi pwedeng mag-create ng store. Mag-register muna para sa full access!
+                </Text>
+              </View>
+
+              {/* Benefits Section */}
+              <View style={styles.benefitsContainer}>
+                <Text style={styles.benefitsTitle}>Benefits ng pagkakaroon ng Store:</Text>
+                
+                <View style={styles.benefitItem}>
+                  <Ionicons name="cash" size={24} color={Colors.accent} />
+                  <Text style={styles.benefitText}>Mag-earn ng extra income</Text>
+                </View>
+                
+                <View style={styles.benefitItem}>
+                  <Ionicons name="people" size={24} color={Colors.accent} />
+                  <Text style={styles.benefitText}>Maging kilala sa inyong community</Text>
+                </View>
+                
+                <View style={styles.benefitItem}>
+                  <Ionicons name="trending-up" size={24} color={Colors.accent} />
+                  <Text style={styles.benefitText}>Palakihin ang inyong business</Text>
+                </View>
+                
+                <View style={styles.benefitItem}>
+                  <Ionicons name="phone-portrait" size={24} color={Colors.accent} />
+                  <Text style={styles.benefitText}>Madaling ma-contact ng mga customers</Text>
+                </View>
+                
+                <View style={styles.benefitItem}>
+                  <Ionicons name="shield-checkmark" size={24} color={Colors.accent} />
+                  <Text style={styles.benefitText}>Secure at trusted platform</Text>
+                </View>
+              </View>
+
+              {/* Call to Action */}
+              <View style={styles.ctaContainer}>
+                <TouchableOpacity
+                  style={styles.signupButton}
+                  onPress={() => navigation.navigate('Auth', { screen: 'Signup' })}
+                >
+                  <Ionicons name="person-add" size={20} color={Colors.text.white} style={styles.buttonIcon} />
+                  <Text style={styles.signupButtonText}>Mag-register ngayon!</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.backButton}
+                  onPress={() => navigation.goBack()}
+                >
+                  <Text style={styles.backButtonText}>Bumalik sa Home</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
+        </LinearGradient>
+      </View>
+    );
+  }
+
   const handleCreateStore = async () => {
     try {
       if (!currentUser) {
         Alert.alert('Error', 'You must be logged in to create a store');
-        return;
-      }
-
-      // Check if user is a guest/anonymous user
-      if (isGuestUser()) {
-        Alert.alert(
-          'Mag-create ng Account', 
-          'Hindi pwedeng mag-create ng tindahan ang mga guest user. Kailangan mag-register muna para magkaroon ng sariling tindahan.',
-          [
-            {
-              text: 'Cancel',
-              style: 'cancel'
-            },
-            {
-              text: 'Mag-register',
-              onPress: () => {
-                // Navigate to sign up and then logout to clear guest session
-                navigation.navigate('Auth', { screen: 'Signup' });
-              }
-            }
-          ]
-        );
         return;
       }
 
@@ -178,6 +236,139 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f9fa',
   },
+  
+  // Guest User Styles
+  gradientBackground: {
+    flex: 1,
+  },
+  
+  guestScrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing['2xl'],
+  },
+  
+  guestContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  
+  guestHeader: {
+    alignItems: 'center',
+    marginBottom: Spacing['3xl'],
+  },
+  
+  iconContainer: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.xl,
+    borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  
+  guestTitle: {
+    fontSize: Typography.fontSize['3xl'],
+    fontWeight: Typography.fontWeight.extrabold,
+    color: Colors.text.white,
+    textAlign: 'center',
+    marginBottom: Spacing.lg,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  
+  guestSubtitle: {
+    fontSize: Typography.fontSize.lg,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    lineHeight: 24,
+    paddingHorizontal: Spacing.md,
+  },
+  
+  benefitsContainer: {
+    backgroundColor: Colors.background.card,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xl,
+    marginBottom: Spacing.xl,
+    shadowColor: Colors.text.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  
+  benefitsTitle: {
+    fontSize: Typography.fontSize.xl,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.primary,
+    textAlign: 'center',
+    marginBottom: Spacing.xl,
+  },
+  
+  benefitItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.lg,
+    paddingHorizontal: Spacing.md,
+  },
+  
+  benefitText: {
+    fontSize: Typography.fontSize.base,
+    color: Colors.text.primary,
+    marginLeft: Spacing.lg,
+    flex: 1,
+    fontWeight: Typography.fontWeight.medium,
+  },
+  
+  ctaContainer: {
+    alignItems: 'center',
+  },
+  
+  signupButton: {
+    backgroundColor: Colors.accent,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing['2xl'],
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.lg,
+    minWidth: 200,
+    shadowColor: Colors.text.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  
+  buttonIcon: {
+    marginRight: Spacing.sm,
+  },
+  
+  signupButtonText: {
+    fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.white,
+  },
+  
+  backButton: {
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xl,
+  },
+  
+  backButtonText: {
+    fontSize: Typography.fontSize.base,
+    color: 'rgba(255, 255, 255, 0.8)',
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+  },
+  
+  // Regular Form Styles
   scrollView: {
     flex: 1,
   },

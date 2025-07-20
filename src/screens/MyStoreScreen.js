@@ -118,16 +118,37 @@ export default function MyStoreScreen({ navigation }) {
     if (isGuestUser()) {
       return (
         <View style={styles.noStoreContainer}>
-          <Ionicons name="person-outline" size={80} color="#bdc3c7" />
-          <Text style={styles.noStoreTitle}>Guest Mode</Text>
-          <Text style={styles.noStoreText}>
-            Mga guest user ay hindi pwedeng mag-create ng tindahan. Mag-register po muna para magkaroon ng sariling store.
+          <Ionicons name="person-outline" size={80} color="#FF6B35" />
+          <Text style={styles.guestTitle}>Ikaw ay Guest User</Text>
+          <Text style={styles.guestText}>
+            Salamat sa paggamit ng LokalFinds! Bilang guest, pwede mo lang tingnan ang mga tindahan at produkto.
           </Text>
+          
+          <View style={styles.benefitsContainer}>
+            <Text style={styles.benefitsTitle}>Mga benepisyo ng pag-register:</Text>
+            <View style={styles.benefitItem}>
+              <Ionicons name="storefront" size={20} color="#FF6B35" />
+              <Text style={styles.benefitText}>Magkakaroon ng sariling tindahan</Text>
+            </View>
+            <View style={styles.benefitItem}>
+              <Ionicons name="cube" size={20} color="#FF6B35" />
+              <Text style={styles.benefitText}>Magtinda ng mga produkto</Text>
+            </View>
+            <View style={styles.benefitItem}>
+              <Ionicons name="people" size={20} color="#FF6B35" />
+              <Text style={styles.benefitText}>Makakuha ng mga customer</Text>
+            </View>
+            <View style={styles.benefitItem}>
+              <Ionicons name="cash" size={20} color="#FF6B35" />
+              <Text style={styles.benefitText}>Kumita mula sa negosyo</Text>
+            </View>
+          </View>
+
           <TouchableOpacity
-            style={styles.createStoreButton}
+            style={styles.signupButton}
             onPress={() => navigation.navigate('Auth', { screen: 'Signup' })}
           >
-            <Text style={styles.createStoreButtonText}>Mag-register para sa Store</Text>
+            <Text style={styles.signupButtonText}>Mag-register para sa Store</Text>
           </TouchableOpacity>
           
           <TouchableOpacity
@@ -376,5 +397,64 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#95a5a6',
     marginTop: 5,
+  },
+  // Guest user styles
+  guestTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FF6B35',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  guestText: {
+    fontSize: 16,
+    color: '#7f8c8d',
+    textAlign: 'center',
+    marginBottom: 25,
+    lineHeight: 22,
+  },
+  benefitsContainer: {
+    backgroundColor: '#f8f9fa',
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 25,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  benefitsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  benefitItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    paddingVertical: 5,
+  },
+  benefitText: {
+    fontSize: 16,
+    color: '#2c3e50',
+    marginLeft: 12,
+    flex: 1,
+  },
+  signupButton: {
+    backgroundColor: '#FF6B35',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  signupButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

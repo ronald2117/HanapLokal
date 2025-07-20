@@ -12,11 +12,9 @@ import {
 } from 'react-native';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
-import { useAuth } from '../contexts/AuthContext';
 
 export default function EditStoreScreen({ route, navigation }) {
   const { store } = route.params;
-  const { isGuestUser } = useAuth();
   const [storeName, setStoreName] = useState(store.name);
   const [address, setAddress] = useState(store.address);
   const [hours, setHours] = useState(store.hours);
@@ -25,27 +23,6 @@ export default function EditStoreScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false);
 
   const handleUpdateStore = async () => {
-    // Check if user is a guest
-    if (isGuestUser()) {
-      Alert.alert(
-        'Mag-create ng Account', 
-        'Hindi pwedeng mag-edit ng store ang mga guest user. Kailangan mag-register muna.',
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel'
-          },
-          {
-            text: 'Mag-register',
-            onPress: () => {
-              navigation.navigate('Auth', { screen: 'Signup' });
-            }
-          }
-        ]
-      );
-      return;
-    }
-
     if (!storeName || !address || !hours || !contact || !description) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
