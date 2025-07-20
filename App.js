@@ -20,6 +20,7 @@ import SignupScreen from './src/screens/SignupScreen';
 // Main Screens
 import HomeScreen from './src/screens/HomeScreen';
 import StoreDetailsScreen from './src/screens/StoreDetailsScreen';
+import StoreMapScreen from './src/screens/StoreMapScreen';
 import ProductDetailsScreen from './src/screens/ProductDetailsScreen';
 import MyStoreScreen from './src/screens/MyStoreScreen';
 import FavoritesScreen from './src/screens/FavoritesScreen';
@@ -67,6 +68,11 @@ function HomeStack() {
         name="StoreDetails" 
         component={StoreDetailsScreen}
         options={{ title: 'Detalye ng Tindahan' }}
+      />
+      <Stack.Screen 
+        name="StoreMap" 
+        component={StoreMapScreen}
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="ProductDetails" 
@@ -140,6 +146,11 @@ function FavoritesStack() {
         name="StoreDetails" 
         component={StoreDetailsScreen}
         options={{ title: 'Detalye ng Tindahan' }}
+      />
+      <Stack.Screen 
+        name="StoreMap" 
+        component={StoreMapScreen}
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="ProductDetails" 

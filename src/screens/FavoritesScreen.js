@@ -4,7 +4,8 @@ import {
   Text,
   FlatList,
   StyleSheet,
-  Alert
+  Alert,
+  TouchableOpacity
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, doc, getDoc } from 'firebase/firestore';
@@ -88,6 +89,17 @@ export default function FavoritesScreen({ navigation }) {
           </View>
         )}
       />
+      
+      {/* Floating Map Button */}
+      {favoriteStores.length > 0 && (
+        <TouchableOpacity
+          style={styles.floatingMapButton}
+          onPress={() => navigation.navigate('StoreMap', { stores: favoriteStores })}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="map" size={24} color="#fff" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -131,5 +143,21 @@ const styles = StyleSheet.create({
     color: '#95a5a6',
     marginTop: 5,
     textAlign: 'center',
+  },
+  floatingMapButton: {
+    position: 'absolute',
+    right: 20,
+    bottom: 100, // Account for tab bar height
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#3498db',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });

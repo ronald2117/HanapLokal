@@ -222,6 +222,15 @@ export default function HomeScreen({ navigation }) {
           />
         </View>
       </View>
+      
+      {/* Floating Map Button */}
+      <TouchableOpacity
+        style={styles.floatingMapButton}
+        onPress={() => navigation.navigate('StoreMap', { stores: filteredStores })}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="map" size={24} color={Colors.text.white} />
+      </TouchableOpacity>
     </>
   );
 }
@@ -403,5 +412,19 @@ const styles = StyleSheet.create({
     color: Colors.text.light,
     textAlign: 'center',
     lineHeight: Typography.lineHeight.relaxed * Typography.fontSize.sm,
+  },
+  
+  floatingMapButton: {
+    position: 'absolute',
+    right: Spacing.xl,
+    bottom: Spacing.xl + 80, // Account for tab bar height
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Shadows.large,
+    elevation: 8,
   },
 });

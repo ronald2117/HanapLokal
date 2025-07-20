@@ -28,6 +28,7 @@ export default function CreateStoreScreen({ navigation }) {
   const [category, setCategory] = useState('');
   const [profileImage, setProfileImage] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
+  const [storeCoordinates, setStoreCoordinates] = useState(null);
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
   const { currentUser, isGuestUser } = useAuth();
@@ -149,6 +150,7 @@ export default function CreateStoreScreen({ navigation }) {
         category: category,
         profileImage: profileImage || '', // Store the image URI or empty string as placeholder
         coverImage: coverImage || '', // Store the image URI or empty string as placeholder
+        coordinates: storeCoordinates, // Store GPS coordinates for accurate map positioning
         ownerId: currentUser.uid,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -237,11 +239,25 @@ export default function CreateStoreScreen({ navigation }) {
         return;
       }
 
-      // Get current position
+      // Get current position with high accuracy
       const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-        timeout: 10000,
+        accuracy: Location.Accuracy.BestForNavigation,
+        timeout: 15000,
+        maximumAge: 10000,
       });
+
+      console.log('📍 Current location detected:', {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        accuracy: location.coords.accuracy
+      });
+
+      // Store coordinates for the store
+      const coordinates = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude
+      };
+      setStoreCoordinates(coordinates);
 
       // Reverse geocode to get address
       const addresses = await Location.reverseGeocodeAsync({
@@ -266,7 +282,10 @@ export default function CreateStoreScreen({ navigation }) {
         
         if (formattedAddress) {
           setAddress(formattedAddress);
-          Alert.alert('Success', 'Location detected successfully!');
+          Alert.alert(
+            'Location Detected!', 
+            `Address: ${formattedAddress}\n\nCoordinates: ${coordinates.latitude.toFixed(6)}, ${coordinates.longitude.toFixed(6)}\nAccuracy: ${Math.round(location.coords.accuracy)}m`
+          );
         } else {
           throw new Error('Could not format address');
         }
@@ -275,7 +294,7 @@ export default function CreateStoreScreen({ navigation }) {
       }
 
     } catch (error) {
-      console.error('Error getting location:', error);
+      console.error('❌ Error getting location:', error);
       Alert.alert(
         'Location Error',
         'Could not detect your location. Please enter your address manually.',
@@ -284,6 +303,41 @@ export default function CreateStoreScreen({ navigation }) {
     } finally {
       setLocationLoading(false);
     }
+  };
+
+  // For testing: Allow manual coordinate input (development only)
+  const setTestCoordinates = () => {
+    Alert.prompt(
+      'Set Test Coordinates',
+      'Enter coordinates as: latitude,longitude\n(Example: 14.5995,120.9842 for Manila)',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Set',
+          onPress: (input) => {
+            try {
+              const [lat, lng] = input.split(',').map(coord => parseFloat(coord.trim()));
+              if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+                setStoreCoordinates({ latitude: lat, longitude: lng });
+                Alert.alert(
+                  'Test Coordinates Set!', 
+                  `Latitude: ${lat}\nLongitude: ${lng}\n\nNote: This is for testing only.`
+                );
+              } else {
+                Alert.alert('Error', 'Invalid format. Use: latitude,longitude');
+              }
+            } catch (error) {
+              Alert.alert('Error', 'Invalid format. Use: latitude,longitude');
+            }
+          },
+        },
+      ],
+      'plain-text',
+      '14.5995,120.9842'
+    );
   };
 
   return (
@@ -425,6 +479,26 @@ export default function CreateStoreScreen({ navigation }) {
               onChangeText={setAddress}
               multiline
             />
+            
+            {/* Test coordinate button for development */}
+            <TouchableOpacity 
+              style={[styles.button, styles.testButton]} 
+              onPress={setTestCoordinates}
+            >
+              <Text style={styles.buttonText}>Set Test Coordinates (Dev)</Text>
+            </TouchableOpacity>
+            
+            {/* Display current coordinates */}
+            {storeCoordinates && (
+              <View style={styles.coordinateDisplay}>
+                <Text style={styles.coordinateText}>
+                  📍 GPS Coordinates: {storeCoordinates.latitude.toFixed(6)}, {storeCoordinates.longitude.toFixed(6)}
+                </Text>
+                <Text style={styles.coordinateSubtext}>
+                  These coordinates will be used for precise map positioning
+                </Text>
+              </View>
+            )}
           </View>
 
           <View style={styles.inputGroup}>
@@ -791,5 +865,28 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  testButton: {
+    backgroundColor: '#f39c12',
+    marginTop: 10,
+  },
+  coordinateDisplay: {
+    marginTop: 10,
+    padding: 12,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  coordinateText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginBottom: 4,
+  },
+  coordinateSubtext: {
+    fontSize: 12,
+    color: '#7f8c8d',
+    fontStyle: 'italic',
   },
 });
