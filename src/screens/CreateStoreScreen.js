@@ -638,6 +638,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     alignItems: 'center',
+    width: '100%',
   },
   addImageButton: {
     backgroundColor: '#f8f9fa',
@@ -672,6 +673,7 @@ const styles = StyleSheet.create({
   },
   selectedImageContainer: {
     position: 'relative',
+    width: '100%',
   },
   profileImagePreview: {
     width: 120,
@@ -686,6 +688,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 2,
     borderColor: '#3498db',
+    resizeMode: 'cover',
   },
   removeImageButton: {
     position: 'absolute',
