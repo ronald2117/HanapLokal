@@ -21,6 +21,27 @@ export default function StoreDetailsScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
 
+  // Get category information
+  const getCategoryInfo = () => {
+    const categories = {
+      'sari-sari': { name: 'Sari-sari Store', icon: 'storefront', emoji: '🏪' },
+      'kainan': { name: 'Kainan/Restaurant', icon: 'restaurant', emoji: '🍽️' },
+      'laundry': { name: 'Laundry Shop', icon: 'shirt', emoji: '👕' },
+      'vegetables': { name: 'Vegetable Store', icon: 'leaf', emoji: '🥬' },
+      'meat': { name: 'Meat Shop', icon: 'fish', emoji: '🥩' },
+      'bakery': { name: 'Bakery', icon: 'cafe', emoji: '🍞' },
+      'pharmacy': { name: 'Pharmacy', icon: 'medical', emoji: '💊' },
+      'hardware': { name: 'Hardware Store', icon: 'hammer', emoji: '🔨' },
+      'clothing': { name: 'Clothing Store', icon: 'shirt-outline', emoji: '👔' },
+      'electronics': { name: 'Electronics', icon: 'phone-portrait', emoji: '📱' },
+      'beauty': { name: 'Beauty Salon', icon: 'cut', emoji: '✂️' },
+      'automotive': { name: 'Automotive Shop', icon: 'car', emoji: '🚗' },
+      'other': { name: 'Other', icon: 'business', emoji: '🏪' },
+    };
+    
+    return categories[store.category] || categories['other'];
+  };
+
   useEffect(() => {
     fetchProducts();
     checkIfFavorite();
@@ -116,6 +137,12 @@ export default function StoreDetailsScreen({ route, navigation }) {
         
         <View style={styles.storeInfo}>
           <Text style={styles.storeName}>{store.name}</Text>
+          {store.category && (
+            <View style={styles.categoryContainer}>
+              <Ionicons name={getCategoryInfo().icon} size={16} color="#3498db" />
+              <Text style={styles.categoryText}>{getCategoryInfo().name}</Text>
+            </View>
+          )}
           <Text style={styles.storeAddress}>📍 {store.address}</Text>
           <Text style={styles.storeHours}>🕒 {store.hours}</Text>
           {store.contact && <Text style={styles.storeContact}>📞 {store.contact}</Text>}
@@ -224,6 +251,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#2c3e50',
     marginBottom: 8,
+  },
+  categoryContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  categoryText: {
+    fontSize: 14,
+    color: '#3498db',
+    marginLeft: 6,
+    fontWeight: '600',
   },
   storeAddress: {
     fontSize: 16,

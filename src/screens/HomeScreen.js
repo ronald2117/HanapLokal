@@ -23,9 +23,28 @@ export default function HomeScreen({ navigation }) {
   const [stores, setStores] = useState([]);
   const [filteredStores, setFilteredStores] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { location } = useLocation();
+
+  // Store categories for filtering
+  const storeCategories = [
+    { id: '', name: 'All', icon: 'apps' },
+    { id: 'sari-sari', name: 'Sari-sari', icon: 'storefront' },
+    { id: 'kainan', name: 'Kainan', icon: 'restaurant' },
+    { id: 'laundry', name: 'Laundry', icon: 'shirt' },
+    { id: 'vegetables', name: 'Vegetables', icon: 'leaf' },
+    { id: 'meat', name: 'Meat Shop', icon: 'fish' },
+    { id: 'bakery', name: 'Bakery', icon: 'cafe' },
+    { id: 'pharmacy', name: 'Pharmacy', icon: 'medical' },
+    { id: 'hardware', name: 'Hardware', icon: 'hammer' },
+    { id: 'clothing', name: 'Clothing', icon: 'shirt-outline' },
+    { id: 'electronics', name: 'Electronics', icon: 'phone-portrait' },
+    { id: 'beauty', name: 'Beauty', icon: 'cut' },
+    { id: 'automotive', name: 'Automotive', icon: 'car' },
+    { id: 'other', name: 'Other', icon: 'business' },
+  ];
 
   useEffect(() => {
     fetchStores();
@@ -33,7 +52,7 @@ export default function HomeScreen({ navigation }) {
 
   useEffect(() => {
     filterStores();
-  }, [searchQuery, stores]);
+  }, [searchQuery, selectedCategory, stores]);
 
   const fetchStores = async () => {
     try {
@@ -62,16 +81,22 @@ export default function HomeScreen({ navigation }) {
   };
 
   const filterStores = () => {
-    if (!searchQuery.trim()) {
-      setFilteredStores(stores);
-      return;
+    let filtered = stores;
+
+    // Filter by category
+    if (selectedCategory) {
+      filtered = filtered.filter(store => store.category === selectedCategory);
     }
 
-    const filtered = stores.filter(store =>
-      store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      store.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      store.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Filter by search query
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(store =>
+        store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        store.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        store.description.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
     setFilteredStores(filtered);
   };
 
@@ -83,17 +108,23 @@ export default function HomeScreen({ navigation }) {
     />
   );
 
-  const categories = [
-    { id: 1, name: 'Sari-Sari', icon: '🏪', color: Colors.primary },
-    { id: 2, name: 'Kainan', icon: '🍽️', color: Colors.accent },
-    { id: 3, name: 'Repair', icon: '🔧', color: Colors.secondary },
-    { id: 4, name: 'Lahat', icon: '🌟', color: Colors.success },
-  ];
-
   const renderCategory = ({ item }) => (
-    <TouchableOpacity style={[styles.categoryItem, { borderColor: item.color }]} activeOpacity={0.7}>
-      <Text style={styles.categoryIcon}>{item.icon}</Text>
-      <Text style={[styles.categoryText, { color: item.color }]}>{item.name}</Text>
+    <TouchableOpacity 
+      style={[
+        styles.categoryItem, 
+        { borderColor: selectedCategory === item.id ? Colors.primary : Colors.border },
+        selectedCategory === item.id && styles.categoryItemSelected
+      ]} 
+      activeOpacity={0.7}
+      onPress={() => setSelectedCategory(item.id)}
+    >
+      <Ionicons name={item.icon} size={20} color={selectedCategory === item.id ? Colors.primary : Colors.text.secondary} />
+      <Text style={[
+        styles.categoryText, 
+        { color: selectedCategory === item.id ? Colors.primary : Colors.text.secondary }
+      ]}>
+        {item.name}
+      </Text>
     </TouchableOpacity>
   );
 
@@ -145,9 +176,9 @@ export default function HomeScreen({ navigation }) {
         <View style={styles.categoriesSection}>
           <Text style={styles.sectionTitle}>Mga Kategorya</Text>
           <FlatList
-            data={categories}
+            data={storeCategories}
             renderItem={renderCategory}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => item.id}
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoriesList}
@@ -294,25 +325,30 @@ const styles = StyleSheet.create({
   },
   
   categoryItem: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: Colors.background.card,
     borderWidth: 2,
     borderRadius: BorderRadius.xl,
-    paddingVertical: Spacing.lg,
-    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
     marginHorizontal: Spacing.sm,
-    minWidth: 80,
+    minWidth: 90,
     ...Shadows.base,
   },
   
+  categoryItemSelected: {
+    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+  },
+  
   categoryIcon: {
-    fontSize: 24,
-    marginBottom: Spacing.xs,
+    fontSize: 16,
+    marginRight: Spacing.xs,
   },
   
   categoryText: {
-    fontSize: Typography.fontSize.sm,
+    fontSize: Typography.fontSize.xs,
     fontWeight: Typography.fontWeight.semibold,
   },
   

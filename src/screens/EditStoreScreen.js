@@ -23,14 +23,32 @@ export default function EditStoreScreen({ route, navigation }) {
   const [address, setAddress] = useState(store.address);
   const [hours, setHours] = useState(store.hours);
   const [description, setDescription] = useState(store.description);
+  const [category, setCategory] = useState(store.category || '');
   const [profileImage, setProfileImage] = useState(store.profileImage || null);
   const [coverImage, setCoverImage] = useState(store.coverImage || null);
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
 
+  // Store categories
+  const storeCategories = [
+    { id: 'sari-sari', name: 'Sari-sari Store', icon: 'storefront' },
+    { id: 'kainan', name: 'Kainan/Restaurant', icon: 'restaurant' },
+    { id: 'laundry', name: 'Laundry Shop', icon: 'shirt' },
+    { id: 'vegetables', name: 'Vegetable Store', icon: 'leaf' },
+    { id: 'meat', name: 'Meat Shop', icon: 'fish' },
+    { id: 'bakery', name: 'Bakery', icon: 'cafe' },
+    { id: 'pharmacy', name: 'Pharmacy', icon: 'medical' },
+    { id: 'hardware', name: 'Hardware Store', icon: 'hammer' },
+    { id: 'clothing', name: 'Clothing Store', icon: 'shirt-outline' },
+    { id: 'electronics', name: 'Electronics', icon: 'phone-portrait' },
+    { id: 'beauty', name: 'Beauty Salon', icon: 'cut' },
+    { id: 'automotive', name: 'Automotive Shop', icon: 'car' },
+    { id: 'other', name: 'Other', icon: 'business' },
+  ];
+
   const handleUpdateStore = async () => {
-    if (!storeName || !address || !hours || !description) {
-      Alert.alert('Error', 'Please fill in all fields');
+    if (!storeName || !address || !hours || !description || !category) {
+      Alert.alert('Error', 'Please fill in all fields including store category');
       return;
     }
 
@@ -42,6 +60,7 @@ export default function EditStoreScreen({ route, navigation }) {
         address: address,
         hours: hours,
         description: description,
+        category: category,
         profileImage: profileImage || '',
         coverImage: coverImage || '',
         updatedAt: new Date()
@@ -195,6 +214,35 @@ export default function EditStoreScreen({ route, navigation }) {
               value={storeName}
               onChangeText={setStoreName}
             />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Store Category *</Text>
+            <Text style={styles.subtitle}>Select what type of store you have</Text>
+            <View style={styles.categoryContainer}>
+              {storeCategories.map((cat) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[
+                    styles.categoryButton,
+                    category === cat.id && styles.categoryButtonSelected
+                  ]}
+                  onPress={() => setCategory(cat.id)}
+                >
+                  <Ionicons 
+                    name={cat.icon} 
+                    size={20} 
+                    color={category === cat.id ? '#fff' : '#3498db'} 
+                  />
+                  <Text style={[
+                    styles.categoryButtonText,
+                    category === cat.id && styles.categoryButtonTextSelected
+                  ]}>
+                    {cat.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
 
           {/* Store Images Section */}
@@ -393,6 +441,37 @@ const styles = StyleSheet.create({
   textArea: {
     height: 120,
     textAlignVertical: 'top',
+  },
+  // Category Selection Styles
+  categoryContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+  },
+  categoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#3498db',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+  categoryButtonSelected: {
+    backgroundColor: '#3498db',
+    borderColor: '#3498db',
+  },
+  categoryButtonText: {
+    fontSize: 12,
+    color: '#3498db',
+    marginLeft: 6,
+    fontWeight: '500',
+  },
+  categoryButtonTextSelected: {
+    color: '#fff',
   },
   // Image Selection Styles
   imageSection: {

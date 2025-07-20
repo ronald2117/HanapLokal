@@ -17,7 +17,33 @@ export default function StoreCard({ store, onPress, userLocation, showFavoriteIc
     return '0.5 km away';
   };
 
+  // Get category information
+  const getCategoryInfo = () => {
+    const categories = {
+      'sari-sari': { name: 'Sari-sari Store', icon: 'storefront', emoji: '🏪' },
+      'kainan': { name: 'Kainan/Restaurant', icon: 'restaurant', emoji: '🍽️' },
+      'laundry': { name: 'Laundry Shop', icon: 'shirt', emoji: '👕' },
+      'vegetables': { name: 'Vegetable Store', icon: 'leaf', emoji: '🥬' },
+      'meat': { name: 'Meat Shop', icon: 'fish', emoji: '🥩' },
+      'bakery': { name: 'Bakery', icon: 'cafe', emoji: '🍞' },
+      'pharmacy': { name: 'Pharmacy', icon: 'medical', emoji: '💊' },
+      'hardware': { name: 'Hardware Store', icon: 'hammer', emoji: '🔨' },
+      'clothing': { name: 'Clothing Store', icon: 'shirt-outline', emoji: '👔' },
+      'electronics': { name: 'Electronics', icon: 'phone-portrait', emoji: '📱' },
+      'beauty': { name: 'Beauty Salon', icon: 'cut', emoji: '✂️' },
+      'automotive': { name: 'Automotive Shop', icon: 'car', emoji: '🚗' },
+      'other': { name: 'Other', icon: 'business', emoji: '🏪' },
+    };
+    
+    return categories[store.category] || categories['other'];
+  };
+
   const getStoreTypeIcon = () => {
+    if (store.category) {
+      return getCategoryInfo().emoji;
+    }
+    
+    // Fallback logic for stores without category
     const storeType = store.name?.toLowerCase() || '';
     if (storeType.includes('sari') || storeType.includes('tindahan')) return '🏪';
     if (storeType.includes('resto') || storeType.includes('kain')) return '🍽️';
@@ -42,6 +68,12 @@ export default function StoreCard({ store, onPress, userLocation, showFavoriteIc
         
         <View style={styles.storeInfo}>
           <Text style={styles.storeName}>{store.name}</Text>
+          {store.category && (
+            <View style={styles.categoryRow}>
+              <Ionicons name={getCategoryInfo().icon} size={12} color={Colors.primary} />
+              <Text style={styles.categoryText}>{getCategoryInfo().name}</Text>
+            </View>
+          )}
           <View style={styles.locationRow}>
             <Ionicons name="location-outline" size={14} color={Colors.text.secondary} />
             <Text style={styles.storeAddress}>{store.address}</Text>
@@ -130,6 +162,19 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeight.bold,
     color: Colors.text.primary,
     marginBottom: Spacing.xs,
+  },
+  
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.xs,
+  },
+  
+  categoryText: {
+    fontSize: Typography.fontSize.xs,
+    color: Colors.primary,
+    marginLeft: Spacing.xs,
+    fontWeight: Typography.fontWeight.medium,
   },
   
   locationRow: {

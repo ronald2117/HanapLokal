@@ -21,9 +21,31 @@ import ProductCard from '../components/ProductCard';
 export default function MyStoreScreen({ navigation }) {
   const [myStore, setMyStore] = useState(null);
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [productLoading, setProductLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const { currentUser, isGuestUser, logoutGuestAndSignup } = useAuth();
+  const { currentUser, isGuestUser } = useAuth();
+
+  // Get category information
+  const getCategoryInfo = (category) => {
+    const categories = {
+      'sari-sari': { name: 'Sari-sari Store', icon: 'storefront', emoji: '🏪' },
+      'kainan': { name: 'Kainan/Restaurant', icon: 'restaurant', emoji: '🍽️' },
+      'laundry': { name: 'Laundry Shop', icon: 'shirt', emoji: '👕' },
+      'vegetables': { name: 'Vegetable Store', icon: 'leaf', emoji: '🥬' },
+      'meat': { name: 'Meat Shop', icon: 'fish', emoji: '🥩' },
+      'bakery': { name: 'Bakery', icon: 'cafe', emoji: '🍞' },
+      'pharmacy': { name: 'Pharmacy', icon: 'medical', emoji: '💊' },
+      'hardware': { name: 'Hardware Store', icon: 'hammer', emoji: '🔨' },
+      'clothing': { name: 'Clothing Store', icon: 'shirt-outline', emoji: '👔' },
+      'electronics': { name: 'Electronics', icon: 'phone-portrait', emoji: '📱' },
+      'beauty': { name: 'Beauty Salon', icon: 'cut', emoji: '✂️' },
+      'automotive': { name: 'Automotive Shop', icon: 'car', emoji: '🚗' },
+      'other': { name: 'Other', icon: 'business', emoji: '🏪' },
+    };
+    
+    return categories[category] || categories['other'];
+  };
 
   // Refresh store data whenever the screen comes into focus
   useFocusEffect(
@@ -231,6 +253,12 @@ export default function MyStoreScreen({ navigation }) {
         
         <View style={styles.storeNameContainer}>
           <Text style={styles.storeName}>{myStore.name}</Text>
+          {myStore.category && (
+            <View style={styles.categoryContainer}>
+              <Ionicons name={getCategoryInfo(myStore.category).icon} size={14} color="#3498db" />
+              <Text style={styles.categoryText}>{getCategoryInfo(myStore.category).name}</Text>
+            </View>
+          )}
         </View>
         
         <TouchableOpacity
@@ -389,6 +417,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#2c3e50',
     flex: 1,
+  },
+  categoryContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  categoryText: {
+    fontSize: 12,
+    color: '#3498db',
+    marginLeft: 4,
+    fontWeight: '600',
   },
   settingsButton: {
     flexDirection: 'row',

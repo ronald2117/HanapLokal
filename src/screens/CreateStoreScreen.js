@@ -25,11 +25,29 @@ export default function CreateStoreScreen({ navigation }) {
   const [address, setAddress] = useState('');
   const [hours, setHours] = useState('');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
   const [profileImage, setProfileImage] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
   const { currentUser, isGuestUser } = useAuth();
+
+  // Store categories
+  const storeCategories = [
+    { id: 'sari-sari', name: 'Sari-sari Store', icon: 'storefront' },
+    { id: 'kainan', name: 'Kainan/Restaurant', icon: 'restaurant' },
+    { id: 'laundry', name: 'Laundry Shop', icon: 'shirt' },
+    { id: 'vegetables', name: 'Vegetable Store', icon: 'leaf' },
+    { id: 'meat', name: 'Meat Shop', icon: 'fish' },
+    { id: 'bakery', name: 'Bakery', icon: 'cafe' },
+    { id: 'pharmacy', name: 'Pharmacy', icon: 'medical' },
+    { id: 'hardware', name: 'Hardware Store', icon: 'hammer' },
+    { id: 'clothing', name: 'Clothing Store', icon: 'shirt-outline' },
+    { id: 'electronics', name: 'Electronics', icon: 'phone-portrait' },
+    { id: 'beauty', name: 'Beauty Salon', icon: 'cut' },
+    { id: 'automotive', name: 'Automotive Shop', icon: 'car' },
+    { id: 'other', name: 'Other', icon: 'business' },
+  ];
 
   // If user is a guest, show the guest restriction screen
   if (isGuestUser()) {
@@ -116,8 +134,8 @@ export default function CreateStoreScreen({ navigation }) {
       }
 
       // Validate form data
-      if (!storeName.trim() || !address.trim() || !hours.trim() || !description.trim()) {
-        Alert.alert('Error', 'Please fill in all required fields');
+      if (!storeName.trim() || !address.trim() || !hours.trim() || !description.trim() || !category) {
+        Alert.alert('Error', 'Please fill in all required fields including store category');
         return;
       }
 
@@ -128,6 +146,7 @@ export default function CreateStoreScreen({ navigation }) {
         address: address.trim(),
         hours: hours.trim(),
         description: description.trim(),
+        category: category,
         profileImage: profileImage || '', // Store the image URI or empty string as placeholder
         coverImage: coverImage || '', // Store the image URI or empty string as placeholder
         ownerId: currentUser.uid,
@@ -292,6 +311,35 @@ export default function CreateStoreScreen({ navigation }) {
               value={storeName}
               onChangeText={setStoreName}
             />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Store Category *</Text>
+            <Text style={styles.subtitle}>Select what type of store you have</Text>
+            <View style={styles.categoryContainer}>
+              {storeCategories.map((cat) => (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[
+                    styles.categoryButton,
+                    category === cat.id && styles.categoryButtonSelected
+                  ]}
+                  onPress={() => setCategory(cat.id)}
+                >
+                  <Ionicons 
+                    name={cat.icon} 
+                    size={20} 
+                    color={category === cat.id ? '#fff' : '#3498db'} 
+                  />
+                  <Text style={[
+                    styles.categoryButtonText,
+                    category === cat.id && styles.categoryButtonTextSelected
+                  ]}>
+                    {cat.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
 
           {/* Store Images Section */}
@@ -625,6 +673,37 @@ const styles = StyleSheet.create({
   textArea: {
     height: 120,
     textAlignVertical: 'top',
+  },
+  // Category Selection Styles
+  categoryContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 8,
+  },
+  categoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#3498db',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+  categoryButtonSelected: {
+    backgroundColor: '#3498db',
+    borderColor: '#3498db',
+  },
+  categoryButtonText: {
+    fontSize: 12,
+    color: '#3498db',
+    marginLeft: 6,
+    fontWeight: '500',
+  },
+  categoryButtonTextSelected: {
+    color: '#fff',
   },
   // Image Selection Styles
   imageSection: {
