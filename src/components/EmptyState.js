@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing } from '../styles/theme';
@@ -42,6 +43,30 @@ const EmptyState = ({
       )}
     </View>
   );
+};
+
+// Props validation
+EmptyState.propTypes = {
+  icon: PropTypes.string,
+  emoji: PropTypes.string,
+  title: PropTypes.string.isRequired,
+  message: PropTypes.string,
+  actionTitle: PropTypes.string,
+  onAction: PropTypes.func,
+  style: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.array
+  ])
+};
+
+// Default props
+EmptyState.defaultProps = {
+  icon: 'information-circle-outline',
+  emoji: null,
+  message: null,
+  actionTitle: null,
+  onAction: null,
+  style: null
 };
 
 const styles = StyleSheet.create({

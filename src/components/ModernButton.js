@@ -115,10 +115,9 @@ const ModernButton = ({
       ) : (
         <>
           {icon && (
-            <React.Fragment>
+            <View style={styles.iconContainer}>
               {icon}
-              <View style={{ width: Spacing.sm }} />
-            </React.Fragment>
+            </View>
           )}
           <Text style={[getTextStyle(), textStyle]}>{title}</Text>
         </>
@@ -126,5 +125,11 @@ const ModernButton = ({
     </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    marginRight: Spacing.sm,
+  },
+});
 
 export default ModernButton;
