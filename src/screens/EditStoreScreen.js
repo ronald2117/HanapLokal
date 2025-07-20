@@ -52,11 +52,17 @@ export default function EditStoreScreen({ route, navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView 
+    <ScrollView 
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={true}
+      keyboardShouldPersistTaps="handled"
+      nestedScrollEnabled={true}
     >
-      <ScrollView style={styles.scrollView}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
         <View style={styles.form}>
           <Text style={styles.title}>Edit Store</Text>
           <Text style={styles.subtitle}>
@@ -127,8 +133,8 @@ export default function EditStoreScreen({ route, navigation }) {
             </Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </ScrollView>
   );
 }
 
@@ -137,10 +143,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f9fa',
   },
-  scrollView: {
-    flex: 1,
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 50, // Extra padding at bottom for better scrolling
   },
   form: {
+    flex: 1,
     padding: 20,
   },
   title: {
