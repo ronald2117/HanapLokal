@@ -20,13 +20,12 @@ export default function EditStoreScreen({ route, navigation }) {
   const [storeName, setStoreName] = useState(store.name);
   const [address, setAddress] = useState(store.address);
   const [hours, setHours] = useState(store.hours);
-  const [contact, setContact] = useState(store.contact);
   const [description, setDescription] = useState(store.description);
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
 
   const handleUpdateStore = async () => {
-    if (!storeName || !address || !hours || !contact || !description) {
+    if (!storeName || !address || !hours || !description) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
@@ -38,7 +37,6 @@ export default function EditStoreScreen({ route, navigation }) {
         name: storeName,
         address: address,
         hours: hours,
-        contact: contact,
         description: description,
         updatedAt: new Date()
       });
@@ -193,24 +191,15 @@ export default function EditStoreScreen({ route, navigation }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Contact Information *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Phone number, email, etc."
-              value={contact}
-              onChangeText={setContact}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
             <Text style={styles.label}>About Your Store *</Text>
+            <Text style={styles.subtitle}>Tell customers about your store, what you sell, your contact info, and your story...</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Tell customers about your store, what you sell, your story..."
+              placeholder="Describe your store, products, contact information (phone, email, etc.), and your story..."
               value={description}
               onChangeText={setDescription}
               multiline
-              numberOfLines={4}
+              numberOfLines={6}
             />
           </View>
 
@@ -299,7 +288,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   textArea: {
-    height: 100,
+    height: 120,
     textAlignVertical: 'top',
   },
   button: {

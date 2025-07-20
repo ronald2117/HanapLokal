@@ -22,7 +22,6 @@ export default function CreateStoreScreen({ navigation }) {
   const [storeName, setStoreName] = useState('');
   const [address, setAddress] = useState('');
   const [hours, setHours] = useState('');
-  const [contact, setContact] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
@@ -113,7 +112,7 @@ export default function CreateStoreScreen({ navigation }) {
       }
 
       // Validate form data
-      if (!storeName.trim() || !address.trim() || !hours.trim() || !contact.trim() || !description.trim()) {
+      if (!storeName.trim() || !address.trim() || !hours.trim() || !description.trim()) {
         Alert.alert('Error', 'Please fill in all required fields');
         return;
       }
@@ -124,7 +123,6 @@ export default function CreateStoreScreen({ navigation }) {
         name: storeName.trim(),
         address: address.trim(),
         hours: hours.trim(),
-        contact: contact.trim(),
         description: description.trim(),
         ownerId: currentUser.uid,
         createdAt: new Date().toISOString(),
@@ -285,24 +283,15 @@ export default function CreateStoreScreen({ navigation }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Contact Information *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Phone number, email, etc."
-              value={contact}
-              onChangeText={setContact}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
             <Text style={styles.label}>About Your Store *</Text>
+            <Text style={styles.subtitle}>Tell customers about your store, what you sell, your contact info, and your story...</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Tell customers about your store, what you sell, your story..."
+              placeholder="Describe your store, products, contact information (phone, email, etc.), and your story..."
               value={description}
               onChangeText={setDescription}
               multiline
-              numberOfLines={4}
+              numberOfLines={6}
             />
           </View>
 
@@ -522,7 +511,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   textArea: {
-    height: 100,
+    height: 120,
     textAlignVertical: 'top',
   },
   button: {
