@@ -21,12 +21,34 @@ export default function CreateStoreScreen({ navigation }) {
   const [contact, setContact] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
-  const { currentUser } = useAuth();
+  const { currentUser, isGuestUser } = useAuth();
 
   const handleCreateStore = async () => {
     try {
       if (!currentUser) {
         Alert.alert('Error', 'You must be logged in to create a store');
+        return;
+      }
+
+      // Check if user is a guest/anonymous user
+      if (isGuestUser()) {
+        Alert.alert(
+          'Mag-create ng Account', 
+          'Hindi pwedeng mag-create ng tindahan ang mga guest user. Kailangan mag-register muna para magkaroon ng sariling tindahan.',
+          [
+            {
+              text: 'Cancel',
+              style: 'cancel'
+            },
+            {
+              text: 'Mag-register',
+              onPress: () => {
+                // Navigate to sign up and then logout to clear guest session
+                navigation.navigate('Auth', { screen: 'Signup' });
+              }
+            }
+          ]
+        );
         return;
       }
 

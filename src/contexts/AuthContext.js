@@ -34,6 +34,11 @@ export function AuthProvider({ children }) {
     return signInAnonymously(auth);
   }
 
+  // Check if current user is anonymous/guest
+  function isGuestUser() {
+    return currentUser && currentUser.isAnonymous;
+  }
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -48,7 +53,8 @@ export function AuthProvider({ children }) {
     signup,
     login,
     logout,
-    loginAnonymously
+    loginAnonymously,
+    isGuestUser
   };
 
   return (

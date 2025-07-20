@@ -13,10 +13,12 @@ import {
 } from 'react-native';
 import { doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
+import { useAuth } from '../contexts/AuthContext';
 import ImageUploader from '../components/ImageUploader';
 
 export default function EditProductScreen({ route, navigation }) {
   const { product, storeId } = route.params;
+  const { isGuestUser } = useAuth();
   const [productName, setProductName] = useState(product.name);
   const [price, setPrice] = useState(product.price.toString());
   const [description, setDescription] = useState(product.description);
@@ -26,6 +28,27 @@ export default function EditProductScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false);
 
   const handleUpdateProduct = async () => {
+    // Check if user is a guest
+    if (isGuestUser()) {
+      Alert.alert(
+        'Mag-create ng Account', 
+        'Hindi pwedeng mag-edit ng products ang mga guest user. Kailangan mag-register muna.',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          },
+          {
+            text: 'Mag-register',
+            onPress: () => {
+              navigation.navigate('Auth', { screen: 'Signup' });
+            }
+          }
+        ]
+      );
+      return;
+    }
+
     if (!productName || !price || !description) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
@@ -61,6 +84,27 @@ export default function EditProductScreen({ route, navigation }) {
   };
 
   const handleDeleteProduct = () => {
+    // Check if user is a guest
+    if (isGuestUser()) {
+      Alert.alert(
+        'Mag-create ng Account', 
+        'Hindi pwedeng mag-delete ng products ang mga guest user. Kailangan mag-register muna.',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          },
+          {
+            text: 'Mag-register',
+            onPress: () => {
+              navigation.navigate('Auth', { screen: 'Signup' });
+            }
+          }
+        ]
+      );
+      return;
+    }
+
     Alert.alert(
       'Delete Product',
       'Are you sure you want to delete this product? This action cannot be undone.',

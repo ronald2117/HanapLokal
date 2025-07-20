@@ -13,10 +13,12 @@ import {
 } from 'react-native';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
+import { useAuth } from '../contexts/AuthContext';
 import ImageUploader from '../components/ImageUploader';
 
 export default function AddProductScreen({ route, navigation }) {
   const { storeId } = route.params;
+  const { isGuestUser } = useAuth();
   const [productName, setProductName] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
@@ -26,6 +28,27 @@ export default function AddProductScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false);
 
   const handleAddProduct = async () => {
+    // Check if user is a guest
+    if (isGuestUser()) {
+      Alert.alert(
+        'Mag-create ng Account', 
+        'Hindi pwedeng mag-add ng products ang mga guest user. Kailangan mag-register muna.',
+        [
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          },
+          {
+            text: 'Mag-register',
+            onPress: () => {
+              navigation.navigate('Auth', { screen: 'Signup' });
+            }
+          }
+        ]
+      );
+      return;
+    }
+
     if (!productName || !price || !description) {
       Alert.alert('Error', 'Please fill in all fields');
       return;

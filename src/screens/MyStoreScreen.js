@@ -21,7 +21,7 @@ export default function MyStoreScreen({ navigation }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const { currentUser } = useAuth();
+  const { currentUser, isGuestUser } = useAuth();
 
   // Refresh store data whenever the screen comes into focus
   useFocusEffect(
@@ -114,6 +114,37 @@ export default function MyStoreScreen({ navigation }) {
   }
 
   if (!myStore) {
+    // Show different content for guest users
+    if (isGuestUser()) {
+      return (
+        <View style={styles.noStoreContainer}>
+          <Ionicons name="person-outline" size={80} color="#bdc3c7" />
+          <Text style={styles.noStoreTitle}>Guest Mode</Text>
+          <Text style={styles.noStoreText}>
+            Mga guest user ay hindi pwedeng mag-create ng tindahan. Mag-register po muna para magkaroon ng sariling store.
+          </Text>
+          <TouchableOpacity
+            style={styles.createStoreButton}
+            onPress={() => navigation.navigate('Auth', { screen: 'Signup' })}
+          >
+            <Text style={styles.createStoreButtonText}>Mag-register para sa Store</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.refreshButton}
+            onPress={onRefresh}
+            disabled={refreshing}
+          >
+            <Ionicons name="refresh" size={20} color="#3498db" />
+            <Text style={styles.refreshButtonText}>
+              {refreshing ? 'Refreshing...' : 'Refresh'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    // Regular user without store
     return (
       <View style={styles.noStoreContainer}>
         <Ionicons name="storefront-outline" size={80} color="#bdc3c7" />
