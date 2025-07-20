@@ -7,7 +7,8 @@ import {
   StyleSheet,
   Alert,
   FlatList,
-  RefreshControl
+  RefreshControl,
+  Image
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -207,8 +208,31 @@ export default function MyStoreScreen({ navigation }) {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
+      {/* Cover Photo */}
+      {myStore.coverImage ? (
+        <Image source={{ uri: myStore.coverImage }} style={styles.coverImage} />
+      ) : (
+        <View style={styles.coverPlaceholder} />
+      )}
+      
       <View style={styles.storeHeader}>
-        <Text style={styles.storeName}>{myStore.name}</Text>
+        {/* Profile Picture */}
+        <View style={styles.profileContainer}>
+          {myStore.profileImage ? (
+            <Image source={{ uri: myStore.profileImage }} style={styles.profileImage} />
+          ) : (
+            <View style={styles.profilePlaceholder}>
+              <Text style={styles.profileInitial}>
+                {myStore.name ? myStore.name.charAt(0).toUpperCase() : '?'}
+              </Text>
+            </View>
+          )}
+        </View>
+        
+        <View style={styles.storeNameContainer}>
+          <Text style={styles.storeName}>{myStore.name}</Text>
+        </View>
+        
         <TouchableOpacity
           style={styles.settingsButton}
           onPress={() => navigation.navigate('StoreSettings', { store: myStore })}
@@ -221,7 +245,7 @@ export default function MyStoreScreen({ navigation }) {
       <View style={styles.storeInfo}>
         <Text style={styles.storeAddress}>📍 {myStore.address}</Text>
         <Text style={styles.storeHours}>🕒 {myStore.hours}</Text>
-        <Text style={styles.storeContact}>📞 {myStore.contact}</Text>
+        {myStore.contact && <Text style={styles.storeContact}>📞 {myStore.contact}</Text>}
       </View>
 
       <View style={styles.productsSection}>
@@ -311,14 +335,54 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     fontWeight: '600',
   },
+  coverImage: {
+    width: '100%',
+    height: 200,
+    backgroundColor: '#ecf0f1',
+  },
+  coverPlaceholder: {
+    width: '100%',
+    height: 200,
+    backgroundColor: '#ecf0f1',
+  },
   storeHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#fff',
     padding: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#ecf0f1',
+    marginTop: -40, // Pull up over cover image
+  },
+  profileContainer: {
+    marginRight: 15,
+    marginTop: -20, // Pull up over cover image
+  },
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 4,
+    borderColor: '#fff',
+    backgroundColor: '#f8f9fa',
+  },
+  profilePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 4,
+    borderColor: '#fff',
+    backgroundColor: '#3498db',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileInitial: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  storeNameContainer: {
+    flex: 1,
   },
   storeName: {
     fontSize: 24,

@@ -3,7 +3,8 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet
+  StyleSheet,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
@@ -29,7 +30,14 @@ export default function StoreCard({ store, onPress, userLocation, showFavoriteIc
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.cardHeader}>
         <View style={styles.storeIconContainer}>
-          <Text style={styles.storeIcon}>{getStoreTypeIcon()}</Text>
+          {store.profileImage ? (
+            <Image 
+              source={{ uri: store.profileImage }} 
+              style={styles.profileImage}
+            />
+          ) : (
+            <Text style={styles.storeIcon}>{getStoreTypeIcon()}</Text>
+          )}
         </View>
         
         <View style={styles.storeInfo}>
@@ -104,6 +112,13 @@ const styles = StyleSheet.create({
   
   storeIcon: {
     fontSize: 24,
+  },
+
+  profileImage: {
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.primaryLight,
   },
   
   storeInfo: {

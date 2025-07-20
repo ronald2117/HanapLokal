@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  FlatList
+  FlatList,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { collection, getDocs, query, where } from 'firebase/firestore';
@@ -88,12 +89,32 @@ export default function StoreDetailsScreen({ route, navigation }) {
 
   return (
     <ScrollView style={styles.container}>
+      {/* Cover Photo */}
+      {store.coverImage ? (
+        <Image source={{ uri: store.coverImage }} style={styles.coverImage} />
+      ) : (
+        <View style={styles.coverPlaceholder} />
+      )}
+      
       <View style={styles.header}>
+        {/* Profile Picture */}
+        <View style={styles.profileContainer}>
+          {store.profileImage ? (
+            <Image source={{ uri: store.profileImage }} style={styles.profileImage} />
+          ) : (
+            <View style={styles.profilePlaceholder}>
+              <Text style={styles.profileInitial}>
+                {store.name ? store.name.charAt(0).toUpperCase() : '?'}
+              </Text>
+            </View>
+          )}
+        </View>
+        
         <View style={styles.storeInfo}>
           <Text style={styles.storeName}>{store.name}</Text>
           <Text style={styles.storeAddress}>📍 {store.address}</Text>
           <Text style={styles.storeHours}>🕒 {store.hours}</Text>
-          <Text style={styles.storeContact}>📞 {store.contact}</Text>
+          {store.contact && <Text style={styles.storeContact}>📞 {store.contact}</Text>}
         </View>
         
         <TouchableOpacity
@@ -142,14 +163,51 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f9fa',
   },
+  coverImage: {
+    width: '100%',
+    height: 200,
+    backgroundColor: '#ecf0f1',
+  },
+  coverPlaceholder: {
+    width: '100%',
+    height: 200,
+    backgroundColor: '#ecf0f1',
+  },
   header: {
     backgroundColor: '#fff',
     padding: 20,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'flex-start',
     borderBottomWidth: 1,
     borderBottomColor: '#ecf0f1',
+    marginTop: -40, // Pull up over cover image
+  },
+  profileContainer: {
+    marginRight: 15,
+    marginTop: -20, // Pull up over cover image
+  },
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 4,
+    borderColor: '#fff',
+    backgroundColor: '#f8f9fa',
+  },
+  profilePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 4,
+    borderColor: '#fff',
+    backgroundColor: '#3498db',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileInitial: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
   },
   storeInfo: {
     flex: 1,

@@ -8,11 +8,13 @@ import {
   Alert,
   ScrollView,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Location from 'expo-location';
+import * as ImagePicker from 'expo-image-picker';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,6 +25,8 @@ export default function CreateStoreScreen({ navigation }) {
   const [address, setAddress] = useState('');
   const [hours, setHours] = useState('');
   const [description, setDescription] = useState('');
+  const [profileImage, setProfileImage] = useState(null);
+  const [coverImage, setCoverImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
   const { currentUser, isGuestUser } = useAuth();
@@ -124,6 +128,8 @@ export default function CreateStoreScreen({ navigation }) {
         address: address.trim(),
         hours: hours.trim(),
         description: description.trim(),
+        profileImage: profileImage || '', // Store the image URI or empty string as placeholder
+        coverImage: coverImage || '', // Store the image URI or empty string as placeholder
         ownerId: currentUser.uid,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -147,6 +153,45 @@ export default function CreateStoreScreen({ navigation }) {
       Alert.alert('Error', `Failed to create store: ${error.message}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Image picker functions
+  const pickImage = async (imageType) => {
+    try {
+      // Request permission
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (permissionResult.granted === false) {
+        Alert.alert("Permission Required", "Permission to access camera roll is required!");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: imageType === 'profile' ? [1, 1] : [16, 9], // Square for profile, widescreen for cover
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        if (imageType === 'profile') {
+          setProfileImage(result.assets[0].uri);
+        } else {
+          setCoverImage(result.assets[0].uri);
+        }
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to select image');
+    }
+  };
+
+  const removeImage = (imageType) => {
+    if (imageType === 'profile') {
+      setProfileImage(null);
+    } else {
+      setCoverImage(null);
     }
   };
 
@@ -242,6 +287,64 @@ export default function CreateStoreScreen({ navigation }) {
               value={storeName}
               onChangeText={setStoreName}
             />
+          </View>
+
+          {/* Store Images Section */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Store Images</Text>
+            <Text style={styles.subtitle}>Add profile and cover photos to make your store more attractive</Text>
+            
+            {/* Profile Image */}
+            <View style={styles.imageSection}>
+              <Text style={styles.imageLabel}>Profile Picture</Text>
+              <View style={styles.imageContainer}>
+                {profileImage ? (
+                  <View style={styles.selectedImageContainer}>
+                    <Image source={{ uri: profileImage }} style={styles.profileImagePreview} />
+                    <TouchableOpacity 
+                      style={styles.removeImageButton} 
+                      onPress={() => removeImage('profile')}
+                    >
+                      <Ionicons name="close-circle" size={24} color="#e74c3c" />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TouchableOpacity 
+                    style={styles.addImageButton} 
+                    onPress={() => pickImage('profile')}
+                  >
+                    <Ionicons name="camera" size={40} color="#bdc3c7" />
+                    <Text style={styles.addImageText}>Add Profile Picture</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+
+            {/* Cover Image */}
+            <View style={styles.imageSection}>
+              <Text style={styles.imageLabel}>Cover Photo</Text>
+              <View style={styles.imageContainer}>
+                {coverImage ? (
+                  <View style={styles.selectedImageContainer}>
+                    <Image source={{ uri: coverImage }} style={styles.coverImagePreview} />
+                    <TouchableOpacity 
+                      style={styles.removeImageButton} 
+                      onPress={() => removeImage('cover')}
+                    >
+                      <Ionicons name="close-circle" size={24} color="#e74c3c" />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TouchableOpacity 
+                    style={styles.addCoverImageButton} 
+                    onPress={() => pickImage('cover')}
+                  >
+                    <Ionicons name="image" size={40} color="#bdc3c7" />
+                    <Text style={styles.addImageText}>Add Cover Photo</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
           </View>
 
           <View style={styles.inputGroup}>
@@ -513,6 +616,74 @@ const styles = StyleSheet.create({
   textArea: {
     height: 120,
     textAlignVertical: 'top',
+  },
+  // Image Selection Styles
+  imageSection: {
+    marginBottom: 20,
+  },
+  imageLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginBottom: 8,
+  },
+  imageContainer: {
+    alignItems: 'center',
+  },
+  addImageButton: {
+    backgroundColor: '#f8f9fa',
+    borderWidth: 2,
+    borderColor: '#ecf0f1',
+    borderStyle: 'dashed',
+    borderRadius: 8,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 120,
+    height: 120,
+  },
+  addCoverImageButton: {
+    backgroundColor: '#f8f9fa',
+    borderWidth: 2,
+    borderColor: '#ecf0f1',
+    borderStyle: 'dashed',
+    borderRadius: 8,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    height: 120,
+  },
+  addImageText: {
+    fontSize: 12,
+    color: '#7f8c8d',
+    textAlign: 'center',
+    marginTop: 8,
+    fontWeight: '500',
+  },
+  selectedImageContainer: {
+    position: 'relative',
+  },
+  profileImagePreview: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 3,
+    borderColor: '#3498db',
+  },
+  coverImagePreview: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#3498db',
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: '#fff',
+    borderRadius: 12,
   },
   button: {
     backgroundColor: '#3498db',
