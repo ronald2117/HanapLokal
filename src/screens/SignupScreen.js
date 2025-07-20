@@ -144,7 +144,7 @@ export default function SignupScreen({ navigation }) {
                   loading={loading}
                   variant="outline"
                   size="large"
-                  icon="person-outline"
+                  icon={<Ionicons name="person-outline" size={20} color={Colors.primary} />}
                 />
               </View>
 
