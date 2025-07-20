@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 // Theme
@@ -191,15 +192,17 @@ function MainTabs() {
           shadowOffset: { width: 0, height: -5 },
           shadowOpacity: 0.1,
           shadowRadius: 10,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
         },
         tabBarLabelStyle: {
           fontSize: 12,
           marginTop: 2,
         },
         headerShown: false,
+        tabBarHideOnKeyboard: true, // Hide tab bar when keyboard is open
       })}
     >
       <Tab.Screen 
@@ -230,7 +233,7 @@ function AppNavigator() {
   const { currentUser } = useAuth();
 
   return (
-    <NavigationContainer>
+    <NavigationContainer key={currentUser ? 'authenticated' : 'unauthenticated'}>
       {currentUser ? <MainTabs /> : <AuthStack />}
     </NavigationContainer>
   );
@@ -238,11 +241,13 @@ function AppNavigator() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <LocationProvider>
-        <AppNavigator />
-        <StatusBar style="light" backgroundColor={Colors.primary} />
-      </LocationProvider>
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <LocationProvider>
+          <AppNavigator />
+          <StatusBar style="light" backgroundColor={Colors.primary} />
+        </LocationProvider>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
