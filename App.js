@@ -30,6 +30,7 @@ import CreateStoreScreen from './src/screens/CreateStoreScreen';
 import EditStoreScreen from './src/screens/EditStoreScreen';
 import AddProductScreen from './src/screens/AddProductScreen';
 import EditProductScreen from './src/screens/EditProductScreen';
+import StoreSettingsScreen from './src/screens/StoreSettingsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -110,6 +111,11 @@ function MyStoreStack() {
         name="EditProduct" 
         component={EditProductScreen}
         options={{ title: 'I-edit ang Produkto' }}
+      />
+      <Stack.Screen 
+        name="StoreSettings" 
+        component={StoreSettingsScreen}
+        options={{ title: 'Mga Setting ng Tindahan' }}
       />
     </Stack.Navigator>
   );

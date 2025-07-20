@@ -210,11 +210,11 @@ export default function MyStoreScreen({ navigation }) {
       <View style={styles.storeHeader}>
         <Text style={styles.storeName}>{myStore.name}</Text>
         <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => navigation.navigate('EditStore', { store: myStore })}
+          style={styles.settingsButton}
+          onPress={() => navigation.navigate('StoreSettings', { store: myStore })}
         >
-          <Ionicons name="pencil" size={20} color="#3498db" />
-          <Text style={styles.editButtonText}>Edit Store</Text>
+          <Ionicons name="settings" size={20} color="#7f8c8d" />
+          <Text style={styles.settingsButtonText}>Settings</Text>
         </TouchableOpacity>
       </View>
 
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     color: '#2c3e50',
     flex: 1,
   },
-  editButton: {
+  settingsButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#ecf0f1',
@@ -334,8 +334,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 6,
   },
-  editButtonText: {
-    color: '#3498db',
+  settingsButtonText: {
+    color: '#7f8c8d',
     marginLeft: 5,
     fontWeight: '600',
   },
