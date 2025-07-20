@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import * as Location from 'expo-location';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import { useLocation } from '../contexts/LocationContext';
@@ -24,9 +25,40 @@ export default function HomeScreen({ navigation }) {
   const [filteredStores, setFilteredStores] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [searchRadius, setSearchRadius] = useState(10); // Default 10km radius
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const { location } = useLocation();
+  const { location, refreshLocation, isLoading } = useLocation();
+
+  // Custom refresh function with feedback
+  const handleRefreshLocation = async () => {
+    const success = await refreshLocation();
+    if (success && location) {
+      Alert.alert(
+        'Location Updated!',
+        `Your location has been updated with high accuracy.\n\nNow showing stores within ${selectedRadius !== -1 ? `${selectedRadius}km` : 'unlimited'} radius.`,
+        [{ text: 'OK' }]
+      );
+    } else {
+      Alert.alert(
+        'Location Error', 
+        'Could not get your precise location. Please check your GPS settings.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
+  // Search radius options in kilometers
+  const radiusOptions = [
+    { value: 1, label: '1 km' },
+    { value: 2, label: '2 km' },
+    { value: 5, label: '5 km' },
+    { value: 10, label: '10 km' },
+    { value: 20, label: '20 km' },
+    { value: 50, label: '50 km' },
+    { value: 100, label: '100 km' },
+    { value: -1, label: 'No limit' }, // -1 means no distance filtering
+  ];
 
   // Store categories for filtering
   const storeCategories = [
@@ -52,7 +84,20 @@ export default function HomeScreen({ navigation }) {
 
   useEffect(() => {
     filterStores();
-  }, [searchQuery, selectedCategory, stores]);
+  }, [searchQuery, selectedCategory, searchRadius, stores, location]);
+
+  // Calculate distance between two coordinates using Haversine formula
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance in kilometers
+  };
 
   const fetchStores = async () => {
     try {
@@ -82,6 +127,24 @@ export default function HomeScreen({ navigation }) {
 
   const filterStores = () => {
     let filtered = stores;
+
+    // Filter by distance/radius if user location and radius are available
+    if (location && searchRadius !== -1) {
+      filtered = filtered.filter(store => {
+        // Check if store has coordinates
+        if (store.coordinates && store.coordinates.latitude && store.coordinates.longitude) {
+          const distance = calculateDistance(
+            location.latitude,
+            location.longitude,
+            store.coordinates.latitude,
+            store.coordinates.longitude
+          );
+          return distance <= searchRadius;
+        }
+        // If store doesn't have coordinates, include it in results (legacy stores)
+        return true;
+      });
+    }
 
     // Filter by category
     if (selectedCategory) {
@@ -170,6 +233,83 @@ export default function HomeScreen({ navigation }) {
               </TouchableOpacity>
             ) : null}
           </View>
+        </View>
+
+        {/* Search Radius Section */}
+        <View style={styles.radiusSection}>
+          <View style={styles.radiusHeader}>
+            <Ionicons name="location" size={16} color={Colors.primary} />
+            <Text style={styles.radiusTitle}>Search Radius</Text>
+          </View>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.radiusScroll}
+          >
+            {radiusOptions.map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.radiusOption,
+                  searchRadius === option.value && styles.radiusOptionSelected
+                ]}
+                onPress={() => setSearchRadius(option.value)}
+              >
+                <Text style={[
+                  styles.radiusOptionText,
+                  searchRadius === option.value && styles.radiusOptionTextSelected
+                ]}>
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          {!location && (
+            <View style={styles.locationWarningContainer}>
+              <Text style={styles.locationWarning}>
+                📍 Enable location to filter by distance
+              </Text>
+              <TouchableOpacity 
+                style={[styles.refreshLocationButton, isLoading && styles.refreshLocationButtonDisabled]}
+                onPress={handleRefreshLocation}
+                disabled={isLoading}
+              >
+                <Ionicons 
+                  name={isLoading ? "reload" : "location"} 
+                  size={16} 
+                  color="#fff" 
+                />
+                <Text style={styles.refreshLocationButtonText}>
+                  {isLoading ? 'Getting Location...' : 'Get My Location'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          {location && (
+            <View style={styles.locationFoundContainer}>
+              <Text style={styles.storeCount}>
+                {filteredStores.length} store(s) found
+                {searchRadius !== -1 ? ` within ${searchRadius} km` : ''}
+                {location?.accuracy && (
+                  ` (±${Math.round(location.accuracy)}m accuracy)`
+                )}
+              </Text>
+              <TouchableOpacity 
+                style={[styles.refreshLocationButton, styles.refreshLocationButtonSmall, isLoading && styles.refreshLocationButtonDisabled]}
+                onPress={handleRefreshLocation}
+                disabled={isLoading}
+              >
+                <Ionicons 
+                  name={isLoading ? "reload" : "refresh"} 
+                  size={14} 
+                  color="#fff" 
+                />
+                <Text style={styles.refreshLocationButtonTextSmall}>
+                  {isLoading ? 'Updating...' : 'Refresh'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* Categories Section */}
@@ -414,6 +554,65 @@ const styles = StyleSheet.create({
     lineHeight: Typography.lineHeight.relaxed * Typography.fontSize.sm,
   },
   
+  radiusSection: {
+    backgroundColor: Colors.surface,
+    marginHorizontal: Spacing.md,
+    marginTop: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    ...Shadows.small,
+  },
+  radiusHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  radiusTitle: {
+    ...Typography.body,
+    fontWeight: '600',
+    color: Colors.text.primary,
+    marginLeft: Spacing.xs,
+  },
+  radiusScroll: {
+    marginBottom: Spacing.xs,
+  },
+  radiusOption: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    marginRight: Spacing.sm,
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  radiusOptionSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  radiusOptionText: {
+    ...Typography.caption,
+    color: Colors.text.secondary,
+    fontWeight: '500',
+  },
+  radiusOptionTextSelected: {
+    color: Colors.surface,
+    fontWeight: '600',
+  },
+  locationWarning: {
+    ...Typography.caption,
+    color: Colors.text.light,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: Spacing.xs,
+  },
+  storeCount: {
+    ...Typography.caption,
+    color: Colors.primary,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: Spacing.xs,
+  },
+  
   floatingMapButton: {
     position: 'absolute',
     right: Spacing.xl,
@@ -426,5 +625,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...Shadows.large,
     elevation: 8,
+  },
+  locationWarningContainer: {
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  locationFoundContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  refreshLocationButton: {
+    backgroundColor: '#3498db',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginTop: 8,
+  },
+  refreshLocationButtonSmall: {
+    backgroundColor: '#2980b9',
+    marginTop: 0,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  refreshLocationButtonDisabled: {
+    backgroundColor: '#95a5a6',
+  },
+  refreshLocationButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  refreshLocationButtonTextSmall: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '600',
+    marginLeft: 3,
   },
 });
