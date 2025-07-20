@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { TouchableOpacity, Text, View, StyleSheet, ActivityIndicator } from 'react-native';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
 
 const ModernButton = ({ 
@@ -117,7 +117,7 @@ const ModernButton = ({
           {icon && (
             <React.Fragment>
               {icon}
-              <Text style={{ width: Spacing.sm }} />
+              <View style={{ width: Spacing.sm }} />
             </React.Fragment>
           )}
           <Text style={[getTextStyle(), textStyle]}>{title}</Text>
