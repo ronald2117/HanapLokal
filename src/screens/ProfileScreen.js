@@ -52,6 +52,15 @@ export default function ProfileScreen({ navigation }) {
       </View>
 
       <View style={styles.menuSection}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('ReviewScreen')}
+        >
+          <Ionicons name="star" size={24} color="#f39c12" />
+          <Text style={styles.menuText}>Rate & Review App</Text>
+          <Ionicons name="chevron-forward" size={20} color="#bdc3c7" />
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.menuItem}>
           <Ionicons name="settings" size={24} color="#95a5a6" />
           <Text style={styles.menuText}>Settings</Text>
@@ -138,6 +147,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     padding: 20,
+    paddingBottom: 100, // Add extra padding to account for bottom tabs
   },
   logoutButton: {
     flexDirection: 'row',
