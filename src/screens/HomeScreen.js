@@ -429,23 +429,6 @@ const styles = StyleSheet.create({
     lineHeight: Typography.lineHeight.tight * Typography.fontSize['2xl'],
   },
   
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.full,
-    alignSelf: 'flex-start',
-  },
-  
-  locationText: {
-    fontSize: Typography.fontSize.sm,
-    color: Colors.text.white,
-    marginLeft: Spacing.xs,
-    fontWeight: Typography.fontWeight.medium,
-  },
-  
   searchSection: {
     paddingHorizontal: Spacing.xl,
     marginTop: -Spacing.xl,
@@ -477,7 +460,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.text.light,
     ...Shadows.base,
   },
 
@@ -487,30 +470,6 @@ const styles = StyleSheet.create({
     color: Colors.text.primary,
     fontWeight: Typography.fontWeight.medium,
     marginLeft: Spacing.sm,
-  },
-
-  locationInfoSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-    backgroundColor: Colors.surface,
-    marginHorizontal: Spacing.xl,
-    borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.lg,
-    ...Shadows.base,
-  },
-
-  locationWarningSection: {
-    alignItems: 'center',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-    backgroundColor: Colors.surface,
-    marginHorizontal: Spacing.xl,
-    borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.lg,
-    ...Shadows.base,
   },
 
   modalOverlay: {
@@ -525,7 +484,9 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.xl,
     margin: Spacing.xl,
     maxHeight: '70%',
-    width: '80%',
+    width: '85%',
+    borderWidth: 1,
+    borderColor: Colors.text.light,
     ...Shadows.large,
   },
 
@@ -535,7 +496,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: Spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: Colors.text.light,
   },
 
   modalTitle: {
@@ -554,7 +515,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: Colors.text.light,
   },
 
   modalItemSelected: {
@@ -587,54 +548,7 @@ const styles = StyleSheet.create({
   clearButton: {
     padding: Spacing.xs,
   },
-
-  storeCount: {
-    fontSize: Typography.fontSize.sm,
-    color: Colors.primary,
-    fontWeight: Typography.fontWeight.semibold,
-    flex: 1,
-  },
-
-  locationWarning: {
-    fontSize: Typography.fontSize.sm,
-    color: Colors.text.light,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    marginBottom: Spacing.md,
-  },
   
-  refreshLocationButton: {
-    backgroundColor: Colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
-  },
-  
-  refreshLocationButtonDisabled: {
-    backgroundColor: Colors.text.light,
-  },
-  
-  refreshLocationButtonText: {
-    color: Colors.text.white,
-    fontSize: Typography.fontSize.xs,
-    fontWeight: Typography.fontWeight.semibold,
-    marginLeft: Spacing.xs,
-  },
-  
-  categoriesSection: {
-    marginBottom: Spacing.lg,
-  },
-  
-  sectionTitle: {
-    fontSize: Typography.fontSize.xl,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.text.primary,
-    marginHorizontal: Spacing.xl,
-    marginBottom: Spacing.lg,
-  },
-
   storesSection: {
     flex: 1,
   },
@@ -687,6 +601,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: Typography.lineHeight.relaxed * Typography.fontSize.sm,
   },
+  
   floatingMapButton: {
     position: 'absolute',
     right: Spacing.xl,
