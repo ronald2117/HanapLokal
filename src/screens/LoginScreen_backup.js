@@ -31,6 +31,7 @@ export default function LoginScreen({ navigation }) {
       try {
         const pendingSignup = await AsyncStorage.getItem('pendingSignup');
         if (pendingSignup === 'true') {
+          // Clear the flag and navigate to signup
           await AsyncStorage.removeItem('pendingSignup');
           navigation.navigate('Signup');
         }
@@ -44,7 +45,7 @@ export default function LoginScreen({ navigation }) {
 
   async function handleSubmit() {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert('Oops!', 'Kumpletuhin po lahat ng fields');
       return;
     }
 
@@ -52,7 +53,7 @@ export default function LoginScreen({ navigation }) {
       setLoading(true);
       await login(email, password);
     } catch (error) {
-      Alert.alert('Login Failed', error.message);
+      Alert.alert('Hindi makapasok', error.message);
     } finally {
       setLoading(false);
     }
@@ -106,34 +107,35 @@ export default function LoginScreen({ navigation }) {
             <View style={styles.formContainer}>
               <View style={styles.card}>
                 <Text style={styles.formTitle}>Mag-login para magsimula</Text>
-                
-                <ModernInput
-                  label="Email Address"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  icon="mail-outline"
-                  placeholder="Ilagay ang inyong email"
-                />
+                  
+                  <ModernInput
+                    label="Email Address"
+                    placeholder="Ilagay ang inyong email"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    icon="mail-outline"
+                  />
+                  
+                  <ModernInput
+                    label="Password"
+                    placeholder="Ilagay ang password"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    icon="lock-closed-outline"
+                  />
 
-                <ModernInput
-                  label="Password"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  icon="lock-closed-outline"
-                  placeholder="Ilagay ang password"
-                />
-
-                <ModernButton
-                  title="Mag-login"
-                  onPress={handleSubmit}
-                  loading={loading}
-                  variant="primary"
-                  size="large"
-                  style={styles.loginButton}
-                />
+                  <ModernButton
+                    title={loading ? 'Pumapasok...' : 'Mag-login'}
+                    onPress={handleSubmit}
+                    disabled={loading}
+                    loading={loading}
+                    variant="primary"
+                    size="large"
+                    style={styles.loginButton}
+                  />
 
                 <View style={styles.divider}>
                   <View style={styles.dividerLine} />
@@ -190,6 +192,8 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 40,
   },
+  
+  },
   iconContainer: {
     width: 120,
     height: 120,
@@ -222,63 +226,71 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     paddingHorizontal: Spacing.md,
   },
+  
   formContainer: {
-    paddingBottom: 40,
+    flex: 1,
+    justifyContent: 'center',
+    marginTop: Spacing['2xl'],
   },
-  card: {
+  
+  form: {
     backgroundColor: Colors.background.card,
-    borderRadius: BorderRadius.xl,
-    padding: Spacing.xl,
-    marginBottom: Spacing.lg,
+    borderRadius: BorderRadius['2xl'],
+    padding: Spacing['2xl'],
+    marginHorizontal: Spacing.sm,
     shadowColor: Colors.text.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 15,
   },
+  
   formTitle: {
     fontSize: Typography.fontSize.xl,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.text.primary,
     textAlign: 'center',
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.xl,
   },
+  
   loginButton: {
-    marginTop: Spacing.md,
+    marginTop: Spacing.lg,
     marginBottom: Spacing.lg,
   },
+  
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: Spacing.lg,
   },
+  
   dividerLine: {
     flex: 1,
     height: 1,
     backgroundColor: Colors.border.light,
   },
+  
   dividerText: {
+    marginHorizontal: Spacing.lg,
     fontSize: Typography.fontSize.sm,
     color: Colors.text.secondary,
-    marginHorizontal: Spacing.md,
     fontWeight: Typography.fontWeight.medium,
   },
-  signUpContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  
+  linkButton: {
     alignItems: 'center',
+    paddingVertical: Spacing.lg,
+    marginTop: Spacing.md,
   },
-  signUpText: {
-    fontSize: Typography.fontSize.base,
-    color: 'rgba(255, 255, 255, 0.9)',
+  
+  linkText: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.secondary,
+    textAlign: 'center',
   },
-  signUpLink: {
-    paddingVertical: Spacing.xs,
-  },
-  signUpLinkText: {
-    fontSize: Typography.fontSize.base,
-    color: Colors.accent,
+  
+  linkTextBold: {
     fontWeight: Typography.fontWeight.bold,
-    textDecorationLine: 'underline',
+    color: Colors.primary,
   },
 });
