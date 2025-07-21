@@ -55,7 +55,7 @@ export default function CreateStoreScreen({ navigation }) {
     return (
       <View style={styles.container}>
         <LinearGradient
-          colors={[Colors.primary, Colors.primaryDark, Colors.secondary]}
+          colors={[Colors.primary, Colors.primaryLight]}
           style={styles.gradientBackground}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}

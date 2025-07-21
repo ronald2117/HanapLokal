@@ -73,7 +73,7 @@ export default function LoginScreen({ navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
       <LinearGradient
-        colors={[Colors.primary, Colors.secondary]}
+        colors={[Colors.primary, Colors.primaryLight]}
         style={styles.gradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   signUpLinkText: {
     fontSize: Typography.fontSize.base,
-    color: Colors.accent,
+    color: Colors.primaryDark ,
     fontWeight: Typography.fontWeight.bold,
     textDecorationLine: 'underline',
   },

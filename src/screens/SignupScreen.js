@@ -66,7 +66,7 @@ export default function SignupScreen({ navigation }) {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
       <LinearGradient
-        colors={[Colors.primary, Colors.secondary]}
+        colors={[Colors.primary, Colors.primaryLight]}
         style={styles.gradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -116,7 +116,7 @@ export default function SignupScreen({ navigation }) {
                   onChangeText={setPassword}
                   secureTextEntry
                   icon="lock-closed-outline"
-                  placeholder="Gumawa ng malakas na password"
+                  placeholder="Ilagay ang password"
                 />
 
                 <ModernInput
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
   },
   signInLinkText: {
     fontSize: Typography.fontSize.base,
-    color: Colors.accent,
+    color: Colors.primaryDark,
     fontWeight: Typography.fontWeight.bold,
     textDecorationLine: 'underline',
   },
