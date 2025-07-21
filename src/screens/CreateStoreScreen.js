@@ -65,7 +65,11 @@ export default function CreateStoreScreen({ navigation }) {
               {/* Header */}
               <View style={styles.guestHeader}>
                 <View style={styles.iconContainer}>
-                  <Ionicons name="storefront" size={80} color={Colors.accent} />
+                  <Image 
+                    source={require('../../assets/lokalfinds-logo.png')} 
+                    style={styles.guestLogo}
+                    resizeMode="contain"
+                  />
                 </View>
                 <Text style={styles.guestTitle}>Gusto mo bang magkaroon ng sariling tindahan?</Text>
                 <Text style={styles.guestSubtitle}>
@@ -578,6 +582,11 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
     borderWidth: 3,
     borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  
+  guestLogo: {
+    width: 80,
+    height: 80,
   },
   
   guestTitle: {

@@ -8,7 +8,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StatusBar
+  StatusBar,
+  Image
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -82,7 +83,11 @@ export default function SignupScreen({ navigation }) {
             {/* Header */}
             <View style={styles.header}>
               <View style={styles.iconContainer}>
-                <Ionicons name="storefront" size={60} color={Colors.accent} />
+                <Image 
+                  source={require('../../assets/lokalfinds-logo.png')} 
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
               </View>
               <Text style={styles.title}>Mag-register sa LokalFinds!</Text>
               <Text style={styles.subtitle}>
@@ -197,6 +202,10 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
     borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  logo: {
+    width: 80,
+    height: 80,
   },
   title: {
     fontSize: Typography.fontSize['4xl'],

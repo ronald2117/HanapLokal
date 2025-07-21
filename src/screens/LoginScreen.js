@@ -8,7 +8,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StatusBar
+  StatusBar,
+  Image
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -87,7 +88,11 @@ export default function LoginScreen({ navigation }) {
               {/* Header Section */}
               <View style={styles.header}>
                 <View style={styles.logoContainer}>
-                  <Text style={styles.logoEmoji}>🏪</Text>
+                  <Image 
+                    source={require('../../assets/lokalfinds-logo.png')} 
+                    style={styles.logo}
+                    resizeMode="contain"
+                  />
                   <Text style={styles.title}>LokalFinds</Text>
                 </View>
                 <Text style={styles.subtitle}>Tuklasin ang mga lokal na tindahan</Text>
@@ -193,8 +198,9 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   
-  logoEmoji: {
-    fontSize: 60,
+  logo: {
+    width: 80,
+    height: 80,
     marginBottom: Spacing.md,
   },
   
