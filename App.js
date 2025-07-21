@@ -14,8 +14,9 @@ import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { LocationProvider } from './src/contexts/LocationContext';
 
 // Auth Screens
-import LoginScreen from './src/screens/LoginScreen';
+import LoginScreen from './src/screens/LoginScreen_new';
 import SignupScreen from './src/screens/SignupScreen';
+import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
 
 // Main Screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -45,6 +46,7 @@ function AuthStack() {
     >
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Signup" component={SignupScreen} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
     </Stack.Navigator>
   );
 }

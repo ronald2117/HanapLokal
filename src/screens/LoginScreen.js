@@ -23,7 +23,9 @@ export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, loginAnonymously } = useAuth();
+  const [resetEmailSent, setResetEmailSent] = useState(false);
+  
+  const { login, loginAnonymously, resetPassword } = useAuth();
 
   // Check if user wants to go to signup after logout
   useEffect(() => {
@@ -64,6 +66,34 @@ export default function LoginScreen({ navigation }) {
       await loginAnonymously();
     } catch (error) {
       Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleForgotPassword() {
+    if (!email) {
+      Alert.alert('Email Required', 'Please enter your email address first');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await resetPassword(email);
+      setResetEmailSent(true);
+      Alert.alert(
+        'Reset Email Sent', 
+        'Check your email for password reset instructions',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      let errorMessage = 'Failed to send reset email';
+      if (error.code === 'auth/user-not-found') {
+        errorMessage = 'No account found with this email address';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Please enter a valid email address';
+      }
+      Alert.alert('Error', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -125,6 +155,17 @@ export default function LoginScreen({ navigation }) {
                   icon="lock-closed-outline"
                   placeholder="Ilagay ang password"
                 />
+
+                {/* Forgot Password Link */}
+                <TouchableOpacity
+                  onPress={handleForgotPassword}
+                  style={styles.forgotPasswordContainer}
+                  disabled={loading}
+                >
+                  <Text style={styles.forgotPasswordText}>
+                    Nakalimutan ang password?
+                  </Text>
+                </TouchableOpacity>
 
                 <ModernButton
                   title="Mag-login"
@@ -279,6 +320,18 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.base,
     color: Colors.primaryDark ,
     fontWeight: Typography.fontWeight.bold,
+    textDecorationLine: 'underline',
+  },
+  forgotPasswordContainer: {
+    alignSelf: 'flex-end',
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.md,
+    paddingVertical: Spacing.xs,
+  },
+  forgotPasswordText: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.primary,
+    fontWeight: Typography.fontWeight.medium,
     textDecorationLine: 'underline',
   },
 });

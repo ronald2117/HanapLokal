@@ -69,11 +69,15 @@ export default function LoginScreen({ navigation }) {
     }
   }
 
+  function handleForgotPassword() {
+    navigation.navigate('ForgotPassword');
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
       <LinearGradient
-        colors={[Colors.primary, Colors.secondary]}
+        colors={[Colors.primary, Colors.primaryLight]}
         style={styles.gradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -125,6 +129,17 @@ export default function LoginScreen({ navigation }) {
                   icon="lock-closed-outline"
                   placeholder="Ilagay ang password"
                 />
+
+                {/* Forgot Password Link */}
+                <TouchableOpacity
+                  onPress={handleForgotPassword}
+                  style={styles.forgotPasswordContainer}
+                  disabled={loading}
+                >
+                  <Text style={styles.forgotPasswordText}>
+                    Nakalimutan ang password?
+                  </Text>
+                </TouchableOpacity>
 
                 <ModernButton
                   title="Mag-login"
@@ -279,6 +294,18 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.base,
     color: Colors.accent,
     fontWeight: Typography.fontWeight.bold,
+    textDecorationLine: 'underline',
+  },
+  forgotPasswordContainer: {
+    alignSelf: 'flex-end',
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.md,
+    paddingVertical: Spacing.xs,
+  },
+  forgotPasswordText: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.primary,
+    fontWeight: Typography.fontWeight.medium,
     textDecorationLine: 'underline',
   },
 });

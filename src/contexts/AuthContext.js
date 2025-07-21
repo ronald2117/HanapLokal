@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { 
+import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  signInAnonymously
+  signInAnonymously,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth } from '../services/firebaseConfig';
 
@@ -50,6 +51,10 @@ export function AuthProvider({ children }) {
     }
   }
 
+  const resetPassword = async (email) => {
+    return sendPasswordResetEmail(auth, email);
+  }
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -66,7 +71,8 @@ export function AuthProvider({ children }) {
     logout,
     loginAnonymously,
     isGuestUser,
-    logoutGuestAndSignup
+    logoutGuestAndSignup,
+    resetPassword
   };
 
   return (
