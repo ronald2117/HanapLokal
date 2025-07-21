@@ -303,12 +303,6 @@ export default function HomeScreen({ navigation }) {
               <Text style={styles.greeting}>Kumusta!</Text>
               <Text style={styles.headerTitle}>Hanap tayo ng magandang tindahan</Text>
             </View>
-            {location && (
-              <View style={styles.locationContainer}>
-                <Ionicons name="location" size={16} color={Colors.text.white} />
-                <Text style={styles.locationText}>Malapit sa iyo</Text>
-              </View>
-            )}
           </View>
         </LinearGradient>
 
@@ -352,64 +346,8 @@ export default function HomeScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Location Info Section */}
-        {location && (
-          <View style={styles.locationInfoSection}>
-            <Text style={styles.storeCount}>
-              {filteredStores.length} store(s) found
-              {searchRadius !== -1 ? ` within ${searchRadius} km` : ''}
-              {location?.accuracy && (
-                ` (±${Math.round(location.accuracy)}m accuracy)`
-              )}
-            </Text>
-            <TouchableOpacity 
-              style={[styles.refreshLocationButton, isLoading && styles.refreshLocationButtonDisabled]}
-              onPress={handleRefreshLocation}
-              disabled={isLoading}
-            >
-              <Ionicons 
-                name={isLoading ? "reload" : "refresh"} 
-                size={14} 
-                color="#fff" 
-              />
-              <Text style={styles.refreshLocationButtonText}>
-                {isLoading ? 'Updating...' : 'Refresh'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {!location && (
-          <View style={styles.locationWarningSection}>
-            <Text style={styles.locationWarning}>
-              📍 Enable location to filter by distance
-            </Text>
-            <TouchableOpacity 
-              style={[styles.refreshLocationButton, isLoading && styles.refreshLocationButtonDisabled]}
-              onPress={handleRefreshLocation}
-              disabled={isLoading}
-            >
-              <Ionicons 
-                name={isLoading ? "reload" : "location"} 
-                size={16} 
-                color="#fff" 
-              />
-              <Text style={styles.refreshLocationButtonText}>
-                {isLoading ? 'Getting Location...' : 'Get My Location'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
         {/* Stores Section */}
         <View style={styles.storesSection}>
-          <View style={styles.storesSectionHeader}>
-            <Text style={styles.sectionTitle}>Mga Lokal na Tindahan</Text>
-            <Text style={styles.storesCount}>
-              {filteredStores.length} {filteredStores.length === 1 ? 'tindahan' : 'mga tindahan'}
-            </Text>
-          </View>
-          
           <FlatList
             data={filteredStores}
             renderItem={renderStore}
