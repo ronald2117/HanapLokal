@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,41 @@ import {
   Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../services/firebaseConfig';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
 
 export default function StoreCard({ store, onPress, userLocation, showFavoriteIcon = false }) {
+  const [rating, setRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+
+  useEffect(() => {
+    fetchStoreRating();
+  }, [store.id]);
+
+  const fetchStoreRating = async () => {
+    try {
+      const reviewsQuery = query(
+        collection(db, 'storeReviews'),
+        where('storeId', '==', store.id)
+      );
+      
+      const querySnapshot = await getDocs(reviewsQuery);
+      let totalRating = 0;
+      let count = 0;
+      
+      querySnapshot.forEach((doc) => {
+        const reviewData = doc.data();
+        totalRating += reviewData.rating;
+        count++;
+      });
+      
+      setReviewCount(count);
+      setRating(count > 0 ? totalRating / count : 0);
+    } catch (error) {
+      console.error('Error fetching store rating:', error);
+    }
+  };
   // Calculate real distance using Haversine formula
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371; // Earth's radius in kilometers
@@ -66,6 +98,29 @@ export default function StoreCard({ store, onPress, userLocation, showFavoriteIc
     return categories[store.category] || categories['other'];
   };
 
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    for (let i = 1; i <= 5; i++) {
+      if (i <= fullStars) {
+        stars.push(
+          <Ionicons key={i} name="star" size={12} color="#FFD700" />
+        );
+      } else if (i === fullStars + 1 && hasHalfStar) {
+        stars.push(
+          <Ionicons key={i} name="star-half" size={12} color="#FFD700" />
+        );
+      } else {
+        stars.push(
+          <Ionicons key={i} name="star-outline" size={12} color="#e0e0e0" />
+        );
+      }
+    }
+    return stars;
+  };
+
   const getStoreTypeIcon = () => {
     if (store.category) {
       return getCategoryInfo().emoji;
@@ -110,6 +165,16 @@ export default function StoreCard({ store, onPress, userLocation, showFavoriteIc
             <View style={styles.distanceRow}>
               <Ionicons name="walk-outline" size={12} color={Colors.success} />
               <Text style={styles.distance}>{getDistanceText()}</Text>
+            </View>
+          )}
+          {reviewCount > 0 && (
+            <View style={styles.ratingRow}>
+              <View style={styles.stars}>
+                {renderStars(rating)}
+              </View>
+              <Text style={styles.ratingText}>
+                {rating.toFixed(1)} ({reviewCount})
+              </Text>
             </View>
           )}
         </View>
@@ -228,6 +293,23 @@ const styles = StyleSheet.create({
     color: Colors.success,
     fontWeight: Typography.fontWeight.semibold,
     marginLeft: Spacing.xs,
+  },
+  
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  
+  stars: {
+    flexDirection: 'row',
+    marginRight: Spacing.xs,
+  },
+  
+  ratingText: {
+    fontSize: Typography.fontSize.xs,
+    color: Colors.text.secondary,
+    fontWeight: Typography.fontWeight.medium,
   },
   
   favoriteIcon: {

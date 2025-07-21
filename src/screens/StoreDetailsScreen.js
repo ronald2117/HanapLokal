@@ -10,33 +10,39 @@ import {
   Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProductCard from '../components/ProductCard';
+import ReviewCard from '../components/ReviewCard';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function StoreDetailsScreen({ route, navigation }) {
   const { store } = route.params;
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+  const { t } = useLanguage();
 
   // Get category information
   const getCategoryInfo = () => {
     const categories = {
-      'sari-sari': { name: 'Sari-sari Store', icon: 'storefront', emoji: '🏪' },
-      'kainan': { name: 'Kainan/Restaurant', icon: 'restaurant', emoji: '🍽️' },
-      'laundry': { name: 'Laundry Shop', icon: 'shirt', emoji: '👕' },
-      'vegetables': { name: 'Vegetable Store', icon: 'leaf', emoji: '🥬' },
-      'meat': { name: 'Meat Shop', icon: 'fish', emoji: '🥩' },
-      'bakery': { name: 'Bakery', icon: 'cafe', emoji: '🍞' },
-      'pharmacy': { name: 'Pharmacy', icon: 'medical', emoji: '💊' },
-      'hardware': { name: 'Hardware Store', icon: 'hammer', emoji: '🔨' },
-      'clothing': { name: 'Clothing Store', icon: 'shirt-outline', emoji: '👔' },
-      'electronics': { name: 'Electronics', icon: 'phone-portrait', emoji: '📱' },
-      'beauty': { name: 'Beauty Salon', icon: 'cut', emoji: '✂️' },
-      'automotive': { name: 'Automotive Shop', icon: 'car', emoji: '🚗' },
-      'other': { name: 'Other', icon: 'business', emoji: '🏪' },
+      'sari-sari': { name: t('sariSari'), icon: 'storefront', emoji: '🏪' },
+      'kainan': { name: t('restaurant'), icon: 'restaurant', emoji: '🍽️' },
+      'laundry': { name: t('laundry'), icon: 'shirt', emoji: '👕' },
+      'vegetables': { name: t('vegetables'), icon: 'leaf', emoji: '🥬' },
+      'meat': { name: t('meatShop'), icon: 'fish', emoji: '🥩' },
+      'bakery': { name: t('bakery'), icon: 'cafe', emoji: '🍞' },
+      'pharmacy': { name: t('pharmacy'), icon: 'medical', emoji: '💊' },
+      'hardware': { name: t('hardware'), icon: 'hammer', emoji: '🔨' },
+      'clothing': { name: t('clothing'), icon: 'shirt-outline', emoji: '👔' },
+      'electronics': { name: t('electronics'), icon: 'phone-portrait', emoji: '📱' },
+      'beauty': { name: t('beauty'), icon: 'cut', emoji: '✂️' },
+      'automotive': { name: t('automotive'), icon: 'car', emoji: '🚗' },
+      'other': { name: t('other'), icon: 'business', emoji: '🏪' },
     };
     
     return categories[store.category] || categories['other'];
@@ -45,6 +51,7 @@ export default function StoreDetailsScreen({ route, navigation }) {
   useEffect(() => {
     fetchProducts();
     checkIfFavorite();
+    fetchReviews();
   }, []);
 
   const fetchProducts = async () => {
@@ -68,6 +75,69 @@ export default function StoreDetailsScreen({ route, navigation }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      const reviewsQuery = query(
+        collection(db, 'storeReviews'),
+        where('storeId', '==', store.id),
+        orderBy('createdAt', 'desc'),
+        limit(3) // Show only latest 3 reviews in preview
+      );
+
+      const querySnapshot = await getDocs(reviewsQuery);
+      const reviewsData = [];
+      let totalRating = 0;
+      let count = 0;
+
+      // Get all reviews for average calculation
+      const allReviewsQuery = query(
+        collection(db, 'storeReviews'),
+        where('storeId', '==', store.id)
+      );
+      const allReviewsSnapshot = await getDocs(allReviewsQuery);
+      
+      allReviewsSnapshot.forEach((doc) => {
+        const reviewData = doc.data();
+        totalRating += reviewData.rating;
+        count++;
+      });
+
+      // Get latest reviews for display
+      querySnapshot.forEach((doc) => {
+        reviewsData.push({ id: doc.id, ...doc.data() });
+      });
+
+      setReviews(reviewsData);
+      setReviewCount(count);
+      setAverageRating(count > 0 ? totalRating / count : 0);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  };
+
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    for (let i = 1; i <= 5; i++) {
+      if (i <= fullStars) {
+        stars.push(
+          <Ionicons key={i} name="star" size={16} color="#FFD700" />
+        );
+      } else if (i === fullStars + 1 && hasHalfStar) {
+        stars.push(
+          <Ionicons key={i} name="star-half" size={16} color="#FFD700" />
+        );
+      } else {
+        stars.push(
+          <Ionicons key={i} name="star-outline" size={16} color="#e0e0e0" />
+        );
+      }
+    }
+    return stars;
   };
 
   const checkIfFavorite = async () => {
@@ -161,14 +231,69 @@ export default function StoreDetailsScreen({ route, navigation }) {
       </View>
 
       <View style={styles.aboutSection}>
-        <Text style={styles.sectionTitle}>About</Text>
+        <Text style={styles.sectionTitle}>{t('about')}</Text>
         <Text style={styles.description}>{store.description}</Text>
       </View>
 
+      {/* Reviews Section */}
+      <View style={styles.reviewsSection}>
+        <View style={styles.reviewsHeader}>
+          <Text style={styles.sectionTitle}>{t('reviews')}</Text>
+          <TouchableOpacity
+            style={styles.seeAllButton}
+            onPress={() => navigation.navigate('StoreReviews', { store })}
+          >
+            <Text style={styles.seeAllText}>{t('seeAll')}</Text>
+          </TouchableOpacity>
+        </View>
+        
+        {reviewCount > 0 ? (
+          <>
+            <View style={styles.ratingOverview}>
+              <View style={styles.ratingStats}>
+                <Text style={styles.averageRating}>
+                  {averageRating.toFixed(1)}
+                </Text>
+                <View style={styles.starsContainer}>
+                  {renderStars(averageRating)}
+                </View>
+                <Text style={styles.reviewCount}>
+                  {reviewCount} {reviewCount === 1 ? t('review') : t('reviews')}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.writeReviewButton}
+                onPress={() => navigation.navigate('StoreReview', { store })}
+              >
+                <Ionicons name="create-outline" size={16} color="#3498db" />
+                <Text style={styles.writeReviewText}>{t('writeReview')}</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {reviews.map((review) => (
+              <ReviewCard key={review.id} review={review} />
+            ))}
+          </>
+        ) : (
+          <View style={styles.noReviewsContainer}>
+            <Ionicons name="star-outline" size={32} color="#bdc3c7" />
+            <Text style={styles.noReviewsText}>{t('noReviewsYet')}</Text>
+            <TouchableOpacity
+              style={styles.firstReviewButton}
+              onPress={() => navigation.navigate('StoreReview', { store })}
+            >
+              <Text style={styles.firstReviewButtonText}>
+                {t('writeFirstReview')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
       <View style={styles.productsSection}>
-        <Text style={styles.sectionTitle}>Products</Text>
+        <Text style={styles.sectionTitle}>{t('products')}</Text>
         {loading ? (
-          <Text style={styles.loadingText}>Loading products...</Text>
+          <Text style={styles.loadingText}>{t('loadingProducts')}</Text>
         ) : products.length > 0 ? (
           <FlatList
             data={products}
@@ -181,7 +306,7 @@ export default function StoreDetailsScreen({ route, navigation }) {
         ) : (
           <View style={styles.emptyProducts}>
             <Ionicons name="cube-outline" size={48} color="#bdc3c7" />
-            <Text style={styles.emptyText}>No products available</Text>
+            <Text style={styles.emptyText}>{t('noProductsAvailable')}</Text>
           </View>
         )}
       </View>
@@ -318,5 +443,87 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#7f8c8d',
     marginTop: 10,
+  },
+  reviewsSection: {
+    backgroundColor: '#fff',
+    padding: 20,
+    marginTop: 10,
+  },
+  reviewsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  seeAllButton: {
+    padding: 5,
+  },
+  seeAllText: {
+    color: '#3498db',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  ratingOverview: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ecf0f1',
+  },
+  ratingStats: {
+    alignItems: 'center',
+  },
+  averageRating: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2c3e50',
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    marginVertical: 5,
+  },
+  reviewCount: {
+    fontSize: 12,
+    color: '#7f8c8d',
+  },
+  writeReviewButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#3498db',
+  },
+  writeReviewText: {
+    color: '#3498db',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 5,
+  },
+  noReviewsContainer: {
+    alignItems: 'center',
+    padding: 30,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 10,
+  },
+  noReviewsText: {
+    fontSize: 16,
+    color: '#7f8c8d',
+    marginTop: 10,
+    marginBottom: 15,
+  },
+  firstReviewButton: {
+    backgroundColor: '#3498db',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 6,
+  },
+  firstReviewButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

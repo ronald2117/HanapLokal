@@ -179,6 +179,26 @@ export const translations = {
     addProduct: 'Add Product',
     noProductsYet: 'No products yet',
     addFirstProduct: 'Add your first product to get started',
+    
+    // Reviews
+    reviews: 'Reviews',
+    review: 'Review',
+    writeReview: 'Write Review',
+    writeFirstReview: 'Write First Review',
+    noReviewsYet: 'No reviews yet',
+    beFirstToReview: 'Be the first to review this store',
+    seeAll: 'See All',
+    about: 'About',
+    products: 'Products',
+    loadingProducts: 'Loading products...',
+    noProductsAvailable: 'No products available',
+    reviewingStore: 'Reviewing Store',
+    shareExperience: 'Share your thoughts, suggestions, or any issues you encountered...',
+    guestUserLimit: 'Guest User Limitation',
+    registerToReview: 'Please register an account to write reviews',
+    register: 'Register',
+    thankYouForReview: 'Thank you for your review! Your feedback helps other customers.',
+    failedToSubmitReview: 'Failed to submit review. Please try again.',
   },
   
   tl: {
@@ -356,6 +376,26 @@ export const translations = {
     addProduct: 'Magdagdag ng Produkto',
     noProductsYet: 'Wala pang mga produkto',
     addFirstProduct: 'Magdagdag ng unang produkto para magsimula',
+    
+    // Reviews
+    reviews: 'Mga Review',
+    review: 'Review',
+    writeReview: 'Sumulat ng Review',
+    writeFirstReview: 'Sumulat ng Unang Review',
+    noReviewsYet: 'Wala pang mga review',
+    beFirstToReview: 'Maging una sa pag-review sa tindahang ito',
+    seeAll: 'Tingnan Lahat',
+    about: 'Tungkol',
+    products: 'Mga Produkto',
+    loadingProducts: 'Naglo-load ng mga produkto...',
+    noProductsAvailable: 'Walang available na produkto',
+    reviewingStore: 'Nire-review ang Tindahan',
+    shareExperience: 'Ibahagi ang inyong opinyon, suhestiyon, o anumang problema na naranasan...',
+    guestUserLimit: 'Limitasyon ng Guest User',
+    registerToReview: 'Mag-register ng account para magsulat ng mga review',
+    register: 'Mag-register',
+    thankYouForReview: 'Salamat sa inyong review! Ang inyong feedback ay nakakatulong sa ibang customer.',
+    failedToSubmitReview: 'Hindi naisumite ang review. Subukan ulit.',
   }
 };
 

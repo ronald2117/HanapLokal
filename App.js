@@ -29,6 +29,8 @@ import FavoritesScreen from './src/screens/FavoritesScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ReviewScreen from './src/screens/ReviewScreen';
 import LanguageSettingsScreen from './src/screens/LanguageSettingsScreen';
+import StoreReviewScreen from './src/screens/StoreReviewScreen';
+import StoreReviewsScreen from './src/screens/StoreReviewsScreen';
 
 // Store Management Screens
 import CreateStoreScreen from './src/screens/CreateStoreScreen';
@@ -83,6 +85,16 @@ function HomeStack() {
         name="ProductDetails" 
         component={ProductDetailsScreen}
         options={{ title: 'Detalye ng Produkto' }}
+      />
+      <Stack.Screen 
+        name="StoreReview" 
+        component={StoreReviewScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="StoreReviews" 
+        component={StoreReviewsScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
