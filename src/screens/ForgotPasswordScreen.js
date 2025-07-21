@@ -85,7 +85,7 @@ export default function ForgotPasswordScreen({ navigation }) {
             style={styles.keyboardView}
           >
             <ScrollView
-              contentContainerStyle={styles.scrollContent}
+              contentContainerStyle={styles.centeredScrollContent}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
@@ -112,8 +112,8 @@ export default function ForgotPasswordScreen({ navigation }) {
                     loading={loading}
                     variant="outline"
                     size="large"
-                    style={styles.resendButton}
-                    icon={<Ionicons name="refresh-outline" size={20} color={Colors.text.white} />}
+                    style={[styles.buttonSpacing, {backgroundColor: Colors.background.primary}]}
+                    icon={<Ionicons name="refresh-outline" size={20} color={Colors.primary} />}
                   />
                   
                   <ModernButton
@@ -121,7 +121,6 @@ export default function ForgotPasswordScreen({ navigation }) {
                     onPress={handleBackToLogin}
                     variant="primary"
                     size="large"
-                    style={styles.backButton}
                     icon={<Ionicons name="arrow-back-outline" size={20} color={Colors.text.white} />}
                   />
                 </View>
@@ -147,7 +146,7 @@ export default function ForgotPasswordScreen({ navigation }) {
           style={styles.keyboardView}
         >
           <ScrollView
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={styles.centeredScrollContent}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
@@ -233,19 +232,24 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingHorizontal: Spacing.lg,
   },
+  centeredScrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: Spacing.lg,
+    justifyContent: 'center', // Vertically center content
+    paddingBottom: Spacing['2xl'], // Add some bottom padding
+    paddingTop: Spacing['2xl'], // Add some top padding
+  },
   header: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 60,
-    paddingBottom: 40,
+    marginBottom: Spacing.xl,
     position: 'relative',
   },
   backButton: {
     position: 'absolute',
-    top: 60,
+    top: 0,
     left: 0,
     padding: Spacing.md,
+    zIndex: 10,
   },
   iconContainer: {
     width: 120,
@@ -280,7 +284,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
   },
   formContainer: {
-    paddingBottom: 40,
+    width: '100%',
   },
   card: {
     backgroundColor: Colors.background.card,
@@ -307,6 +311,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: Spacing.md,
   },
   loginText: {
     fontSize: Typography.fontSize.base,
@@ -323,10 +328,9 @@ const styles = StyleSheet.create({
   },
   // Success screen styles
   successContainer: {
-    flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 100,
+    justifyContent: 'center',
+    width: '100%',
   },
   successIconContainer: {
     width: 120,
@@ -375,14 +379,8 @@ const styles = StyleSheet.create({
   },
   actionContainer: {
     width: '100%',
-    paddingHorizontal: Spacing.lg,
   },
-  resendButton: {
+  buttonSpacing: {
     marginBottom: Spacing.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderColor: 'rgba(255, 255, 255, 0.5)',
-  },
-  backButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
+  }
 });
