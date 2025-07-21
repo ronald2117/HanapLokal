@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   },
   signUpLinkText: {
     fontSize: Typography.fontSize.base,
-    color: Colors.accent,
+    color: Colors.primary,
     fontWeight: Typography.fontWeight.bold,
     textDecorationLine: 'underline',
   },

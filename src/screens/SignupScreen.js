@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
   },
   signInLinkText: {
     fontSize: Typography.fontSize.base,
-    color: Colors.primaryDark,
+    color: Colors.primary,
     fontWeight: Typography.fontWeight.bold,
     textDecorationLine: 'underline',
   },
