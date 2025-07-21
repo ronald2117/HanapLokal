@@ -25,7 +25,7 @@ export default function MyStoreScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [productLoading, setProductLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const { currentUser, isGuestUser } = useAuth();
+  const { currentUser, isGuestUser, logoutGuestAndSignup } = useAuth();
   const { t } = useLanguage();
 
   // Get category information
@@ -268,7 +268,7 @@ export default function MyStoreScreen({ navigation }) {
           onPress={() => navigation.navigate('StoreSettings', { store: myStore })}
         >
           <Ionicons name="settings" size={20} color="#7f8c8d" />
-          <Text style={styles.settingsButtonText}>Settings</Text>
+          <Text style={styles.settingsButtonText}>{t('settings')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -280,13 +280,13 @@ export default function MyStoreScreen({ navigation }) {
 
       <View style={styles.productsSection}>
         <View style={styles.productsHeader}>
-          <Text style={styles.sectionTitle}>My Products ({products.length})</Text>
+          <Text style={styles.sectionTitle}>{t('myProducts')} ({products.length})</Text>
           <TouchableOpacity
             style={styles.addButton}
             onPress={() => navigation.navigate('AddProduct', { storeId: myStore.id })}
           >
             <Ionicons name="add" size={20} color="#fff" />
-            <Text style={styles.addButtonText}>Add Product</Text>
+            <Text style={styles.addButtonText}>{t('addProduct')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -302,8 +302,8 @@ export default function MyStoreScreen({ navigation }) {
         ) : (
           <View style={styles.emptyProducts}>
             <Ionicons name="cube-outline" size={48} color="#bdc3c7" />
-            <Text style={styles.emptyText}>No products yet</Text>
-            <Text style={styles.emptySubtext}>Add your first product to get started</Text>
+            <Text style={styles.emptyText}>{t('noProductsYet')}</Text>
+            <Text style={styles.emptySubtext}>{t('addFirstProduct')}</Text>
           </View>
         )}
       </View>
