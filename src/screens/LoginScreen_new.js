@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import ModernInput from '../components/ModernInput';
 import ModernButton from '../components/ModernButton';
 import { Colors, Typography, Spacing, BorderRadius } from '../styles/theme';
@@ -24,6 +25,7 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, loginAnonymously } = useAuth();
+  const { t } = useLanguage();
 
   // Check if user wants to go to signup after logout
   useEffect(() => {
@@ -44,7 +46,7 @@ export default function LoginScreen({ navigation }) {
 
   async function handleSubmit() {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert(t('error'), t('completeAllFields'));
       return;
     }
 
@@ -63,7 +65,7 @@ export default function LoginScreen({ navigation }) {
       setLoading(true);
       await loginAnonymously();
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert(t('error'), error.message);
     } finally {
       setLoading(false);
     }
@@ -100,34 +102,34 @@ export default function LoginScreen({ navigation }) {
                   resizeMode="contain"
                 />
               </View>
-              <Text style={styles.title}>Kumusta ka, kaibigan!</Text>
+              <Text style={styles.title}>{t('loginTitle')}</Text>
               <Text style={styles.subtitle}>
-                Mag-login sa LokalFinds at tuklasin ang mga lokal na tindahan
+                {t('loginSubtitle')}
               </Text>
             </View>
 
             {/* Login Form */}
             <View style={styles.formContainer}>
               <View style={styles.card}>
-                <Text style={styles.formTitle}>Mag-login para magsimula</Text>
+                <Text style={styles.formTitle}>{t('login')}</Text>
                 
                 <ModernInput
-                  label="Email Address"
+                  label={t('email')}
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   icon="mail-outline"
-                  placeholder="Ilagay ang inyong email"
+                  placeholder="Enter your email"
                 />
 
                 <ModernInput
-                  label="Password"
+                  label={t('password')}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry
                   icon="lock-closed-outline"
-                  placeholder="Ilagay ang password"
+                  placeholder="Enter your password"
                 />
 
                 {/* Forgot Password Link */}
@@ -137,12 +139,12 @@ export default function LoginScreen({ navigation }) {
                   disabled={loading}
                 >
                   <Text style={styles.forgotPasswordText}>
-                    Nakalimutan ang password?
+                    {t('forgotPassword')}
                   </Text>
                 </TouchableOpacity>
 
                 <ModernButton
-                  title="Mag-login"
+                  title={t('login')}
                   onPress={handleSubmit}
                   loading={loading}
                   variant="primary"
@@ -157,7 +159,7 @@ export default function LoginScreen({ navigation }) {
                 </View>
 
                 <ModernButton
-                  title="Guest Mode (Hindi kailangan mag-register)"
+                  title={t('guestMode')}
                   onPress={handleAnonymousLogin}
                   loading={loading}
                   variant="outline"
@@ -168,12 +170,12 @@ export default function LoginScreen({ navigation }) {
 
               {/* Sign Up Link */}
               <View style={styles.signUpContainer}>
-                <Text style={styles.signUpText}>Wala pang account? </Text>
+                <Text style={styles.signUpText}>{t('noAccount')}</Text>
                 <TouchableOpacity
                   onPress={() => navigation.navigate('Signup')}
                   style={styles.signUpLink}
                 >
-                  <Text style={styles.signUpLinkText}>Mag-signup dito</Text>
+                  <Text style={styles.signUpLinkText}>{t('signUpHere')}</Text>
                 </TouchableOpacity>
               </View>
             </View>

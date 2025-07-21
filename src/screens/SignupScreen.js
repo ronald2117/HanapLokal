@@ -14,6 +14,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import ModernInput from '../components/ModernInput';
 import ModernButton from '../components/ModernButton';
 import { Colors, Typography, Spacing, BorderRadius } from '../styles/theme';
@@ -24,20 +25,21 @@ export default function SignupScreen({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { signup, loginAnonymously } = useAuth();
+  const { t } = useLanguage();
 
   async function handleSubmit() {
     if (!email || !password || !confirmPassword) {
-      Alert.alert('Oops!', 'Kumpletuhin po lahat ng fields');
+      Alert.alert(t('error'), t('completeAllFields'));
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Hindi tugma ang mga password');
+      Alert.alert(t('error'), t('passwordsDontMatch'));
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert('Error', 'Dapat hindi bababa sa 6 characters ang password');
+      Alert.alert(t('error'), t('passwordTooShort'));
       return;
     }
 
@@ -45,7 +47,7 @@ export default function SignupScreen({ navigation }) {
       setLoading(true);
       await signup(email, password);
     } catch (error) {
-      Alert.alert('Hindi makapag-register', error.message);
+      Alert.alert(t('registrationFailed'), error.message);
     } finally {
       setLoading(false);
     }
@@ -56,7 +58,7 @@ export default function SignupScreen({ navigation }) {
       setLoading(true);
       await loginAnonymously();
     } catch (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert(t('error'), error.message);
     } finally {
       setLoading(false);
     }
@@ -89,47 +91,47 @@ export default function SignupScreen({ navigation }) {
                   resizeMode="contain"
                 />
               </View>
-              <Text style={styles.title}>Mag-register sa LokalFinds!</Text>
+              <Text style={styles.title}>{t('signupTitle')}</Text>
               <Text style={styles.subtitle}>
-                Sumali sa aming komunidad at tuklasin ang mga lokal na tindahan
+                {t('signupSubtitle')}
               </Text>
             </View>
 
             {/* Sign Up Form */}
             <View style={styles.formContainer}>
               <View style={styles.card}>
-                <Text style={styles.formTitle}>Gumawa ng Account</Text>
+                <Text style={styles.formTitle}>{t('createAccount')}</Text>
                 
                 <ModernInput
-                  label="Email Address"
+                  label={t('email')}
                   value={email}
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   icon="mail-outline"
-                  placeholder="Ilagay ang inyong email"
+                  placeholder={t('enterEmail')}
                 />
 
                 <ModernInput
-                  label="Password"
+                  label={t('password')}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry
                   icon="lock-closed-outline"
-                  placeholder="Ilagay ang password"
+                  placeholder={t('enterPassword')}
                 />
 
                 <ModernInput
-                  label="Confirm Password"
+                  label={t('confirmPassword')}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry
                   icon="lock-closed-outline"
-                  placeholder="Ulitin ang password"
+                  placeholder={t('confirmYourPassword')}
                 />
 
                 <ModernButton
-                  title="Mag-register"
+                  title={t('signup')}
                   onPress={handleSubmit}
                   loading={loading}
                   variant="primary"
@@ -144,7 +146,7 @@ export default function SignupScreen({ navigation }) {
                 </View>
 
                 <ModernButton
-                  title="Guest Mode (Hindi kailangan mag-register)"
+                  title={t('guestMode')}
                   onPress={handleAnonymousLogin}
                   loading={loading}
                   variant="outline"
@@ -155,12 +157,12 @@ export default function SignupScreen({ navigation }) {
 
               {/* Sign In Link */}
               <View style={styles.signInContainer}>
-                <Text style={styles.signInText}>May account na? </Text>
+                <Text style={styles.signInText}>{t('haveAccount')}</Text>
                 <TouchableOpacity
                   onPress={() => navigation.navigate('Login')}
                   style={styles.signInLink}
                 >
-                  <Text style={styles.signInLinkText}>Mag-log in dito</Text>
+                  <Text style={styles.signInLinkText}>{t('signInHere')}</Text>
                 </TouchableOpacity>
               </View>
             </View>

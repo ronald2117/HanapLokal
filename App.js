@@ -12,6 +12,7 @@ import { Colors } from './src/styles/theme';
 // Contexts
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { LocationProvider } from './src/contexts/LocationContext';
+import { LanguageProvider } from './src/contexts/LanguageContext';
 
 // Auth Screens
 import LoginScreen from './src/screens/LoginScreen_new';
@@ -26,6 +27,8 @@ import ProductDetailsScreen from './src/screens/ProductDetailsScreen';
 import MyStoreScreen from './src/screens/MyStoreScreen';
 import FavoritesScreen from './src/screens/FavoritesScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import ReviewScreen from './src/screens/ReviewScreen';
+import LanguageSettingsScreen from './src/screens/LanguageSettingsScreen';
 
 // Store Management Screens
 import CreateStoreScreen from './src/screens/CreateStoreScreen';
@@ -178,6 +181,16 @@ function ProfileStack() {
         component={ProfileScreen}
         options={{ title: 'Profile' }}
       />
+      <Stack.Screen 
+        name="ReviewScreen" 
+        component={ReviewScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="LanguageSettings" 
+        component={LanguageSettingsScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }
@@ -261,12 +274,14 @@ function AppNavigator() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <LocationProvider>
-          <AppNavigator />
-          <StatusBar style="light" backgroundColor={Colors.primary} />
-        </LocationProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <LocationProvider>
+            <AppNavigator />
+            <StatusBar style="light" backgroundColor={Colors.primary} />
+          </LocationProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </SafeAreaProvider>
   );
 }

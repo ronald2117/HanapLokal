@@ -18,6 +18,7 @@ import * as Location from 'expo-location';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import { useLocation } from '../contexts/LocationContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import StoreCard from '../components/StoreCard';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
 
@@ -32,6 +33,7 @@ export default function HomeScreen({ navigation }) {
   const [showRadiusModal, setShowRadiusModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const { location, refreshLocation, isLoading } = useLocation();
+  const { t } = useLanguage();
 
   // Custom refresh function with feedback
   const handleRefreshLocation = async () => {
@@ -39,7 +41,7 @@ export default function HomeScreen({ navigation }) {
     if (success && location) {
       Alert.alert(
         'Location Updated!',
-        `Your location has been updated with high accuracy.\n\nNow showing stores within ${searchRadius !== -1 ? `${searchRadius}km` : 'unlimited'} radius.`,
+        t(`Your location has been updated with high accuracy.\n\nNow showing stores within ${searchRadius !== -1 ? `${searchRadius}km` : t('unlimited')} radius.`),
         [{ text: 'OK' }]
       );
     } else {
@@ -53,32 +55,32 @@ export default function HomeScreen({ navigation }) {
 
   // Search radius options in kilometers
   const radiusOptions = [
-    { value: 1, label: '1 km' },
-    { value: 2, label: '2 km' },
-    { value: 5, label: '5 km' },
-    { value: 10, label: '10 km' },
-    { value: 20, label: '20 km' },
-    { value: 50, label: '50 km' },
-    { value: 100, label: '100 km' },
-    { value: -1, label: 'No limit' }, // -1 means no distance filtering
+    { value: 1, label: t('1km') },
+    { value: 2, label: t('2km') },
+    { value: 5, label: t('5km') },
+    { value: 10, label: t('10km') },
+    { value: 20, label: t('20km') },
+    { value: 50, label: t('50km') },
+    { value: 100, label: t('100km') },
+    { value: -1, label: t('noLimit') }, // -1 means no distance filtering
   ];
 
   // Store categories for filtering
   const storeCategories = [
-    { id: '', name: 'All', icon: 'apps' },
-    { id: 'sari-sari', name: 'Sari-sari', icon: 'storefront' },
-    { id: 'kainan', name: 'Kainan', icon: 'restaurant' },
-    { id: 'laundry', name: 'Laundry', icon: 'shirt' },
-    { id: 'vegetables', name: 'Vegetables', icon: 'leaf' },
-    { id: 'meat', name: 'Meat Shop', icon: 'fish' },
-    { id: 'bakery', name: 'Bakery', icon: 'cafe' },
-    { id: 'pharmacy', name: 'Pharmacy', icon: 'medical' },
-    { id: 'hardware', name: 'Hardware', icon: 'hammer' },
-    { id: 'clothing', name: 'Clothing', icon: 'shirt-outline' },
-    { id: 'electronics', name: 'Electronics', icon: 'phone-portrait' },
-    { id: 'beauty', name: 'Beauty', icon: 'cut' },
-    { id: 'automotive', name: 'Automotive', icon: 'car' },
-    { id: 'other', name: 'Other', icon: 'business' },
+    { id: '', name: t('all'), icon: 'apps' },
+    { id: 'sari-sari', name: t('sariSari'), icon: 'storefront' },
+    { id: 'kainan', name: t('restaurant'), icon: 'restaurant' },
+    { id: 'laundry', name: t('laundry'), icon: 'shirt' },
+    { id: 'vegetables', name: t('vegetables'), icon: 'leaf' },
+    { id: 'meat', name: t('meatShop'), icon: 'fish' },
+    { id: 'bakery', name: t('bakery'), icon: 'cafe' },
+    { id: 'pharmacy', name: t('pharmacy'), icon: 'medical' },
+    { id: 'hardware', name: t('hardware'), icon: 'hammer' },
+    { id: 'clothing', name: t('clothing'), icon: 'shirt-outline' },
+    { id: 'electronics', name: t('electronics'), icon: 'phone-portrait' },
+    { id: 'beauty', name: t('beauty'), icon: 'cut' },
+    { id: 'automotive', name: t('automotive'), icon: 'car' },
+    { id: 'other', name: t('other'), icon: 'business' },
   ];
 
   useEffect(() => {
@@ -176,12 +178,12 @@ export default function HomeScreen({ navigation }) {
 
   const getSelectedCategoryName = () => {
     const category = storeCategories.find(cat => cat.id === selectedCategory);
-    return category ? category.name : 'All';
+    return category ? category.name : t('all');
   };
 
   const getSelectedRadiusLabel = () => {
     const radius = radiusOptions.find(opt => opt.value === searchRadius);
-    return radius ? radius.label : '10 km';
+    return radius ? radius.label : t('10km');
   };
 
   const handleRadiusSelect = (value) => {
@@ -204,7 +206,7 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Search Radius</Text>
+            <Text style={styles.modalTitle}>{t('selectSearchRadius')}</Text>
             <TouchableOpacity onPress={() => setShowRadiusModal(false)}>
               <Ionicons name="close" size={24} color={Colors.text.secondary} />
             </TouchableOpacity>
@@ -251,7 +253,7 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Category</Text>
+            <Text style={styles.modalTitle}>{t('selectCategory')}</Text>
             <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
               <Ionicons name="close" size={24} color={Colors.text.secondary} />
             </TouchableOpacity>
@@ -300,8 +302,8 @@ export default function HomeScreen({ navigation }) {
         >
           <View style={styles.header}>
             <View style={styles.greetingContainer}>
-              <Text style={styles.greeting}>Kumusta!</Text>
-              <Text style={styles.headerTitle}>Hanap tayo ng magandang tindahan</Text>
+              <Text style={styles.greeting}>{t('greetingHello')}</Text>
+              <Text style={styles.headerTitle}>{t('findGoodStores')}</Text>
             </View>
           </View>
         </LinearGradient>
@@ -312,7 +314,7 @@ export default function HomeScreen({ navigation }) {
             <Ionicons name="search" size={20} color={Colors.text.secondary} style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Hanapin ang tindahan o produkto..."
+              placeholder={t('searchPlaceholder')}
               placeholderTextColor={Colors.text.light}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -366,10 +368,10 @@ export default function HomeScreen({ navigation }) {
               <View style={styles.emptyContainer}>
                 <Text style={styles.emptyIcon}>🏪</Text>
                 <Text style={styles.emptyText}>
-                  {loading ? 'Hinahanap ang mga tindahan...' : 'Walang nakitang tindahan'}
+                  {loading ? t('searchingStores') : t('noStoresFound')}
                 </Text>
                 <Text style={styles.emptySubtext}>
-                  {searchQuery ? 'Subukan ang ibang keyword' : 'Mag-antay lang, darating din ang mga tindahan dito'}
+                  {searchQuery ? t('tryDifferentKeyword') : t('waitForStores')}
                 </Text>
               </View>
             )}

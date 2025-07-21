@@ -8,24 +8,26 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function ProfileScreen({ navigation }) {
   const { currentUser, logout } = useAuth();
+  const { t } = useLanguage();
 
   const handleLogout = () => {
     Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
+      t('logout'),
+      t('logoutConfirm'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('cancel'), style: 'cancel' },
         { 
-          text: 'Logout', 
+          text: t('logout'), 
           style: 'destructive',
           onPress: async () => {
             try {
               await logout();
             } catch (error) {
-              Alert.alert('Error', 'Failed to logout');
+              Alert.alert(t('error'), t('failedToLogout'));
             }
           }
         }
@@ -42,10 +44,10 @@ export default function ProfileScreen({ navigation }) {
           </View>
           <View style={styles.userDetails}>
             <Text style={styles.userName}>
-              {currentUser?.email || 'Guest User'}
+              {currentUser?.email || t('guestUser')}
             </Text>
             <Text style={styles.userType}>
-              {currentUser?.isAnonymous ? 'Guest Account' : 'Registered User'}
+              {currentUser?.isAnonymous ? t('guestAccount') : t('registeredUser')}
             </Text>
           </View>
         </View>
@@ -57,19 +59,28 @@ export default function ProfileScreen({ navigation }) {
           onPress={() => navigation.navigate('ReviewScreen')}
         >
           <Ionicons name="star" size={24} color="#f39c12" />
-          <Text style={styles.menuText}>Rate & Review App</Text>
+          <Text style={styles.menuText}>{t('rateReviewApp')}</Text>
+          <Ionicons name="chevron-forward" size={20} color="#bdc3c7" />
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('LanguageSettings')}
+        >
+          <Ionicons name="language" size={24} color="#9b59b6" />
+          <Text style={styles.menuText}>{t('language')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#bdc3c7" />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuItem}>
           <Ionicons name="settings" size={24} color="#95a5a6" />
-          <Text style={styles.menuText}>Settings</Text>
+          <Text style={styles.menuText}>{t('settings')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#bdc3c7" />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.menuItem}>
           <Ionicons name="help-circle" size={24} color="#95a5a6" />
-          <Text style={styles.menuText}>Help & Support</Text>
+          <Text style={styles.menuText}>{t('helpSupport')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#bdc3c7" />
         </TouchableOpacity>
       </View>
@@ -80,10 +91,10 @@ export default function ProfileScreen({ navigation }) {
           onPress={handleLogout}
         >
           <Ionicons name="log-out" size={20} color="#e74c3c" />
-          <Text style={styles.logoutText}>Logout</Text>
+          <Text style={styles.logoutText}>{t('logout')}</Text>
         </TouchableOpacity>
 
-        <Text style={styles.versionText}>LokalFinds v1.0.0</Text>
+        <Text style={styles.versionText}>{t('version')}</Text>
       </View>
     </View>
   );
