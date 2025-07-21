@@ -193,7 +193,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
+      {/* <StatusBar barStyle="light-content" backgroundColor={Colors.primary} /> */}
       <View style={styles.container}>
         {/* Header Section */}
         <LinearGradient
@@ -394,6 +394,7 @@ const styles = StyleSheet.create({
   
   greetingContainer: {
     marginBottom: Spacing.md,
+    marginTop: 20,
   },
   
   greeting: {
