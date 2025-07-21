@@ -193,7 +193,6 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <>
-      {/* <StatusBar barStyle="light-content" backgroundColor={Colors.primary} /> */}
       <View style={styles.container}>
         {/* Header Section */}
         <LinearGradient
