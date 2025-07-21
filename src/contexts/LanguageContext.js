@@ -159,6 +159,26 @@ export const translations = {
     noStoresFound: 'No stores found',
     tryDifferentKeyword: 'Try a different keyword',
     waitForStores: 'Please wait, stores will appear here soon',
+    
+    // MyStore Screen
+    failedToFetchStore: 'Failed to fetch store information',
+    failedToFetchProducts: 'Failed to fetch products',
+    guestWelcomeMessage: 'Thank you for using LokalFinds! As a guest, you can only view stores and products.',
+    registrationBenefits: 'Benefits of registration:',
+    ownStore: 'Have your own store',
+    sellProducts: 'Sell products',
+    getCustomers: 'Get customers',
+    earnFromBusiness: 'Earn from business',
+    registerForStore: 'Register for Store',
+    refreshing: 'Refreshing...',
+    noStoreYet: 'No Store Yet',
+    createStoreDescription: 'Create your store to start selling your products to local customers',
+    createStore: 'Create Store',
+    settings: 'Settings',
+    myProducts: 'My Products',
+    addProduct: 'Add Product',
+    noProductsYet: 'No products yet',
+    addFirstProduct: 'Add your first product to get started',
   },
   
   tl: {
@@ -316,6 +336,26 @@ export const translations = {
     noStoresFound: 'Walang nakitang tindahan',
     tryDifferentKeyword: 'Subukan ang ibang keyword',
     waitForStores: 'Mag-antay lang, darating din ang mga tindahan dito',
+    
+    // MyStore Screen
+    failedToFetchStore: 'Hindi nakuha ang impormasyon ng tindahan',
+    failedToFetchProducts: 'Hindi nakuha ang mga produkto',
+    guestWelcomeMessage: 'Salamat sa paggamit ng LokalFinds! Bilang guest, pwede mo lang tingnan ang mga tindahan at produkto.',
+    registrationBenefits: 'Mga benepisyo ng pag-register:',
+    ownStore: 'Magkakaroon ng sariling tindahan',
+    sellProducts: 'Magtinda ng mga produkto',
+    getCustomers: 'Makakuha ng mga customer',
+    earnFromBusiness: 'Kumita mula sa negosyo',
+    registerForStore: 'Mag-register para sa Store',
+    refreshing: 'Nire-refresh...',
+    noStoreYet: 'Wala Pang Tindahan',
+    createStoreDescription: 'Gumawa ng tindahan para magsimulang magtinda ng mga produkto sa mga lokal na customer',
+    createStore: 'Gumawa ng Tindahan',
+    settings: 'Settings',
+    myProducts: 'Mga Produkto Ko',
+    addProduct: 'Magdagdag ng Produkto',
+    noProductsYet: 'Wala pang mga produkto',
+    addFirstProduct: 'Magdagdag ng unang produkto para magsimula',
   }
 };
 

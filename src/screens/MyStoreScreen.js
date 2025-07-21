@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useFocusEffect } from '@react-navigation/native';
 import ProductCard from '../components/ProductCard';
 
@@ -25,23 +26,24 @@ export default function MyStoreScreen({ navigation }) {
   const [productLoading, setProductLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { currentUser, isGuestUser } = useAuth();
+  const { t } = useLanguage();
 
   // Get category information
   const getCategoryInfo = (category) => {
     const categories = {
-      'sari-sari': { name: 'Sari-sari Store', icon: 'storefront', emoji: '🏪' },
-      'kainan': { name: 'Kainan/Restaurant', icon: 'restaurant', emoji: '🍽️' },
-      'laundry': { name: 'Laundry Shop', icon: 'shirt', emoji: '👕' },
-      'vegetables': { name: 'Vegetable Store', icon: 'leaf', emoji: '🥬' },
-      'meat': { name: 'Meat Shop', icon: 'fish', emoji: '🥩' },
-      'bakery': { name: 'Bakery', icon: 'cafe', emoji: '🍞' },
-      'pharmacy': { name: 'Pharmacy', icon: 'medical', emoji: '💊' },
-      'hardware': { name: 'Hardware Store', icon: 'hammer', emoji: '🔨' },
-      'clothing': { name: 'Clothing Store', icon: 'shirt-outline', emoji: '👔' },
-      'electronics': { name: 'Electronics', icon: 'phone-portrait', emoji: '📱' },
-      'beauty': { name: 'Beauty Salon', icon: 'cut', emoji: '✂️' },
-      'automotive': { name: 'Automotive Shop', icon: 'car', emoji: '🚗' },
-      'other': { name: 'Other', icon: 'business', emoji: '🏪' },
+      'sari-sari': { name: t('sariSari'), icon: 'storefront', emoji: '🏪' },
+      'kainan': { name: t('restaurant'), icon: 'restaurant', emoji: '🍽️' },
+      'laundry': { name: t('laundry'), icon: 'shirt', emoji: '👕' },
+      'vegetables': { name: t('vegetables'), icon: 'leaf', emoji: '🥬' },
+      'meat': { name: t('meatShop'), icon: 'fish', emoji: '🥩' },
+      'bakery': { name: t('bakery'), icon: 'cafe', emoji: '🍞' },
+      'pharmacy': { name: t('pharmacy'), icon: 'medical', emoji: '💊' },
+      'hardware': { name: t('hardware'), icon: 'hammer', emoji: '🔨' },
+      'clothing': { name: t('clothing'), icon: 'shirt-outline', emoji: '👔' },
+      'electronics': { name: t('electronics'), icon: 'phone-portrait', emoji: '📱' },
+      'beauty': { name: t('beauty'), icon: 'cut', emoji: '✂️' },
+      'automotive': { name: t('automotive'), icon: 'car', emoji: '🚗' },
+      'other': { name: t('other'), icon: 'business', emoji: '🏪' },
     };
     
     return categories[category] || categories['other'];
@@ -85,7 +87,7 @@ export default function MyStoreScreen({ navigation }) {
         setMyStore(null);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to fetch store information');
+      Alert.alert(t('error'), t('failedToFetchStore'));
       console.error('Error fetching store:', error);
     } finally {
       setLoading(false);
@@ -108,7 +110,7 @@ export default function MyStoreScreen({ navigation }) {
       console.log('📦 Products found:', productsData.length);
       setProducts(productsData);
     } catch (error) {
-      Alert.alert('Error', 'Failed to fetch products');
+      Alert.alert(t('error'), t('failedToFetchProducts'));
       console.error('Error fetching products:', error);
     }
   };
@@ -132,7 +134,7 @@ export default function MyStoreScreen({ navigation }) {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
+        <Text>{t('loading')}</Text>
       </View>
     );
   }
@@ -143,28 +145,28 @@ export default function MyStoreScreen({ navigation }) {
       return (
         <View style={styles.noStoreContainer}>
           <Ionicons name="person-outline" size={80} color="#FF6B35" />
-          <Text style={styles.guestTitle}>Ikaw ay Guest User</Text>
+          <Text style={styles.guestTitle}>{t('guestUser')}</Text>
           <Text style={styles.guestText}>
-            Salamat sa paggamit ng LokalFinds! Bilang guest, pwede mo lang tingnan ang mga tindahan at produkto.
+            {t('guestWelcomeMessage')}
           </Text>
           
           <View style={styles.benefitsContainer}>
-            <Text style={styles.benefitsTitle}>Mga benepisyo ng pag-register:</Text>
+            <Text style={styles.benefitsTitle}>{t('registrationBenefits')}</Text>
             <View style={styles.benefitItem}>
               <Ionicons name="storefront" size={20} color="#FF6B35" />
-              <Text style={styles.benefitText}>Magkakaroon ng sariling tindahan</Text>
+              <Text style={styles.benefitText}>{t('ownStore')}</Text>
             </View>
             <View style={styles.benefitItem}>
               <Ionicons name="cube" size={20} color="#FF6B35" />
-              <Text style={styles.benefitText}>Magtinda ng mga produkto</Text>
+              <Text style={styles.benefitText}>{t('sellProducts')}</Text>
             </View>
             <View style={styles.benefitItem}>
               <Ionicons name="people" size={20} color="#FF6B35" />
-              <Text style={styles.benefitText}>Makakuha ng mga customer</Text>
+              <Text style={styles.benefitText}>{t('getCustomers')}</Text>
             </View>
             <View style={styles.benefitItem}>
               <Ionicons name="cash" size={20} color="#FF6B35" />
-              <Text style={styles.benefitText}>Kumita mula sa negosyo</Text>
+              <Text style={styles.benefitText}>{t('earnFromBusiness')}</Text>
             </View>
           </View>
 
@@ -177,7 +179,7 @@ export default function MyStoreScreen({ navigation }) {
               await logoutGuestAndSignup();
             }}
           >
-            <Text style={styles.signupButtonText}>Mag-register para sa Store</Text>
+            <Text style={styles.signupButtonText}>{t('registerForStore')}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity
@@ -187,7 +189,7 @@ export default function MyStoreScreen({ navigation }) {
           >
             <Ionicons name="refresh" size={20} color="#3498db" />
             <Text style={styles.refreshButtonText}>
-              {refreshing ? 'Refreshing...' : 'Refresh'}
+              {refreshing ? t('refreshing') : t('refresh')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -198,15 +200,15 @@ export default function MyStoreScreen({ navigation }) {
     return (
       <View style={styles.noStoreContainer}>
         <Ionicons name="storefront-outline" size={80} color="#bdc3c7" />
-        <Text style={styles.noStoreTitle}>No Store Yet</Text>
+        <Text style={styles.noStoreTitle}>{t('noStoreYet')}</Text>
         <Text style={styles.noStoreText}>
-          Create your store to start selling your products to local customers
+          {t('createStoreDescription')}
         </Text>
         <TouchableOpacity
           style={styles.createStoreButton}
           onPress={() => navigation.navigate('CreateStore')}
         >
-          <Text style={styles.createStoreButtonText}>Create Store</Text>
+          <Text style={styles.createStoreButtonText}>{t('createStore')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
@@ -216,7 +218,7 @@ export default function MyStoreScreen({ navigation }) {
         >
           <Ionicons name="refresh" size={20} color="#3498db" />
           <Text style={styles.refreshButtonText}>
-            {refreshing ? 'Refreshing...' : 'Refresh'}
+            {refreshing ? t('refreshing') : t('refresh')}
           </Text>
         </TouchableOpacity>
       </View>
