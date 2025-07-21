@@ -9,7 +9,8 @@ import {
   RefreshControl,
   Alert,
   StatusBar,
-  ScrollView
+  ScrollView,
+  Modal
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,6 +29,8 @@ export default function HomeScreen({ navigation }) {
   const [searchRadius, setSearchRadius] = useState(10); // Default 10km radius
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showRadiusModal, setShowRadiusModal] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const { location, refreshLocation, isLoading } = useLocation();
 
   // Custom refresh function with feedback
@@ -36,7 +39,7 @@ export default function HomeScreen({ navigation }) {
     if (success && location) {
       Alert.alert(
         'Location Updated!',
-        `Your location has been updated with high accuracy.\n\nNow showing stores within ${selectedRadius !== -1 ? `${selectedRadius}km` : 'unlimited'} radius.`,
+        `Your location has been updated with high accuracy.\n\nNow showing stores within ${searchRadius !== -1 ? `${searchRadius}km` : 'unlimited'} radius.`,
         [{ text: 'OK' }]
       );
     } else {
@@ -171,24 +174,118 @@ export default function HomeScreen({ navigation }) {
     />
   );
 
-  const renderCategory = ({ item }) => (
-    <TouchableOpacity 
-      style={[
-        styles.categoryItem, 
-        { borderColor: selectedCategory === item.id ? Colors.primary : Colors.border },
-        selectedCategory === item.id && styles.categoryItemSelected
-      ]} 
-      activeOpacity={0.7}
-      onPress={() => setSelectedCategory(item.id)}
+  const getSelectedCategoryName = () => {
+    const category = storeCategories.find(cat => cat.id === selectedCategory);
+    return category ? category.name : 'All';
+  };
+
+  const getSelectedRadiusLabel = () => {
+    const radius = radiusOptions.find(opt => opt.value === searchRadius);
+    return radius ? radius.label : '10 km';
+  };
+
+  const handleRadiusSelect = (value) => {
+    setSearchRadius(value);
+    setShowRadiusModal(false);
+  };
+
+  const handleCategorySelect = (id) => {
+    setSelectedCategory(id);
+    setShowCategoryModal(false);
+  };
+
+  const renderRadiusModal = () => (
+    <Modal
+      visible={showRadiusModal}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setShowRadiusModal(false)}
     >
-      <Ionicons name={item.icon} size={20} color={selectedCategory === item.id ? Colors.primary : Colors.text.secondary} />
-      <Text style={[
-        styles.categoryText, 
-        { color: selectedCategory === item.id ? Colors.primary : Colors.text.secondary }
-      ]}>
-        {item.name}
-      </Text>
-    </TouchableOpacity>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select Search Radius</Text>
+            <TouchableOpacity onPress={() => setShowRadiusModal(false)}>
+              <Ionicons name="close" size={24} color={Colors.text.secondary} />
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={styles.modalContent}>
+            {radiusOptions.map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.modalItem,
+                  searchRadius === option.value && styles.modalItemSelected
+                ]}
+                onPress={() => handleRadiusSelect(option.value)}
+              >
+                <Ionicons 
+                  name="location" 
+                  size={20} 
+                  color={searchRadius === option.value ? Colors.primary : Colors.text.secondary} 
+                />
+                <Text style={[
+                  styles.modalItemText,
+                  searchRadius === option.value && styles.modalItemTextSelected
+                ]}>
+                  {option.label}
+                </Text>
+                {searchRadius === option.value && (
+                  <Ionicons name="checkmark" size={20} color={Colors.primary} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  const renderCategoryModal = () => (
+    <Modal
+      visible={showCategoryModal}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setShowCategoryModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select Category</Text>
+            <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
+              <Ionicons name="close" size={24} color={Colors.text.secondary} />
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={styles.modalContent}>
+            {storeCategories.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                style={[
+                  styles.modalItem,
+                  selectedCategory === category.id && styles.modalItemSelected
+                ]}
+                onPress={() => handleCategorySelect(category.id)}
+              >
+                <Ionicons 
+                  name={category.icon} 
+                  size={20} 
+                  color={selectedCategory === category.id ? Colors.primary : Colors.text.secondary} 
+                />
+                <Text style={[
+                  styles.modalItemText,
+                  selectedCategory === category.id && styles.modalItemTextSelected
+                ]}>
+                  {category.name}
+                </Text>
+                {selectedCategory === category.id && (
+                  <Ionicons name="checkmark" size={20} color={Colors.primary} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
   );
 
   return (
@@ -232,97 +329,77 @@ export default function HomeScreen({ navigation }) {
               </TouchableOpacity>
             ) : null}
           </View>
-        </View>
-
-        {/* Search Radius Section */}
-        <View style={styles.radiusSection}>
-          <View style={styles.radiusHeader}>
-            <Ionicons name="location" size={16} color={Colors.primary} />
-            <Text style={styles.radiusTitle}>Search Radius</Text>
+          
+          {/* Filter Buttons */}
+          <View style={styles.filterSection}>
+            <TouchableOpacity 
+              style={styles.filterButton}
+              onPress={() => setShowRadiusModal(true)}
+            >
+              <Ionicons name="location" size={16} color={Colors.primary} />
+              <Text style={styles.filterButtonText}>{getSelectedRadiusLabel()}</Text>
+              <Ionicons name="chevron-down" size={16} color={Colors.text.secondary} />
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.filterButton}
+              onPress={() => setShowCategoryModal(true)}
+            >
+              <Ionicons name="apps" size={16} color={Colors.primary} />
+              <Text style={styles.filterButtonText}>{getSelectedCategoryName()}</Text>
+              <Ionicons name="chevron-down" size={16} color={Colors.text.secondary} />
+            </TouchableOpacity>
           </View>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={styles.radiusScroll}
-          >
-            {radiusOptions.map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={[
-                  styles.radiusOption,
-                  searchRadius === option.value && styles.radiusOptionSelected
-                ]}
-                onPress={() => setSearchRadius(option.value)}
-              >
-                <Text style={[
-                  styles.radiusOptionText,
-                  searchRadius === option.value && styles.radiusOptionTextSelected
-                ]}>
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-          {!location && (
-            <View style={styles.locationWarningContainer}>
-              <Text style={styles.locationWarning}>
-                📍 Enable location to filter by distance
-              </Text>
-              <TouchableOpacity 
-                style={[styles.refreshLocationButton, isLoading && styles.refreshLocationButtonDisabled]}
-                onPress={handleRefreshLocation}
-                disabled={isLoading}
-              >
-                <Ionicons 
-                  name={isLoading ? "reload" : "location"} 
-                  size={16} 
-                  color="#fff" 
-                />
-                <Text style={styles.refreshLocationButtonText}>
-                  {isLoading ? 'Getting Location...' : 'Get My Location'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          {location && (
-            <View style={styles.locationFoundContainer}>
-              <Text style={styles.storeCount}>
-                {filteredStores.length} store(s) found
-                {searchRadius !== -1 ? ` within ${searchRadius} km` : ''}
-                {location?.accuracy && (
-                  ` (±${Math.round(location.accuracy)}m accuracy)`
-                )}
-              </Text>
-              <TouchableOpacity 
-                style={[styles.refreshLocationButton, styles.refreshLocationButtonSmall, isLoading && styles.refreshLocationButtonDisabled]}
-                onPress={handleRefreshLocation}
-                disabled={isLoading}
-              >
-                <Ionicons 
-                  name={isLoading ? "reload" : "refresh"} 
-                  size={14} 
-                  color="#fff" 
-                />
-                <Text style={styles.refreshLocationButtonTextSmall}>
-                  {isLoading ? 'Updating...' : 'Refresh'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
         </View>
 
-        {/* Categories Section */}
-        <View style={styles.categoriesSection}>
-          <Text style={styles.sectionTitle}>Mga Kategorya</Text>
-          <FlatList
-            data={storeCategories}
-            renderItem={renderCategory}
-            keyExtractor={(item) => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoriesList}
-          />
-        </View>
+        {/* Location Info Section */}
+        {location && (
+          <View style={styles.locationInfoSection}>
+            <Text style={styles.storeCount}>
+              {filteredStores.length} store(s) found
+              {searchRadius !== -1 ? ` within ${searchRadius} km` : ''}
+              {location?.accuracy && (
+                ` (±${Math.round(location.accuracy)}m accuracy)`
+              )}
+            </Text>
+            <TouchableOpacity 
+              style={[styles.refreshLocationButton, isLoading && styles.refreshLocationButtonDisabled]}
+              onPress={handleRefreshLocation}
+              disabled={isLoading}
+            >
+              <Ionicons 
+                name={isLoading ? "reload" : "refresh"} 
+                size={14} 
+                color="#fff" 
+              />
+              <Text style={styles.refreshLocationButtonText}>
+                {isLoading ? 'Updating...' : 'Refresh'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {!location && (
+          <View style={styles.locationWarningSection}>
+            <Text style={styles.locationWarning}>
+              📍 Enable location to filter by distance
+            </Text>
+            <TouchableOpacity 
+              style={[styles.refreshLocationButton, isLoading && styles.refreshLocationButtonDisabled]}
+              onPress={handleRefreshLocation}
+              disabled={isLoading}
+            >
+              <Ionicons 
+                name={isLoading ? "reload" : "location"} 
+                size={16} 
+                color="#fff" 
+              />
+              <Text style={styles.refreshLocationButtonText}>
+                {isLoading ? 'Getting Location...' : 'Get My Location'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Stores Section */}
         <View style={styles.storesSection}>
@@ -370,6 +447,10 @@ export default function HomeScreen({ navigation }) {
       >
         <Ionicons name="map" size={24} color={Colors.text.white} />
       </TouchableOpacity>
+
+      {/* Modals */}
+      {renderRadiusModal()}
+      {renderCategoryModal()}
     </>
   );
 }
@@ -441,6 +522,118 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     ...Shadows.lg,
   },
+
+  filterSection: {
+    flexDirection: 'row',
+    marginTop: Spacing.md,
+    gap: Spacing.md,
+  },
+
+  filterButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.background.card,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    ...Shadows.base,
+  },
+
+  filterButtonText: {
+    flex: 1,
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.primary,
+    fontWeight: Typography.fontWeight.medium,
+    marginLeft: Spacing.sm,
+  },
+
+  locationInfoSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    backgroundColor: Colors.surface,
+    marginHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.lg,
+    ...Shadows.base,
+  },
+
+  locationWarningSection: {
+    alignItems: 'center',
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    backgroundColor: Colors.surface,
+    marginHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.lg,
+    ...Shadows.base,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  modalContainer: {
+    backgroundColor: Colors.background.card,
+    borderRadius: BorderRadius.xl,
+    margin: Spacing.xl,
+    maxHeight: '70%',
+    width: '80%',
+    ...Shadows.large,
+  },
+
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+
+  modalTitle: {
+    fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.primary,
+  },
+
+  modalContent: {
+    maxHeight: 300,
+  },
+
+  modalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+
+  modalItemSelected: {
+    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+  },
+
+  modalItemText: {
+    flex: 1,
+    fontSize: Typography.fontSize.base,
+    color: Colors.text.primary,
+    marginLeft: Spacing.md,
+  },
+
+  modalItemTextSelected: {
+    color: Colors.primary,
+    fontWeight: Typography.fontWeight.semibold,
+  },
   
   searchIcon: {
     marginRight: Spacing.md,
@@ -456,6 +649,41 @@ const styles = StyleSheet.create({
   clearButton: {
     padding: Spacing.xs,
   },
+
+  storeCount: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.primary,
+    fontWeight: Typography.fontWeight.semibold,
+    flex: 1,
+  },
+
+  locationWarning: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.light,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginBottom: Spacing.md,
+  },
+  
+  refreshLocationButton: {
+    backgroundColor: Colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+  },
+  
+  refreshLocationButtonDisabled: {
+    backgroundColor: Colors.text.light,
+  },
+  
+  refreshLocationButtonText: {
+    color: Colors.text.white,
+    fontSize: Typography.fontSize.xs,
+    fontWeight: Typography.fontWeight.semibold,
+    marginLeft: Spacing.xs,
+  },
   
   categoriesSection: {
     marginBottom: Spacing.lg,
@@ -468,39 +696,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.xl,
     marginBottom: Spacing.lg,
   },
-  
-  categoriesList: {
-    paddingHorizontal: Spacing.lg,
-  },
-  
-  categoryItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.background.card,
-    borderWidth: 2,
-    borderRadius: BorderRadius.xl,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    marginHorizontal: Spacing.sm,
-    minWidth: 90,
-    ...Shadows.base,
-  },
-  
-  categoryItemSelected: {
-    backgroundColor: 'rgba(52, 152, 219, 0.1)',
-  },
-  
-  categoryIcon: {
-    fontSize: 16,
-    marginRight: Spacing.xs,
-  },
-  
-  categoryText: {
-    fontSize: Typography.fontSize.xs,
-    fontWeight: Typography.fontWeight.semibold,
-  },
-  
+
   storesSection: {
     flex: 1,
   },
@@ -553,66 +749,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: Typography.lineHeight.relaxed * Typography.fontSize.sm,
   },
-  
-  radiusSection: {
-    backgroundColor: Colors.surface,
-    marginHorizontal: Spacing.md,
-    marginTop: Spacing.sm,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-    ...Shadows.small,
-  },
-  radiusHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
-  },
-  radiusTitle: {
-    ...Typography.body,
-    fontWeight: '600',
-    color: Colors.text.primary,
-    marginLeft: Spacing.xs,
-  },
-  radiusScroll: {
-    marginBottom: Spacing.xs,
-  },
-  radiusOption: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    marginRight: Spacing.sm,
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.sm,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  radiusOptionSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  radiusOptionText: {
-    ...Typography.caption,
-    color: Colors.text.secondary,
-    fontWeight: '500',
-  },
-  radiusOptionTextSelected: {
-    color: Colors.surface,
-    fontWeight: '600',
-  },
-  locationWarning: {
-    ...Typography.caption,
-    color: Colors.text.light,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    marginTop: Spacing.xs,
-  },
-  storeCount: {
-    ...Typography.caption,
-    color: Colors.primary,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginTop: Spacing.xs,
-  },
-  
   floatingMapButton: {
     position: 'absolute',
     right: Spacing.xl,
@@ -625,45 +761,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...Shadows.large,
     elevation: 8,
-  },
-  locationWarningContainer: {
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  locationFoundContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  refreshLocationButton: {
-    backgroundColor: '#3498db',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    marginTop: 8,
-  },
-  refreshLocationButtonSmall: {
-    backgroundColor: '#2980b9',
-    marginTop: 0,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  refreshLocationButtonDisabled: {
-    backgroundColor: '#95a5a6',
-  },
-  refreshLocationButtonText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  refreshLocationButtonTextSmall: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: '600',
-    marginLeft: 3,
   },
 });
