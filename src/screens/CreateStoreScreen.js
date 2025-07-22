@@ -31,6 +31,12 @@ export default function CreateStoreScreen({ navigation }) {
   const [storeCoordinates, setStoreCoordinates] = useState(null);
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
+  const [socialLinks, setSocialLinks] = useState([
+    { id: 1, url: '', platform: 'link' },
+    { id: 2, url: '', platform: 'link' },
+    { id: 3, url: '', platform: 'link' },
+    { id: 4, url: '', platform: 'link' }
+  ]);
   const { currentUser, isGuestUser } = useAuth();
 
   // Store categories
@@ -49,6 +55,88 @@ export default function CreateStoreScreen({ navigation }) {
     { id: 'automotive', name: 'Automotive Shop', icon: 'car' },
     { id: 'other', name: 'Other', icon: 'business' },
   ];
+
+  // Function to detect social platform from URL
+  const detectPlatform = (url) => {
+    if (!url) return 'link';
+    
+    const normalizedUrl = url.toLowerCase();
+    
+    if (normalizedUrl.includes('facebook.com') || normalizedUrl.includes('fb.com')) return 'facebook';
+    if (normalizedUrl.includes('instagram.com')) return 'instagram';
+    if (normalizedUrl.includes('twitter.com') || normalizedUrl.includes('x.com')) return 'twitter';
+    if (normalizedUrl.includes('youtube.com') || normalizedUrl.includes('youtu.be')) return 'youtube';
+    if (normalizedUrl.includes('tiktok.com')) return 'tiktok';
+    if (normalizedUrl.includes('linkedin.com')) return 'linkedin';
+    if (normalizedUrl.includes('whatsapp.com') || normalizedUrl.includes('wa.me')) return 'whatsapp';
+    if (normalizedUrl.includes('telegram.org') || normalizedUrl.includes('t.me')) return 'telegram';
+    if (normalizedUrl.includes('viber.com')) return 'viber';
+    if (normalizedUrl.includes('shopee.ph') || normalizedUrl.includes('shopee.com')) return 'shopee';
+    if (normalizedUrl.includes('lazada.com.ph') || normalizedUrl.includes('lazada.com')) return 'lazada';
+    
+    return 'link';
+  };
+
+  // Function to get platform icon
+  const getPlatformIcon = (platform) => {
+    const icons = {
+      facebook: 'logo-facebook',
+      instagram: 'logo-instagram', 
+      twitter: 'logo-twitter',
+      youtube: 'logo-youtube',
+      tiktok: 'logo-tiktok',
+      linkedin: 'logo-linkedin',
+      whatsapp: 'logo-whatsapp',
+      telegram: 'send',
+      viber: 'call',
+      shopee: 'storefront',
+      lazada: 'bag',
+      link: 'link'
+    };
+    return icons[platform] || 'link';
+  };
+
+  // Function to get platform color
+  const getPlatformColor = (platform) => {
+    const colors = {
+      facebook: '#1877F2',
+      instagram: '#E4405F',
+      twitter: '#1DA1F2', 
+      youtube: '#FF0000',
+      tiktok: '#000000',
+      linkedin: '#0A66C2',
+      whatsapp: '#25D366',
+      telegram: '#0088CC',
+      viber: '#665CAC',
+      shopee: '#FF5722',
+      lazada: '#0F146D',
+      link: '#6B7280'
+    };
+    return colors[platform] || '#6B7280';
+  };
+
+  // Function to update social link
+  const updateSocialLink = (id, url) => {
+    const platform = detectPlatform(url);
+    setSocialLinks(prev => 
+      prev.map(link => 
+        link.id === id 
+          ? { ...link, url: url.trim(), platform }
+          : link
+      )
+    );
+  };
+
+  // Function to remove social link
+  const removeSocialLink = (id) => {
+    setSocialLinks(prev => 
+      prev.map(link => 
+        link.id === id 
+          ? { ...link, url: '', platform: 'link' }
+          : link
+      )
+    );
+  };
 
   // If user is a guest, show the guest restriction screen
   if (isGuestUser()) {
@@ -146,6 +234,9 @@ export default function CreateStoreScreen({ navigation }) {
 
       setLoading(true);
 
+      // Filter out empty social links
+      const validSocialLinks = socialLinks.filter(link => link.url.trim() !== '');
+
       const storeData = {
         name: storeName.trim(),
         address: address.trim(),
@@ -155,6 +246,7 @@ export default function CreateStoreScreen({ navigation }) {
         profileImage: profileImage || '', // Store the image URI or empty string as placeholder
         coverImage: coverImage || '', // Store the image URI or empty string as placeholder
         coordinates: storeCoordinates, // Store GPS coordinates for accurate map positioning
+        socialLinks: validSocialLinks, // Add social links to store data
         ownerId: currentUser.uid,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -529,6 +621,59 @@ export default function CreateStoreScreen({ navigation }) {
             />
           </View>
 
+          {/* Social Links Section */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Social Links & Online Presence</Text>
+            <Text style={styles.subtitle}>Add up to 4 links to your social media, website, or online stores (Facebook, Instagram, Shopee, etc.)</Text>
+            
+            <View style={styles.socialLinksContainer}>
+              {socialLinks.map((link, index) => (
+                <View key={link.id} style={styles.socialLinkItem}>
+                  <View style={styles.socialLinkInputContainer}>
+                    <View style={[styles.platformIcon, { backgroundColor: getPlatformColor(link.platform) }]}>
+                      <Ionicons 
+                        name={getPlatformIcon(link.platform)} 
+                        size={20} 
+                        color="#fff" 
+                      />
+                    </View>
+                    <TextInput
+                      style={styles.socialLinkInput}
+                      placeholder={`Link ${index + 1} - Enter URL (e.g., https://facebook.com/yourstore)`}
+                      value={link.url}
+                      onChangeText={(text) => updateSocialLink(link.id, text)}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      keyboardType="url"
+                    />
+                    {link.url !== '' && (
+                      <TouchableOpacity 
+                        style={styles.removeLinkButton}
+                        onPress={() => removeSocialLink(link.id)}
+                      >
+                        <Ionicons name="close" size={20} color="#e74c3c" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  {link.url !== '' && (
+                    <View style={styles.platformPreview}>
+                      <Text style={styles.platformName}>
+                        {link.platform.charAt(0).toUpperCase() + link.platform.slice(1)} detected
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+            
+            <View style={styles.socialLinksNote}>
+              <Ionicons name="information-circle" size={16} color="#7f8c8d" />
+              <Text style={styles.noteText}>
+                Platform icons will automatically appear based on your URL. These links will be displayed on your store profile.
+              </Text>
+            </View>
+          </View>
+
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleCreateStore}
@@ -897,5 +1042,66 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#7f8c8d',
     fontStyle: 'italic',
+  },
+  
+  // Social Links Styles
+  socialLinksContainer: {
+    marginTop: 10,
+  },
+  socialLinkItem: {
+    marginBottom: 15,
+  },
+  socialLinkInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    paddingRight: 10,
+  },
+  platformIcon: {
+    width: 40,
+    height: 40,
+    borderTopLeftRadius: 7,
+    borderBottomLeftRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  socialLinkInput: {
+    flex: 1,
+    padding: 15,
+    fontSize: 14,
+    paddingLeft: 0,
+  },
+  removeLinkButton: {
+    padding: 8,
+  },
+  platformPreview: {
+    marginTop: 5,
+    paddingLeft: 50,
+  },
+  platformName: {
+    fontSize: 12,
+    color: '#27ae60',
+    fontWeight: '600',
+  },
+  socialLinksNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 15,
+    padding: 12,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#3498db',
+  },
+  noteText: {
+    flex: 1,
+    fontSize: 12,
+    color: '#7f8c8d',
+    marginLeft: 8,
+    lineHeight: 16,
   },
 });

@@ -98,6 +98,44 @@ export default function StoreCard({ store, onPress, userLocation, showFavoriteIc
     return categories[store.category] || categories['other'];
   };
 
+  // Function to get platform icon for social links
+  const getPlatformIcon = (platform) => {
+    const icons = {
+      facebook: 'logo-facebook',
+      instagram: 'logo-instagram', 
+      twitter: 'logo-twitter',
+      youtube: 'logo-youtube',
+      tiktok: 'logo-tiktok',
+      linkedin: 'logo-linkedin',
+      whatsapp: 'logo-whatsapp',
+      telegram: 'send',
+      viber: 'call',
+      shopee: 'storefront',
+      lazada: 'bag',
+      link: 'link'
+    };
+    return icons[platform] || 'link';
+  };
+
+  // Function to get platform color for social links
+  const getPlatformColor = (platform) => {
+    const colors = {
+      facebook: '#1877F2',
+      instagram: '#E4405F',
+      twitter: '#1DA1F2', 
+      youtube: '#FF0000',
+      tiktok: '#000000',
+      linkedin: '#0A66C2',
+      whatsapp: '#25D366',
+      telegram: '#0088CC',
+      viber: '#665CAC',
+      shopee: '#FF5722',
+      lazada: '#0F146D',
+      link: '#6B7280'
+    };
+    return colors[platform] || '#6B7280';
+  };
+
   const renderStars = (rating) => {
     const stars = [];
     const fullStars = Math.floor(rating);
@@ -195,8 +233,32 @@ export default function StoreCard({ store, onPress, userLocation, showFavoriteIc
         <Text style={styles.description} numberOfLines={2}>
           {store.description}
         </Text>
+        
+        {/* Compact Social Links */}
+        {store.socialLinks && store.socialLinks.length > 0 && (
+          <View style={styles.socialLinksContainer}>
+            {store.socialLinks.slice(0, 4).map((link, index) => {
+              const platform = link.platform || 'link';
+              const platformIcon = getPlatformIcon(platform);
+              const platformColor = getPlatformColor(platform);
+              
+              return (
+                <View key={index} style={styles.socialLinkIcon}>
+                  <Ionicons
+                    name={platformIcon}
+                    size={14}
+                    color={platformColor}
+                  />
+                </View>
+              );
+            })}
+            {store.socialLinks.length > 4 && (
+              <Text style={styles.socialLinksMore}>+{store.socialLinks.length - 4}</Text>
+            )}
+          </View>
+        )}
       </View>
-      
+
       <View style={styles.cardFooter}>
         <View style={styles.badge}>
           <Text style={styles.badgeText}>Lokal</Text>
@@ -358,5 +420,25 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.xs,
     fontWeight: Typography.fontWeight.semibold,
     color: Colors.text.primary,
+  },
+  
+  socialLinksContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: Spacing.sm,
+    paddingTop: Spacing.sm,
+  },
+  
+  socialLinkIcon: {
+    marginRight: Spacing.sm,
+    backgroundColor: '#f8f9fa',
+    padding: 4,
+    borderRadius: BorderRadius.sm,
+  },
+  
+  socialLinksMore: {
+    fontSize: Typography.fontSize.xs,
+    color: Colors.text.secondary,
+    fontWeight: Typography.fontWeight.medium,
   },
 });
