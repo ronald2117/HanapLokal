@@ -26,9 +26,13 @@ export const translations = {
     email: 'Email Address',
     password: 'Password',
     confirmPassword: 'Confirm Password',
+    firstName: 'First Name',
+    lastName: 'Last Name',
     enterEmail: 'Enter your email',
     enterPassword: 'Enter your password',
     confirmYourPassword: 'Confirm your password',
+    enterFirstName: 'Enter your first name',
+    enterLastName: 'Enter your last name',
     forgotPassword: 'Forgot Password?',
     guestMode: 'Guest Mode (No registration required)',
     loginTitle: 'Welcome Back!',
@@ -43,6 +47,7 @@ export const translations = {
     
     // Home
     greeting: 'Hello!',
+    welcomeUser: 'Hello, {name}!',
     homeTitle: 'Let\'s find great local stores',
     nearYou: 'Near you',
     searchPlaceholder: 'Search for stores or products...',
@@ -137,6 +142,9 @@ export const translations = {
     registrationFailed: 'Registration failed',
     couldNotFetchStores: 'Could not fetch stores',
     failedToLogout: 'Failed to logout',
+    invalidName: 'Names can only contain letters, spaces, hyphens, and apostrophes',
+    invalidFirstName: 'First name can only contain letters, spaces, hyphens, and apostrophes',
+    invalidLastName: 'Last name can only contain letters, spaces, hyphens, and apostrophes',
     
     // Language
     languageSettings: 'Language Settings',
@@ -223,9 +231,13 @@ export const translations = {
     email: 'Email Address',
     password: 'Password',
     confirmPassword: 'Confirm Password',
+    firstName: 'Pangalan',
+    lastName: 'Apelyido',
     enterEmail: 'Ilagay ang inyong email',
     enterPassword: 'Ilagay ang inyong password',
     confirmYourPassword: 'Kumpirmahin ang inyong password',
+    enterFirstName: 'Ilagay ang inyong pangalan',
+    enterLastName: 'Ilagay ang inyong apelyido',
     forgotPassword: 'Nakalimutan ang password?',
     guestMode: 'Guest Mode (Hindi kailangan mag-register)',
     loginTitle: 'Maligayang pagbabalik!',
@@ -240,6 +252,7 @@ export const translations = {
     
     // Home
     greeting: 'Kumusta!',
+    welcomeUser: 'Kumusta, {name}!',
     homeTitle: 'Hanap tayo ng magandang tindahan',
     nearYou: 'Malapit sa iyo',
     searchPlaceholder: 'Hanapin ang tindahan o produkto...',
@@ -334,6 +347,9 @@ export const translations = {
     registrationFailed: 'Hindi makapag-register',
     couldNotFetchStores: 'Hindi makuha ang mga tindahan',
     failedToLogout: 'Hindi makapag-logout',
+    invalidName: 'Ang pangalan ay pwedeng may mga titik, spaces, gitling, at apostrophe lang',
+    invalidFirstName: 'Ang pangalan ay pwedeng may mga titik, spaces, gitling, at apostrophe lang',
+    invalidLastName: 'Ang apelyido ay pwedeng may mga titik, spaces, gitling, at apostrophe lang',
     
     // Language
     languageSettings: 'Mga Setting ng Wika',

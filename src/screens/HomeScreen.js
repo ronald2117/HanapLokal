@@ -19,6 +19,7 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import { useLocation } from '../contexts/LocationContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import StoreCard from '../components/StoreCard';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
 
@@ -34,6 +35,36 @@ export default function HomeScreen({ navigation }) {
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const { location, refreshLocation, isLoading } = useLocation();
   const { t } = useLanguage();
+  const { currentUser, userProfile, isGuestUser } = useAuth();
+
+  // Function to get user's first name securely
+  const getUserFirstName = () => {
+    if (isGuestUser()) {
+      return null; // Don't show name for guest users
+    }
+    
+    if (userProfile && userProfile.firstName) {
+      // Sanitize the name before displaying (additional security layer)
+      return userProfile.firstName.replace(/[<>]/g, '').trim();
+    }
+    
+    if (currentUser && currentUser.displayName) {
+      // Fallback to display name first word
+      const firstName = currentUser.displayName.split(' ')[0];
+      return firstName.replace(/[<>]/g, '').trim();
+    }
+    
+    return null;
+  };
+
+  // Function to get personalized greeting
+  const getGreeting = () => {
+    const firstName = getUserFirstName();
+    if (firstName) {
+      return t('welcomeUser').replace('{name}', firstName);
+    }
+    return t('greeting');
+  };
 
   // Custom refresh function with feedback
   const handleRefreshLocation = async () => {
@@ -302,7 +333,7 @@ export default function HomeScreen({ navigation }) {
         >
           <View style={styles.header}>
             <View style={styles.greetingContainer}>
-              <Text style={styles.greeting}>{t('greetingHello')}</Text>
+              <Text style={styles.greeting}>{getGreeting()}</Text>
               <Text style={styles.headerTitle}>{t('findGoodStores')}</Text>
             </View>
           </View>

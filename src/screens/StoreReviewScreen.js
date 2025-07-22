@@ -18,13 +18,28 @@ import { useLanguage } from '../contexts/LanguageContext';
 import StarRating from '../components/StarRating';
 import { Colors, Typography, Spacing, BorderRadius } from '../styles/theme';
 
-export default function StoreReviewScreen({ navigation, route }) {
+export default function StoreReviewScreen({ route, navigation }) {
   const { store } = route.params;
+  const { currentUser, userProfile } = useAuth();
+  const { t } = useLanguage();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
-  const { currentUser, isGuestUser } = useAuth();
-  const { t } = useLanguage();
+
+  // Get user display name securely
+  const getUserDisplayName = () => {
+    if (userProfile && userProfile.firstName && userProfile.lastName) {
+      // Use sanitized profile data
+      return `${userProfile.firstName} ${userProfile.lastName}`.trim();
+    }
+    
+    if (currentUser && currentUser.displayName) {
+      // Sanitize display name
+      return currentUser.displayName.replace(/[<>]/g, '').trim();
+    }
+    
+    return currentUser?.email || 'Anonymous User';
+  };
 
   const handleSubmitReview = async () => {
     if (isGuestUser()) {
@@ -53,7 +68,7 @@ export default function StoreReviewScreen({ navigation, route }) {
       const reviewData = {
         storeId: store.id,
         userId: currentUser.uid,
-        userName: currentUser.displayName || currentUser.email || 'Anonymous User',
+        userName: getUserDisplayName(),
         rating: rating,
         comment: comment.trim(),
         createdAt: serverTimestamp(),

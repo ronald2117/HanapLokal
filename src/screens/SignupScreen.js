@@ -23,13 +23,27 @@ export default function SignupScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
   const { signup, loginAnonymously } = useAuth();
   const { t } = useLanguage();
 
   async function handleSubmit() {
-    if (!email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword || !firstName || !lastName) {
       Alert.alert(t('error'), t('completeAllFields'));
+      return;
+    }
+
+    // Validate first name and last name
+    const nameRegex = /^[a-zA-Z\s\-']{1,50}$/;
+    if (!nameRegex.test(firstName.trim())) {
+      Alert.alert(t('error'), t('invalidFirstName'));
+      return;
+    }
+
+    if (!nameRegex.test(lastName.trim())) {
+      Alert.alert(t('error'), t('invalidLastName'));
       return;
     }
 
@@ -45,7 +59,7 @@ export default function SignupScreen({ navigation }) {
 
     try {
       setLoading(true);
-      await signup(email, password);
+      await signup(email, password, firstName.trim(), lastName.trim());
     } catch (error) {
       Alert.alert(t('registrationFailed'), error.message);
     } finally {
@@ -102,6 +116,24 @@ export default function SignupScreen({ navigation }) {
               <View style={styles.card}>
                 <Text style={styles.formTitle}>{t('createAccount')}</Text>
                 
+                <ModernInput
+                  label={t('firstName')}
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  autoCapitalize="words"
+                  icon="person-outline"
+                  placeholder={t('enterFirstName')}
+                />
+
+                <ModernInput
+                  label={t('lastName')}
+                  value={lastName}
+                  onChangeText={setLastName}
+                  autoCapitalize="words"
+                  icon="person-outline"
+                  placeholder={t('enterLastName')}
+                />
+
                 <ModernInput
                   label={t('email')}
                   value={email}
