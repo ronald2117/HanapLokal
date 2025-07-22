@@ -223,48 +223,6 @@ export default function StoreCard({ store, onPress, userLocation, showFavoriteIc
           </View>
         )}
       </View>
-      
-      <View style={styles.storeDetails}>
-        <View style={styles.hoursRow}>
-          <Ionicons name="time-outline" size={14} color={Colors.text.secondary} />
-          <Text style={styles.storeHours}>{store.hours}</Text>
-        </View>
-        
-        <Text style={styles.description} numberOfLines={2}>
-          {store.description}
-        </Text>
-        
-        {/* Compact Social Links */}
-        {store.socialLinks && store.socialLinks.length > 0 && (
-          <View style={styles.socialLinksContainer}>
-            {store.socialLinks.slice(0, 4).map((link, index) => {
-              const platform = link.platform || 'link';
-              const platformIcon = getPlatformIcon(platform);
-              const platformColor = getPlatformColor(platform);
-              
-              return (
-                <View key={index} style={styles.socialLinkIcon}>
-                  <Ionicons
-                    name={platformIcon}
-                    size={14}
-                    color={platformColor}
-                  />
-                </View>
-              );
-            })}
-            {store.socialLinks.length > 4 && (
-              <Text style={styles.socialLinksMore}>+{store.socialLinks.length - 4}</Text>
-            )}
-          </View>
-        )}
-      </View>
-
-      <View style={styles.cardFooter}>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>Lokal</Text>
-        </View>
-        <Ionicons name="arrow-forward-outline" size={16} color={Colors.text.secondary} />
-      </View>
     </TouchableOpacity>
   );
 }
