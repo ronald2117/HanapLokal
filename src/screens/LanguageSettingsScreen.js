@@ -12,24 +12,41 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../contexts/LanguageContext';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
 
-export default function LanguageSettingsScreen({ navigation }) {
+const LanguageSettingsScreen = ({ navigation }) => {
   const { language, changeLanguage, t } = useLanguage();
-
-  const handleLanguageChange = async (newLanguage) => {
-    if (newLanguage !== language) {
-      await changeLanguage(newLanguage);
-      Alert.alert(
-        t('languageChanged'),
-        t('languageChangedMessage'),
-        [{ text: t('ok') }]
-      );
-    }
-  };
 
   const languages = [
     { code: 'en', name: t('english'), icon: '🇺🇸' },
     { code: 'tl', name: t('tagalog'), icon: '🇵🇭' }
   ];
+
+  const handleLanguageChange = (newLanguage) => {
+    if (newLanguage !== language) {
+      const newLanguageName = languages.find(lang => lang.code === newLanguage)?.name || newLanguage;
+      
+      Alert.alert(
+        t('changeLanguage'),
+        t('changeLanguageConfirm').replace('{language}', newLanguageName),
+        [
+          {
+            text: t('cancel'),
+            style: 'cancel',
+          },
+          {
+            text: t('change'),
+            onPress: async () => {
+              await changeLanguage(newLanguage);
+              Alert.alert(
+                t('languageChanged'),
+                t('languageChangedMessage'),
+                [{ text: t('ok') }]
+              );
+            },
+          },
+        ]
+      );
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -282,3 +299,5 @@ const styles = StyleSheet.create({
     lineHeight: Typography.lineHeight.relaxed * Typography.fontSize.sm,
   },
 });
+
+export default LanguageSettingsScreen;

@@ -9,6 +9,7 @@ import {
   ScrollView,
   Image
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { Marker, Callout } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
@@ -22,6 +23,7 @@ export default function StoreMapScreen({ route, navigation }) {
   const [selectedStore, setSelectedStore] = useState(null);
   const [loading, setLoading] = useState(true);
   const mapRef = useRef(null);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     getUserLocation();
@@ -160,7 +162,7 @@ export default function StoreMapScreen({ route, navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -194,8 +196,15 @@ export default function StoreMapScreen({ route, navigation }) {
 
       {/* Store Info Panel */}
       {selectedStore && (
-        <View style={styles.storeInfoPanel}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <View style={[styles.storeInfoPanel]}>
+          {/* Panel Handle */}
+          {/* <View style={styles.panelHandle} /> */}
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.scrollContainer}
+            contentContainerStyle={styles.scrollContent}
+          >
             <TouchableOpacity
               style={styles.storeCard}
               onPress={() => navigation.navigate('StoreDetails', { store: selectedStore })}
@@ -246,7 +255,7 @@ export default function StoreMapScreen({ route, navigation }) {
           </Text>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -261,7 +270,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: Colors.primary,
-    paddingTop: Spacing.xl + 20, // Account for status bar
+    paddingTop: Spacing.md,
     paddingBottom: Spacing.md,
     paddingHorizontal: Spacing.lg,
     ...Shadows.base,
@@ -348,17 +357,38 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background.card,
     borderTopLeftRadius: BorderRadius.xl,
     borderTopRightRadius: BorderRadius.xl,
-    paddingVertical: Spacing.lg,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.lg,
+    paddingHorizontal: 0,
+    height: 200, // Fixed height instead of maxHeight
     ...Shadows.large,
+    elevation: 10, // Ensure it appears above other elements on Android
+    zIndex: 1000, // Additional z-index for iOS
   },
   
+  panelHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: Colors.border.medium,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: Spacing.md,
+  },
+  
+  scrollContainer: {
+    flex: 1,
+  },
+  
+  // scrollContent: {
+  //   alignItems: 'center',
+  // },
+  
   storeCard: {
-    backgroundColor: Colors.background.card,
+    backgroundColor: 'transparent', // Make transparent since panel already has background
     borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    marginHorizontal: Spacing.lg,
+    padding: Spacing.sm,
+    marginHorizontal: Spacing.md,
     minWidth: width - (Spacing.lg * 2),
-    ...Shadows.base,
   },
   
   storeCardHeader: {
