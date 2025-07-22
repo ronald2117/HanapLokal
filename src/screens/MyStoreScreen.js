@@ -8,7 +8,8 @@ import {
   Alert,
   FlatList,
   RefreshControl,
-  Image
+  Image,
+  Linking
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -47,6 +48,55 @@ export default function MyStoreScreen({ navigation }) {
     };
     
     return categories[category] || categories['other'];
+  };
+
+  // Function to get platform icon for social links
+  const getPlatformIcon = (platform) => {
+    const icons = {
+      facebook: 'logo-facebook',
+      instagram: 'logo-instagram', 
+      twitter: 'logo-twitter',
+      youtube: 'logo-youtube',
+      tiktok: 'logo-tiktok',
+      linkedin: 'logo-linkedin',
+      whatsapp: 'logo-whatsapp',
+      telegram: 'send',
+      viber: 'call',
+      shopee: 'storefront',
+      lazada: 'bag',
+      link: 'link'
+    };
+    return icons[platform] || 'link';
+  };
+
+  // Function to get platform color for social links
+  const getPlatformColor = (platform) => {
+    const colors = {
+      facebook: '#1877F2',
+      instagram: '#E4405F',
+      twitter: '#1DA1F2', 
+      youtube: '#FF0000',
+      tiktok: '#000000',
+      linkedin: '#0A66C2',
+      whatsapp: '#25D366',
+      telegram: '#0088CC',
+      viber: '#665CAC',
+      shopee: '#FF5722',
+      lazada: '#0F146D',
+      link: '#6B7280'
+    };
+    return colors[platform] || '#6B7280';
+  };
+
+  // Function to open social link
+  const openSocialLink = (url) => {
+    if (url) {
+      // Add https:// if not present
+      const formattedUrl = url.startsWith('http') ? url : `https://${url}`;
+      Linking.openURL(formattedUrl).catch(() => {
+        Alert.alert('Error', 'Could not open this link');
+      });
+    }
   };
 
   // Refresh store data whenever the screen comes into focus
@@ -277,6 +327,38 @@ export default function MyStoreScreen({ navigation }) {
         <Text style={styles.storeHours}>🕒 {myStore.hours}</Text>
         {myStore.contact && <Text style={styles.storeContact}>📞 {myStore.contact}</Text>}
       </View>
+
+      {/* Social Links Section */}
+      {myStore.socialLinks && myStore.socialLinks.length > 0 && (
+        <View style={styles.socialLinksSection}>
+          <Text style={styles.sectionTitle}>Social Links</Text>
+          <View style={styles.socialLinksContainer}>
+            {myStore.socialLinks.map((link, index) => {
+              const platform = link.platform || 'link';
+              const platformIcon = getPlatformIcon(platform);
+              const platformColor = getPlatformColor(platform);
+              
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.socialLinkItem, { borderColor: platformColor }]}
+                  onPress={() => openSocialLink(link.url)}
+                >
+                  <Ionicons
+                    name={platformIcon}
+                    size={20}
+                    color={platformColor}
+                    style={styles.socialLinkIcon}
+                  />
+                  <Text style={[styles.socialLinkText, { color: platformColor }]} numberOfLines={1}>
+                    {link.url.replace(/^https?:\/\//, '')}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      )}
 
       <View style={styles.productsSection}>
         <View style={styles.productsHeader}>
@@ -567,5 +649,44 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  socialLinksSection: {
+    backgroundColor: '#fff',
+    padding: 15,
+    marginHorizontal: 15,
+    marginVertical: 10,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  socialLinksContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 10,
+  },
+  socialLinkItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1.5,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginRight: 10,
+    marginBottom: 8,
+    flex: 1,
+    minWidth: '45%',
+    maxWidth: '48%',
+  },
+  socialLinkIcon: {
+    marginRight: 8,
+  },
+  socialLinkText: {
+    fontSize: 12,
+    fontWeight: '500',
+    flex: 1,
   },
 });
