@@ -25,6 +25,7 @@ import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/th
 
 export default function HomeScreen({ navigation }) {
   const [stores, setStores] = useState([]);
+  const [products, setProducts] = useState([]);
   const [filteredStores, setFilteredStores] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -116,11 +117,12 @@ export default function HomeScreen({ navigation }) {
 
   useEffect(() => {
     fetchStores();
+    fetchProducts();
   }, []);
 
   useEffect(() => {
     filterStores();
-  }, [searchQuery, selectedCategory, searchRadius, stores, location]);
+  }, [searchQuery, selectedCategory, searchRadius, stores, products, location]);
 
   // Calculate distance between two coordinates using Haversine formula
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -155,9 +157,25 @@ export default function HomeScreen({ navigation }) {
     }
   };
 
+  const fetchProducts = async () => {
+    try {
+      const productsQuery = query(collection(db, 'products'), orderBy('name'));
+      const querySnapshot = await getDocs(productsQuery);
+      const productsData = [];
+      
+      querySnapshot.forEach((doc) => {
+        productsData.push({ id: doc.id, ...doc.data() });
+      });
+      
+      setProducts(productsData);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchStores();
+    await Promise.all([fetchStores(), fetchProducts()]);
     setRefreshing(false);
   };
 
@@ -187,25 +205,54 @@ export default function HomeScreen({ navigation }) {
       filtered = filtered.filter(store => store.category === selectedCategory);
     }
 
-    // Filter by search query
+    // Smart search: Filter by search query (stores AND products)
     if (searchQuery.trim()) {
-      filtered = filtered.filter(store =>
-        store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        store.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        store.description.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      const query = searchQuery.toLowerCase();
+      
+      filtered = filtered.filter(store => {
+        // Direct store match (name, address, description)
+        const storeMatch = 
+          store.name.toLowerCase().includes(query) ||
+          store.address.toLowerCase().includes(query) ||
+          store.description.toLowerCase().includes(query);
+
+        // Product match - check if this store has any products matching the search
+        const storeProducts = products.filter(product => product.storeId === store.id);
+        const productMatch = storeProducts.some(product =>
+          product.name.toLowerCase().includes(query) ||
+          product.description.toLowerCase().includes(query)
+        );
+
+        return storeMatch || productMatch;
+      });
     }
 
     setFilteredStores(filtered);
   };
 
-  const renderStore = ({ item }) => (
-    <StoreCard
-      store={item}
-      onPress={() => navigation.navigate('StoreDetails', { store: item })}
-      userLocation={location}
-    />
-  );
+  const renderStore = ({ item }) => {
+    // For smart search, find matching products in this store
+    let matchingProducts = [];
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      matchingProducts = products.filter(product => 
+        product.storeId === item.id && (
+          product.name.toLowerCase().includes(query) ||
+          product.description.toLowerCase().includes(query)
+        )
+      );
+    }
+
+    return (
+      <StoreCard
+        store={item}
+        onPress={() => navigation.navigate('StoreDetails', { store: item })}
+        userLocation={location}
+        matchingProducts={matchingProducts}
+        searchQuery={searchQuery}
+      />
+    );
+  };
 
   const getSelectedCategoryName = () => {
     const category = storeCategories.find(cat => cat.id === selectedCategory);
@@ -345,7 +392,7 @@ export default function HomeScreen({ navigation }) {
             <Ionicons name="search" size={20} color={Colors.text.secondary} style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder={t('searchPlaceholder')}
+              placeholder="Search stores, products (e.g., 'safeguard', 'rice', 'pharmacy')..."
               placeholderTextColor={Colors.text.light}
               value={searchQuery}
               onChangeText={setSearchQuery}

@@ -11,7 +11,14 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
 
-export default function StoreCard({ store, onPress, userLocation, showFavoriteIcon = false }) {
+export default function StoreCard({ 
+  store, 
+  onPress, 
+  userLocation, 
+  showFavoriteIcon = false, 
+  matchingProducts = [], 
+  searchQuery = '' 
+}) {
   const [rating, setRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
 
@@ -121,6 +128,26 @@ export default function StoreCard({ store, onPress, userLocation, showFavoriteIc
     return stars;
   };
 
+  const highlightSearchQuery = (text, query) => {
+    if (!query || !text) return text;
+    
+    const regex = new RegExp(`(${query})`, 'gi');
+    const parts = text.split(regex);
+    
+    return (
+      <Text>
+        {parts.map((part, index) => (
+          <Text 
+            key={index} 
+            style={regex.test(part) ? styles.highlightedText : null}
+          >
+            {part}
+          </Text>
+        ))}
+      </Text>
+    );
+  };
+
   const getStoreTypeIcon = () => {
     if (store.category) {
       return getCategoryInfo().emoji;
@@ -189,6 +216,33 @@ export default function StoreCard({ store, onPress, userLocation, showFavoriteIc
           </View>
         )}
       </View>
+
+      {/* Matching Products Section */}
+      {matchingProducts.length > 0 && (
+        <View style={styles.matchingProductsContainer}>
+          <View style={styles.matchingProductsHeader}>
+            <Ionicons name="search" size={14} color={Colors.primary} />
+            <Text style={styles.matchingProductsTitle}>
+              Found {matchingProducts.length} matching product{matchingProducts.length !== 1 ? 's' : ''}
+            </Text>
+          </View>
+          <View style={styles.matchingProductsList}>
+            {matchingProducts.slice(0, 3).map((product, index) => (
+              <View key={product.id} style={styles.matchingProductItem}>
+                <Text style={styles.matchingProductName} numberOfLines={1}>
+                  {highlightSearchQuery(product.name, searchQuery)}
+                </Text>
+                <Text style={styles.matchingProductPrice}>₱{product.price}</Text>
+              </View>
+            ))}
+            {matchingProducts.length > 3 && (
+              <Text style={styles.moreProductsText}>
+                +{matchingProducts.length - 3} more
+              </Text>
+            )}
+          </View>
+        </View>
+      )}
     </TouchableOpacity>
   );
 }
@@ -371,5 +425,66 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.xs,
     color: Colors.text.secondary,
     fontWeight: Typography.fontWeight.medium,
+  },
+
+  // Matching Products Styles
+  matchingProductsContainer: {
+    marginTop: Spacing.md,
+    paddingTop: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border.light,
+  },
+
+  matchingProductsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+
+  matchingProductsTitle: {
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.primary,
+    marginLeft: Spacing.xs,
+  },
+
+  matchingProductsList: {
+    gap: Spacing.xs,
+  },
+
+  matchingProductItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: Colors.primaryLight,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+  },
+
+  matchingProductName: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.primary,
+    flex: 1,
+    marginRight: Spacing.sm,
+  },
+
+  matchingProductPrice: {
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.semibold,
+    color: Colors.primary,
+  },
+
+  moreProductsText: {
+    fontSize: Typography.fontSize.xs,
+    color: Colors.text.secondary,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: Spacing.xs,
+  },
+
+  highlightedText: {
+    backgroundColor: Colors.accent,
+    fontWeight: Typography.fontWeight.bold,
   },
 });
