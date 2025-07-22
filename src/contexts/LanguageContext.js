@@ -153,6 +153,7 @@ export const translations = {
     tagalog: 'Tagalog',
     languageChanged: 'Language Changed',
     languageChangedMessage: 'Language has been changed successfully!',
+    languageChangeNote: 'App interface will switch to your selected language immediately.',
     
     // Navigation
     home: 'Home',
@@ -367,6 +368,7 @@ export const translations = {
     tagalog: 'Tagalog',
     languageChanged: 'Nabago na ang Wika',
     languageChangedMessage: 'Matagumpay na nabago ang wika!',
+    languageChangeNote: 'Ang interface ng app ay agad na magiging sa napiling wika.',
     
     // Navigation
     home: 'Simula',
