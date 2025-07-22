@@ -31,6 +31,9 @@
     },
     "web": {
       "favicon": "./assets/lokalfinds-logo.png"
-    }
+    },
+    "plugins": [
+      "expo-mail-composer"
+    ]
   }
 }

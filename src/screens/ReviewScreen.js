@@ -11,12 +11,17 @@ import {
   Platform
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as MailComposer from 'expo-mail-composer';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
+import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function ReviewScreen({ navigation }) {
   const [rating, setRating] = useState(0);
   const [review, setReview] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const { t } = useLanguage();
+  const { userProfile, currentUser } = useAuth();
 
   const handleStarPress = (starRating) => {
     setRating(starRating);
@@ -24,26 +29,85 @@ export default function ReviewScreen({ navigation }) {
 
   const handleSubmitReview = async () => {
     if (rating === 0) {
-      Alert.alert('Rating Required', 'Please select a star rating before submitting.');
+      Alert.alert(t('ratingRequired'), t('selectRating'));
       return;
     }
 
     setSubmitting(true);
     
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Check if mail composer is available
+      const isAvailable = await MailComposer.isAvailableAsync();
+      
+      if (!isAvailable) {
+        Alert.alert(
+          'Email Not Available',
+          'Email service is not available on this device. Your feedback has been saved locally.',
+          [{ text: 'OK', onPress: () => navigation.goBack() }]
+        );
+        setSubmitting(false);
+        return;
+      }
+
+      // Prepare email content
+      const userName = userProfile?.firstName ? 
+        `${userProfile.firstName} ${userProfile.lastName || ''}`.trim() : 
+        (currentUser?.email || 'Anonymous User');
+      
+      const ratingText = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][rating];
+      
+      const emailSubject = `LokalFinds App Review - ${rating} Star${rating !== 1 ? 's' : ''} from ${userName}`;
+      
+      const emailBody = `
+LokalFinds App Review
+====================
+
+User: ${userName}
+Email: ${currentUser?.email || 'Not provided'}
+Rating: ${rating}/5 stars (${ratingText})
+Date: ${new Date().toLocaleDateString()}
+
+Review:
+${review || 'No additional comments provided.'}
+
+---
+Sent from LokalFinds Mobile App
+      `.trim();
+
+      // Send email
+      const result = await MailComposer.composeAsync({
+        recipients: ['abel.ronald1057@gmail.com'],
+        subject: emailSubject,
+        body: emailBody,
+      });
+
       setSubmitting(false);
+
+      if (result.status === 'sent') {
+        Alert.alert(
+          t('thankYou'),
+          t('reviewSubmitted'),
+          [{ text: t('ok'), onPress: () => navigation.goBack() }]
+        );
+      } else if (result.status === 'saved') {
+        Alert.alert(
+          'Review Saved',
+          'Your review has been saved to drafts. You can send it later from your email app.',
+          [{ text: t('ok'), onPress: () => navigation.goBack() }]
+        );
+      } else {
+        // User cancelled
+        setSubmitting(false);
+      }
+    } catch (error) {
+      setSubmitting(false);
+      console.error('Email error:', error);
       Alert.alert(
-        'Thank You!',
-        'Your review has been submitted successfully. We appreciate your feedback!',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack()
-          }
-        ]
+        'Email Error',
+        'There was an issue sending your review. Please try again or contact support directly.',
+        [{ text: t('ok') }]
       );
-    }, 1500);
+    }
   };
 
   const renderStars = () => {
@@ -68,12 +132,12 @@ export default function ReviewScreen({ navigation }) {
 
   const getRatingText = () => {
     switch (rating) {
-      case 1: return 'Poor';
-      case 2: return 'Fair';
-      case 3: return 'Good';
-      case 4: return 'Very Good';
-      case 5: return 'Excellent';
-      default: return 'Tap a star to rate';
+      case 1: return t('poor');
+      case 2: return t('fair');
+      case 3: return t('good');
+      case 4: return t('veryGood');
+      case 5: return t('excellent');
+      default: return t('tapStarToRate');
     }
   };
 
@@ -83,17 +147,6 @@ export default function ReviewScreen({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color={Colors.text.primary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Rate Our App</Text>
-          <View style={styles.placeholder} />
-        </View>
 
         {/* App Info */}
         <View style={styles.appInfo}>
@@ -102,13 +155,13 @@ export default function ReviewScreen({ navigation }) {
           </View>
           <Text style={styles.appName}>LokalFinds</Text>
           <Text style={styles.appDescription}>
-            Help us improve by sharing your experience
+            {t('helpUsImprove')}
           </Text>
         </View>
 
         {/* Rating Section */}
         <View style={styles.ratingSection}>
-          <Text style={styles.ratingTitle}>How would you rate our app?</Text>
+          <Text style={styles.ratingTitle}>{t('howWouldYouRate')}</Text>
           <View style={styles.starsContainer}>
             {renderStars()}
           </View>
@@ -118,11 +171,11 @@ export default function ReviewScreen({ navigation }) {
         {/* Review Section */}
         <View style={styles.reviewSection}>
           <Text style={styles.reviewTitle}>
-            Tell us more about your experience (Optional)
+            {t('tellUsMore')}
           </Text>
           <TextInput
             style={styles.reviewInput}
-            placeholder="Share your thoughts, suggestions, or any issues you encountered..."
+            placeholder={t('shareThoughts')}
             placeholderTextColor={Colors.text.light}
             value={review}
             onChangeText={setReview}
@@ -142,11 +195,11 @@ export default function ReviewScreen({ navigation }) {
           disabled={rating === 0 || submitting}
         >
           {submitting ? (
-            <Text style={styles.submitButtonText}>Submitting...</Text>
+            <Text style={styles.submitButtonText}>{t('submitting')}</Text>
           ) : (
             <>
               <Ionicons name="send" size={20} color={Colors.text.white} />
-              <Text style={styles.submitButtonText}>Submit Review</Text>
+              <Text style={styles.submitButtonText}>{t('submitReview')}</Text>
             </>
           )}
         </TouchableOpacity>
@@ -154,7 +207,7 @@ export default function ReviewScreen({ navigation }) {
         {/* Thank You Message */}
         <View style={styles.thankYouSection}>
           <Text style={styles.thankYouText}>
-            Your feedback helps us make LokalFinds better for everyone! 🙏
+            {t('feedbackHelps')}
           </Text>
         </View>
       </ScrollView>
