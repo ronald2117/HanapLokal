@@ -81,7 +81,7 @@ export default function StoreCard({ store, onPress, userLocation, showFavoriteIc
   const getCategoryInfo = () => {
     const categories = {
       'sari-sari': { name: 'Sari-sari Store', icon: 'storefront', emoji: '🏪' },
-      'kainan': { name: 'Kainan/Restaurant', icon: 'restaurant', emoji: '🍽️' },
+      'kainan': { name: 'Restaurant', icon: 'restaurant', emoji: '🍽️' },
       'laundry': { name: 'Laundry Shop', icon: 'shirt', emoji: '👕' },
       'vegetables': { name: 'Vegetable Store', icon: 'leaf', emoji: '🥬' },
       'meat': { name: 'Meat Shop', icon: 'fish', emoji: '🥩' },
@@ -96,44 +96,6 @@ export default function StoreCard({ store, onPress, userLocation, showFavoriteIc
     };
     
     return categories[store.category] || categories['other'];
-  };
-
-  // Function to get platform icon for social links
-  const getPlatformIcon = (platform) => {
-    const icons = {
-      facebook: 'logo-facebook',
-      instagram: 'logo-instagram', 
-      twitter: 'logo-twitter',
-      youtube: 'logo-youtube',
-      tiktok: 'logo-tiktok',
-      linkedin: 'logo-linkedin',
-      whatsapp: 'logo-whatsapp',
-      telegram: 'send',
-      viber: 'call',
-      shopee: 'storefront',
-      lazada: 'bag',
-      link: 'link'
-    };
-    return icons[platform] || 'link';
-  };
-
-  // Function to get platform color for social links
-  const getPlatformColor = (platform) => {
-    const colors = {
-      facebook: '#1877F2',
-      instagram: '#E4405F',
-      twitter: '#1DA1F2', 
-      youtube: '#FF0000',
-      tiktok: '#000000',
-      linkedin: '#0A66C2',
-      whatsapp: '#25D366',
-      telegram: '#0088CC',
-      viber: '#665CAC',
-      shopee: '#FF5722',
-      lazada: '#0F146D',
-      link: '#6B7280'
-    };
-    return colors[platform] || '#6B7280';
   };
 
   const renderStars = (rating) => {
@@ -205,16 +167,20 @@ export default function StoreCard({ store, onPress, userLocation, showFavoriteIc
               <Text style={styles.distance}>{getDistanceText()}</Text>
             </View>
           )}
-          {reviewCount > 0 && (
-            <View style={styles.ratingRow}>
-              <View style={styles.stars}>
-                {renderStars(rating)}
-              </View>
-              <Text style={styles.ratingText}>
-                {rating.toFixed(1)} ({reviewCount})
-              </Text>
-            </View>
-          )}
+          <View style={styles.ratingRow}>
+            {reviewCount > 0 ? (
+              <>
+                <View style={styles.stars}>
+                  {renderStars(rating)}
+                </View>
+                <Text style={styles.ratingText}>
+                  {rating.toFixed(1)} ({reviewCount})
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.noReviewsText}>No reviews</Text>
+            )}
+          </View>
         </View>
         
         {showFavoriteIcon && (
@@ -242,7 +208,6 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: Spacing.md,
   },
   
   storeIconContainer: {
@@ -253,6 +218,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: Spacing.md,
+    marginTop: 5,
+    
   },
   
   storeIcon: {
@@ -330,6 +297,12 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.xs,
     color: Colors.text.secondary,
     fontWeight: Typography.fontWeight.medium,
+  },
+  
+  noReviewsText: {
+    fontSize: Typography.fontSize.xs,
+    color: Colors.text.secondary,
+    fontStyle: 'italic',
   },
   
   favoriteIcon: {
