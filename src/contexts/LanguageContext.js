@@ -174,7 +174,7 @@ export const translations = {
     // Home Screen
     greetingHello: 'Hello!',
     findGoodStores: 'Let\'s find great stores',
-    searchPlaceholder: 'Search for stores or products...',
+    searchPlaceholder: 'Search for stores...',
     searchingStores: 'Searching for stores...',
     noStoresFound: 'No stores found',
     tryDifferentKeyword: 'Try a different keyword',
@@ -267,7 +267,7 @@ export const translations = {
     welcomeUser: 'Kumusta, {name}!',
     homeTitle: 'Hanap tayo ng magandang tindahan',
     nearYou: 'Malapit sa iyo',
-    searchPlaceholder: 'Hanapin ang tindahan o produkto...',
+    searchPlaceholder: 'Hanapin ang tindahan...',
     searchRadius: 'Search Radius',
     categories: 'Mga Kategorya',
     localStores: 'Mga Lokal na Tindahan',
