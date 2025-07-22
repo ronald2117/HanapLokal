@@ -5,9 +5,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // Theme
-import { Colors } from './src/styles/theme';
+import { Colors, Typography, Spacing, BorderRadius } from './src/styles/theme';
 
 // Contexts
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
@@ -42,6 +43,57 @@ import StoreSettingsScreen from './src/screens/StoreSettingsScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+// Custom header component for modern gradient headers
+const ModernHeaderComponent = ({ title, navigation, route }) => {
+  return (
+    <LinearGradient
+      colors={[Colors.primary, Colors.primaryLight]}
+      style={{
+        shadowColor: Colors.text.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 6,
+      }}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
+    </LinearGradient>
+  );
+};
+
+// Modern header options generator
+const getModernHeaderOptions = (title, t) => ({
+  headerStyle: {
+    backgroundColor: 'transparent',
+  },
+  headerBackground: () => (
+    <LinearGradient
+      colors={[Colors.primary, Colors.primaryLight]}
+      style={{
+        flex: 1,
+        shadowColor: Colors.text.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+        elevation: 6,
+      }}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    />
+  ),
+  headerTintColor: Colors.text.white,
+  headerTitleStyle: {
+    fontSize: Typography.fontSize.xl,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.white,
+  },
+  headerBackTitleVisible: false,
+  headerShadowVisible: false,
+  title: typeof title === 'function' ? title() : title,
+});
+
 function AuthStack() {
   return (
     <Stack.Navigator
@@ -62,10 +114,6 @@ function HomeStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: Colors.primary,
-        },
-        headerTintColor: Colors.text.white,
       }}
     >
       <Stack.Screen 
@@ -76,7 +124,7 @@ function HomeStack() {
       <Stack.Screen 
         name="StoreDetails" 
         component={StoreDetailsScreen}
-        options={{ title: t('storeDetails') }}
+        options={getModernHeaderOptions(() => t('storeDetails'), t)}
       />
       <Stack.Screen 
         name="StoreMap" 
@@ -86,17 +134,17 @@ function HomeStack() {
       <Stack.Screen 
         name="ProductDetails" 
         component={ProductDetailsScreen}
-        options={{ title: t('productDetails') }}
+        options={getModernHeaderOptions(() => t('productDetails'), t)}
       />
       <Stack.Screen 
         name="StoreReview" 
         component={StoreReviewScreen}
-        options={{ headerShown: false }}
+        options={getModernHeaderOptions(() => t('writeReview'), t)}
       />
       <Stack.Screen 
         name="StoreReviews" 
         component={StoreReviewsScreen}
-        options={{ headerShown: false }}
+        options={getModernHeaderOptions(() => t('reviews'), t)}
       />
     </Stack.Navigator>
   );
@@ -108,41 +156,39 @@ function MyStoreStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: Colors.primary,
-        },
-        headerTintColor: Colors.text.white,
+        ...getModernHeaderOptions('', t),
+        headerShown: true,
       }}
     >
       <Stack.Screen 
         name="MyStoreMain" 
         component={MyStoreScreen}
-        options={{ title: t('myStore') }}
+        options={getModernHeaderOptions(() => t('myStore'), t)}
       />
       <Stack.Screen 
         name="CreateStore" 
         component={CreateStoreScreen}
-        options={{ title: t('createStore') }}
+        options={getModernHeaderOptions(() => t('createStore'), t)}
       />
       <Stack.Screen 
         name="EditStore" 
         component={EditStoreScreen}
-        options={{ title: t('editStore') }}
+        options={getModernHeaderOptions(() => t('editStore'), t)}
       />
       <Stack.Screen 
         name="AddProduct" 
         component={AddProductScreen}
-        options={{ title: t('addProduct') }}
+        options={getModernHeaderOptions(() => t('addProduct'), t)}
       />
       <Stack.Screen 
         name="EditProduct" 
         component={EditProductScreen}
-        options={{ title: t('editProduct') }}
+        options={getModernHeaderOptions(() => t('editProduct'), t)}
       />
       <Stack.Screen 
         name="StoreSettings" 
         component={StoreSettingsScreen}
-        options={{ title: t('storeSettings') }}
+        options={getModernHeaderOptions(() => t('storeSettings'), t)}
       />
     </Stack.Navigator>
   );
@@ -154,21 +200,19 @@ function FavoritesStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: Colors.primary,
-        },
-        headerTintColor: Colors.text.white,
+        ...getModernHeaderOptions('', t),
+        headerShown: true,
       }}
     >
       <Stack.Screen 
         name="FavoritesMain" 
         component={FavoritesScreen}
-        options={{ title: t('favorites') }}
+        options={getModernHeaderOptions(() => t('favorites'), t)}
       />
       <Stack.Screen 
         name="StoreDetails" 
         component={StoreDetailsScreen}
-        options={{ title: t('storeDetails') }}
+        options={getModernHeaderOptions(() => t('storeDetails'), t)}
       />
       <Stack.Screen 
         name="StoreMap" 
@@ -178,7 +222,7 @@ function FavoritesStack() {
       <Stack.Screen 
         name="ProductDetails" 
         component={ProductDetailsScreen}
-        options={{ title: t('productDetails') }}
+        options={getModernHeaderOptions(() => t('productDetails'), t)}
       />
     </Stack.Navigator>
   );
@@ -190,26 +234,24 @@ function ProfileStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: Colors.primary,
-        },
-        headerTintColor: Colors.text.white,
+        ...getModernHeaderOptions('', t),
+        headerShown: true,
       }}
     >
       <Stack.Screen 
         name="ProfileMain" 
         component={ProfileScreen}
-        options={{ title: t('profile') }}
+        options={getModernHeaderOptions(() => t('profile'), t)}
       />
       <Stack.Screen 
         name="ReviewScreen" 
         component={ReviewScreen}
-        options={{ headerShown: false }}
+        options={getModernHeaderOptions(() => t('reviews'), t)}
       />
       <Stack.Screen 
         name="LanguageSettings" 
         component={LanguageSettingsScreen}
-        options={{ headerShown: false }}
+        options={getModernHeaderOptions(() => t('languageSettings'), t)}
       />
     </Stack.Navigator>
   );
