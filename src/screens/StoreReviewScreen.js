@@ -112,18 +112,6 @@ export default function StoreReviewScreen({ route, navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color={Colors.text.primary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('writeReview')}</Text>
-          <View style={styles.placeholder} />
-        </View>
-
         {/* Store Info */}
         <View style={styles.storeInfo}>
           <Text style={styles.storeLabel}>{t('reviewingStore')}</Text>
@@ -186,24 +174,6 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: Spacing.lg,
-    paddingTop: Spacing.xl,
-    backgroundColor: Colors.background.white,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border.light,
-  },
-  backButton: {
-    padding: Spacing.xs,
-  },
-  headerTitle: {
-    fontSize: Typography.fontSize.lg,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.text.primary,
   },
   placeholder: {
     width: 32,
