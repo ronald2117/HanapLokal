@@ -12,7 +12,7 @@ import { Colors } from './src/styles/theme';
 // Contexts
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { LocationProvider } from './src/contexts/LocationContext';
-import { LanguageProvider } from './src/contexts/LanguageContext';
+import { LanguageProvider, useLanguage } from './src/contexts/LanguageContext';
 
 // Auth Screens
 import LoginScreen from './src/screens/LoginScreen_new';
@@ -57,6 +57,8 @@ function AuthStack() {
 }
 
 function HomeStack() {
+  const { t } = useLanguage();
+  
   return (
     <Stack.Navigator
       screenOptions={{
@@ -74,7 +76,7 @@ function HomeStack() {
       <Stack.Screen 
         name="StoreDetails" 
         component={StoreDetailsScreen}
-        options={{ title: 'Detalye ng Tindahan' }}
+        options={{ title: t('storeDetails') }}
       />
       <Stack.Screen 
         name="StoreMap" 
@@ -84,7 +86,7 @@ function HomeStack() {
       <Stack.Screen 
         name="ProductDetails" 
         component={ProductDetailsScreen}
-        options={{ title: 'Detalye ng Produkto' }}
+        options={{ title: t('productDetails') }}
       />
       <Stack.Screen 
         name="StoreReview" 
@@ -101,6 +103,8 @@ function HomeStack() {
 }
 
 function MyStoreStack() {
+  const { t } = useLanguage();
+  
   return (
     <Stack.Navigator
       screenOptions={{
@@ -113,38 +117,40 @@ function MyStoreStack() {
       <Stack.Screen 
         name="MyStoreMain" 
         component={MyStoreScreen}
-        options={{ title: 'Aking Tindahan' }}
+        options={{ title: t('myStore') }}
       />
       <Stack.Screen 
         name="CreateStore" 
         component={CreateStoreScreen}
-        options={{ title: 'Gumawa ng Tindahan' }}
+        options={{ title: t('createStore') }}
       />
       <Stack.Screen 
         name="EditStore" 
         component={EditStoreScreen}
-        options={{ title: 'I-edit ang Tindahan' }}
+        options={{ title: t('editStore') }}
       />
       <Stack.Screen 
         name="AddProduct" 
         component={AddProductScreen}
-        options={{ title: 'Magdagdag ng Produkto' }}
+        options={{ title: t('addProduct') }}
       />
       <Stack.Screen 
         name="EditProduct" 
         component={EditProductScreen}
-        options={{ title: 'I-edit ang Produkto' }}
+        options={{ title: t('editProduct') }}
       />
       <Stack.Screen 
         name="StoreSettings" 
         component={StoreSettingsScreen}
-        options={{ title: 'Mga Setting ng Tindahan' }}
+        options={{ title: t('storeSettings') }}
       />
     </Stack.Navigator>
   );
 }
 
 function FavoritesStack() {
+  const { t } = useLanguage();
+  
   return (
     <Stack.Navigator
       screenOptions={{
@@ -157,12 +163,12 @@ function FavoritesStack() {
       <Stack.Screen 
         name="FavoritesMain" 
         component={FavoritesScreen}
-        options={{ title: 'Mga Paborito' }}
+        options={{ title: t('favorites') }}
       />
       <Stack.Screen 
         name="StoreDetails" 
         component={StoreDetailsScreen}
-        options={{ title: 'Detalye ng Tindahan' }}
+        options={{ title: t('storeDetails') }}
       />
       <Stack.Screen 
         name="StoreMap" 
@@ -172,13 +178,15 @@ function FavoritesStack() {
       <Stack.Screen 
         name="ProductDetails" 
         component={ProductDetailsScreen}
-        options={{ title: 'Detalye ng Produkto' }}
+        options={{ title: t('productDetails') }}
       />
     </Stack.Navigator>
   );
 }
 
 function ProfileStack() {
+  const { t } = useLanguage();
+  
   return (
     <Stack.Navigator
       screenOptions={{
@@ -191,7 +199,7 @@ function ProfileStack() {
       <Stack.Screen 
         name="ProfileMain" 
         component={ProfileScreen}
-        options={{ title: 'Profile' }}
+        options={{ title: t('profile') }}
       />
       <Stack.Screen 
         name="ReviewScreen" 
@@ -208,6 +216,8 @@ function ProfileStack() {
 }
 
 function MainTabs() {
+  const { t } = useLanguage();
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -252,22 +262,22 @@ function MainTabs() {
       <Tab.Screen 
         name="Home" 
         component={HomeStack}
-        options={{ title: 'Simula' }}
+        options={{ title: t('home') }}
       />
       <Tab.Screen 
         name="MyStore" 
         component={MyStoreStack}
-        options={{ title: 'Aking Tindahan' }}
+        options={{ title: t('myStore') }}
       />
       <Tab.Screen 
         name="Favorites" 
         component={FavoritesStack}
-        options={{ title: 'Paborito' }}
+        options={{ title: t('favorites') }}
       />
       <Tab.Screen 
         name="Profile" 
         component={ProfileStack}
-        options={{ title: 'Profile' }}
+        options={{ title: t('profile') }}
       />
     </Tab.Navigator>
   );
@@ -275,9 +285,10 @@ function MainTabs() {
 
 function AppNavigator() {
   const { currentUser } = useAuth();
+  const { language } = useLanguage(); // Add language dependency for re-render
 
   return (
-    <NavigationContainer key={currentUser ? 'authenticated' : 'unauthenticated'}>
+    <NavigationContainer key={`${currentUser ? 'authenticated' : 'unauthenticated'}-${language}`}>
       {currentUser ? <MainTabs /> : <AuthStack />}
     </NavigationContainer>
   );

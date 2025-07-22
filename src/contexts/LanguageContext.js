@@ -156,8 +156,16 @@ export const translations = {
     
     // Navigation
     home: 'Home',
+    myStore: 'My Store',
+    favorites: 'Favorites',
+    profile: 'Profile',
     storeDetails: 'Store Details',
     productDetails: 'Product Details',
+    createStore: 'Create Store',
+    editStore: 'Edit Store',
+    addProduct: 'Add Product',
+    editProduct: 'Edit Product',
+    storeSettings: 'Store Settings',
     
     // Home Screen
     greetingHello: 'Hello!',
@@ -361,8 +369,16 @@ export const translations = {
     
     // Navigation
     home: 'Simula',
+    myStore: 'Aking Tindahan',
+    favorites: 'Paborito',
+    profile: 'Profile',
     storeDetails: 'Detalye ng Tindahan',
     productDetails: 'Detalye ng Produkto',
+    createStore: 'Gumawa ng Tindahan',
+    editStore: 'I-edit ang Tindahan',
+    addProduct: 'Magdagdag ng Produkto',
+    editProduct: 'I-edit ang Produkto',
+    storeSettings: 'Mga Setting ng Tindahan',
     
     // Home Screen
     greetingHello: 'Kumusta!',
