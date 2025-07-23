@@ -11,12 +11,22 @@ import {
   Linking
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { 
+  collection, 
+  getDocs, 
+  query, 
+  where, 
+  orderBy, 
+  limit, 
+  addDoc, 
+  serverTimestamp 
+} from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProductCard from '../components/ProductCard';
 import ReviewCard from '../components/ReviewCard';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function StoreDetailsScreen({ route, navigation }) {
   const { store } = route.params;
@@ -26,7 +36,9 @@ export default function StoreDetailsScreen({ route, navigation }) {
   const [reviews, setReviews] = useState([]);
   const [averageRating, setAverageRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
+  const [chatLoading, setChatLoading] = useState(false);
   const { t } = useLanguage();
+  const { currentUser, userProfile, isGuestUser } = useAuth();
 
   // Get category information
   const getCategoryInfo = () => {
@@ -221,6 +233,127 @@ export default function StoreDetailsScreen({ route, navigation }) {
     }
   };
 
+  const startChatWithStore = async () => {
+    // Check if user is guest
+    if (isGuestUser()) {
+      Alert.alert(
+        'Sign Up Required',
+        'You need to create an account to chat with stores.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Sign Up', 
+            onPress: () => navigation.navigate('Auth', { screen: 'Signup' })
+          }
+        ]
+      );
+      return;
+    }
+
+    try {
+      console.log('Starting chat with store:', store.name, 'Owner ID:', store.ownerId);
+      
+      // Validate store has owner ID
+      if (!store.ownerId) {
+        Alert.alert('Error', 'Cannot start chat - store owner information is missing.');
+        return;
+      }
+      
+      // Prevent chatting with your own store
+      if (store.ownerId === currentUser.uid) {
+        Alert.alert('Error', 'You cannot chat with your own store.');
+        return;
+      }
+      
+      setChatLoading(true);
+      
+      // Check if conversation already exists
+      const conversationsRef = collection(db, 'conversations');
+      const existingQuery = query(
+        conversationsRef,
+        where('participants', 'array-contains', currentUser.uid)
+      );
+      
+      const existingSnapshot = await getDocs(existingQuery);
+      let existingConversation = null;
+      
+      existingSnapshot.forEach((doc) => {
+        const conversationData = doc.data();
+        if (conversationData.participants.includes(store.ownerId)) {
+          existingConversation = { id: doc.id, ...conversationData };
+        }
+      });
+      
+      if (existingConversation) {
+        // Navigate to existing conversation using nested navigation
+        navigation.navigate('Chats', {
+          screen: 'ChatDetail',
+          params: {
+            conversationId: existingConversation.id,
+            otherParticipant: {
+              uid: store.ownerId,
+              name: store.ownerName || 'Store Owner',
+              storeName: store.name,
+              profileImage: store.profileImage || null,
+              isStore: true
+            }
+          }
+        });
+        return;
+      }
+      
+      // Create new conversation
+      const conversationData = {
+        participants: [currentUser.uid, store.ownerId],
+        participantsInfo: [
+          {
+            uid: currentUser.uid,
+            name: userProfile?.firstName ? `${userProfile.firstName} ${userProfile.lastName || ''}`.trim() : currentUser.email || 'Customer',
+            profileImage: userProfile?.profileImage || null,
+            isStore: false
+          },
+          {
+            uid: store.ownerId,
+            name: store.ownerName || 'Store Owner',
+            storeName: store.name,
+            profileImage: store.profileImage || null,
+            isStore: true
+          }
+        ],
+        createdAt: serverTimestamp(),
+        lastMessage: '',
+        lastMessageTime: serverTimestamp(),
+        unreadCount: {
+          [currentUser.uid]: 0,
+          [store.ownerId]: 0
+        }
+      };
+      
+      const docRef = await addDoc(conversationsRef, conversationData);
+      
+      // Navigate to the new conversation using nested navigation
+      navigation.navigate('Chats', {
+        screen: 'ChatDetail',
+        params: {
+          conversationId: docRef.id,
+          otherParticipant: {
+            uid: store.ownerId,
+            name: store.ownerName || 'Store Owner',
+            storeName: store.name,
+            profileImage: store.profileImage || null,
+            isStore: true
+          }
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error starting chat:', error);
+      Alert.alert('Error', 'Failed to start chat. Please try again.');
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
   const renderProduct = ({ item }) => (
     <ProductCard 
       product={item} 
@@ -268,16 +401,36 @@ export default function StoreDetailsScreen({ route, navigation }) {
           {store.contact && <Text style={styles.storeContact}>📞 {store.contact}</Text>}
         </View>
         
-        <TouchableOpacity
-          style={styles.favoriteButton}
-          onPress={toggleFavorite}
-        >
-          <Ionicons
-            name={isFavorite ? 'heart' : 'heart-outline'}
-            size={24}
-            color={isFavorite ? '#e74c3c' : '#7f8c8d'}
-          />
-        </TouchableOpacity>
+        <View style={styles.actionButtons}>
+          {/* Only show chat button if store has owner and it's not the current user's store */}
+          {store.ownerId && store.ownerId !== currentUser?.uid && (
+            <TouchableOpacity
+              style={styles.chatButton}
+              onPress={startChatWithStore}
+              disabled={chatLoading}
+            >
+              <Ionicons
+                name={chatLoading ? "hourglass" : "chatbubble"}
+                size={20}
+                color="#fff"
+              />
+              <Text style={styles.chatButtonText}>
+                {chatLoading ? t('loading') || 'Loading...' : t('chat') || 'Chat'}
+              </Text>
+            </TouchableOpacity>
+          )}
+          
+          <TouchableOpacity
+            style={styles.favoriteButton}
+            onPress={toggleFavorite}
+          >
+            <Ionicons
+              name={isFavorite ? 'heart' : 'heart-outline'}
+              size={24}
+              color={isFavorite ? '#e74c3c' : '#7f8c8d'}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.aboutSection}>
@@ -483,6 +636,30 @@ const styles = StyleSheet.create({
   storeContact: {
     fontSize: 16,
     color: '#7f8c8d',
+  },
+  actionButtons: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 8,
+  },
+  chatButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#3498db',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  chatButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
   },
   favoriteButton: {
     padding: 8,
