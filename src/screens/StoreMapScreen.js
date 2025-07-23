@@ -7,10 +7,12 @@ import {
   Alert,
   Dimensions,
   ScrollView,
-  Image
+  Image,
+  StatusBar
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { Marker, Callout } from 'react-native-maps';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
@@ -162,20 +164,28 @@ export default function StoreMapScreen({ route, navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color={Colors.text.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Store Locations</Text>
-        <View style={styles.headerRight}>
-          <Text style={styles.storeCount}>{stores.length} stores</Text>
+      <LinearGradient
+        colors={[Colors.primary, Colors.primaryLight]}
+        style={styles.headerGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color={Colors.text.white} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Store Locations</Text>
+          <View style={styles.headerRight}>
+            <Text style={styles.storeCount}>{stores.length} stores</Text>
+          </View>
         </View>
-      </View>
+      </LinearGradient>
 
       {/* Map */}
       <MapView
@@ -255,7 +265,7 @@ export default function StoreMapScreen({ route, navigation }) {
           </Text>
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -265,15 +275,18 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background.primary,
   },
   
+  headerGradient: {
+    ...Shadows.base,
+  },
+  
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.primary,
     paddingTop: Spacing.md,
-    paddingBottom: Spacing.md,
+    paddingBottom: Spacing.lg,
+    paddingTop: 45,
     paddingHorizontal: Spacing.lg,
-    ...Shadows.base,
   },
   
   backButton: {
