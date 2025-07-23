@@ -203,7 +203,7 @@ export default function ChatsScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* Header */}
       <LinearGradient
         colors={[Colors.primary, Colors.primaryLight]}
@@ -283,7 +283,7 @@ export default function ChatsScreen({ navigation }) {
           />
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -294,6 +294,7 @@ const styles = StyleSheet.create({
   },
   
   headerGradient: {
+    paddingTop: Spacing.lg,
     paddingBottom: Spacing.lg,
     borderBottomLeftRadius: BorderRadius['2xl'],
     borderBottomRightRadius: BorderRadius['2xl'],

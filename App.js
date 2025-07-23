@@ -46,26 +46,6 @@ import ChatStack from './src/navigation/ChatStack';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Custom header component for modern gradient headers
-const ModernHeaderComponent = ({ title, navigation, route }) => {
-  return (
-    <LinearGradient
-      colors={[Colors.primary, Colors.primaryLight]}
-      style={{
-        shadowColor: Colors.text.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 6,
-      }}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
-    </LinearGradient>
-  );
-};
-
 // Modern header options generator
 const getModernHeaderOptions = (title, t) => ({
   headerStyle: {

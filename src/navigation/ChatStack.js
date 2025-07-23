@@ -54,7 +54,6 @@ export default function ChatStack() {
       <Stack.Screen 
         name="ChatsMain" 
         component={ChatsScreen}
-        options={{ headerShown: false }} // ChatsScreen handles its own header
       />
       <Stack.Screen 
         name="ChatDetail" 

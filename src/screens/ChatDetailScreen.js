@@ -265,7 +265,7 @@ export default function ChatDetailScreen({ route, navigation }) {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {renderHeader()}
       
       <KeyboardAvoidingView
@@ -322,7 +322,7 @@ export default function ChatDetailScreen({ route, navigation }) {
           </View>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -333,6 +333,7 @@ const styles = StyleSheet.create({
   },
   
   headerGradient: {
+    paddingTop: 30,
     paddingBottom: Spacing.lg,
     borderBottomLeftRadius: BorderRadius['2xl'],
     borderBottomRightRadius: BorderRadius['2xl'],
