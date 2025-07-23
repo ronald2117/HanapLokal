@@ -11,7 +11,7 @@ import {
   StatusBar
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import MapView, { Marker, Callout } from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
@@ -25,7 +25,6 @@ export default function StoreMapScreen({ route, navigation }) {
   const [selectedStore, setSelectedStore] = useState(null);
   const [loading, setLoading] = useState(true);
   const mapRef = useRef(null);
-  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     getUserLocation();
@@ -95,7 +94,7 @@ export default function StoreMapScreen({ route, navigation }) {
   };
 
   const getStoreCoordinates = (store) => {
-    // Use actual GPS coordinates if available, otherwise fallback to Manila center
+    // Use actual GPS coordinates if available
     if (store.coordinates && store.coordinates.latitude && store.coordinates.longitude) {
       console.log(`📍 Using stored GPS coordinates for ${store.name}:`, store.coordinates);
       return {
@@ -113,6 +112,26 @@ export default function StoreMapScreen({ route, navigation }) {
       latitude: baseLatitude,
       longitude: baseLongitude
     };
+  };
+
+  // Group stores by their coordinates to handle clustering
+  const groupStoresByLocation = () => {
+    const groups = {};
+    
+    stores.forEach(store => {
+      const coords = getStoreCoordinates(store);
+      const key = `${coords.latitude.toFixed(4)}_${coords.longitude.toFixed(4)}`;
+      
+      if (!groups[key]) {
+        groups[key] = {
+          coordinate: coords,
+          stores: []
+        };
+      }
+      groups[key].stores.push(store);
+    });
+    
+    return Object.values(groups);
   };
 
   const getCategoryInfo = (category) => {
@@ -135,30 +154,69 @@ export default function StoreMapScreen({ route, navigation }) {
     return categories[category] || categories['other'];
   };
 
-  const renderMarker = (store) => {
-    const coordinates = getStoreCoordinates(store);
-    const categoryInfo = getCategoryInfo(store.category);
+  const renderMarker = (group, groupIndex) => {
+    const { coordinate, stores } = group;
+    const storeCount = stores.length;
+    const isCluster = storeCount > 1;
+    const isSelected = selectedStore && stores.some(store => store.id === selectedStore.id);
+
+    // For single store, show category emoji
+    // For cluster, show count
+    const displayContent = isCluster ? storeCount : getCategoryInfo(stores[0].category).emoji;
 
     return (
       <Marker
-        key={store.id}
-        coordinate={coordinates}
-        onPress={() => setSelectedStore(store)}
+        key={`group-${groupIndex}`}
+        coordinate={coordinate}
+        onPress={() => {
+          if (isCluster) {
+            // For clusters, select the first store or cycle through them
+            const currentIndex = selectedStore ? stores.findIndex(s => s.id === selectedStore.id) : -1;
+            const nextIndex = (currentIndex + 1) % stores.length;
+            setSelectedStore(stores[nextIndex]);
+          } else {
+            // For single stores, select the store
+            setSelectedStore(stores[0]);
+          }
+        }}
+        anchor={{ x: 0.5, y: 0.5 }}
+        centerOffset={{ x: 0, y: 0 }}
+        style={{ width: 50, height: 50}}
       >
-        <View style={[styles.markerContainer, { borderColor: Colors.primary }]}>
-          <Text style={styles.markerEmoji}>{categoryInfo.emoji}</Text>
-        </View>
-        <Callout
-          style={styles.callout}
-          onPress={() => navigation.navigate('StoreDetails', { store })}
-        >
-          <View style={styles.calloutContent}>
-            <Text style={styles.calloutTitle}>{store.name}</Text>
-            <Text style={styles.calloutCategory}>{categoryInfo.name}</Text>
-            <Text style={styles.calloutAddress} numberOfLines={2}>{store.address}</Text>
-            <Text style={styles.calloutTap}>Tap to view details</Text>
+        <View style={[
+          styles.markerWrapper,
+          { transform: [{ scale: isSelected ? 1.1 : 1 }] }
+        ]}>
+          
+          {/* Main marker */}
+          <View style={[
+            styles.markerContainer,
+            isCluster ? styles.clusterMarker : styles.singleMarker,
+            {
+              borderColor: isSelected ? Colors.accent : Colors.primary,
+              shadowColor: isSelected ? Colors.accent : Colors.primary,
+            }
+          ]}>
+            {isCluster ? (
+              <Text style={[
+                styles.clusterText,
+                { 
+                  fontSize: isSelected ? 16 : 14,
+                  color: Colors.text.white 
+                }
+              ]}>
+                {displayContent}
+              </Text>
+            ) : (
+              <Text style={[
+                styles.markerEmoji,
+                { fontSize: isSelected ? 20 : 18 }
+              ]}>
+                {displayContent}
+              </Text>
+            )}
           </View>
-        </Callout>
+        </View>
       </Marker>
     );
   };
@@ -201,57 +259,146 @@ export default function StoreMapScreen({ route, navigation }) {
         showsMyLocationButton={true}
         loadingEnabled={loading}
       >
-        {stores.map(renderMarker)}
+        {groupStoresByLocation().map((group, index) => renderMarker(group, index))}
       </MapView>
 
       {/* Store Info Panel */}
       {selectedStore && (
         <View style={[styles.storeInfoPanel]}>
-          {/* Panel Handle */}
-          {/* <View style={styles.panelHandle} /> */}
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={styles.scrollContainer}
-            contentContainerStyle={styles.scrollContent}
-          >
-            <TouchableOpacity
-              style={styles.storeCard}
-              onPress={() => navigation.navigate('StoreDetails', { store: selectedStore })}
-            >
-              <View style={styles.storeCardHeader}>
-                {selectedStore.profileImage ? (
-                  <Image 
-                    source={{ uri: selectedStore.profileImage }} 
-                    style={styles.storeImage}
-                  />
-                ) : (
-                  <View style={styles.storeImagePlaceholder}>
-                    <Text style={styles.storeImageEmoji}>
-                      {getCategoryInfo(selectedStore.category).emoji}
+          {/* Panel Header for clusters */}
+          {(() => {
+            const selectedCoords = getStoreCoordinates(selectedStore);
+            const nearbyStores = stores.filter(store => {
+              const coords = getStoreCoordinates(store);
+              return Math.abs(coords.latitude - selectedCoords.latitude) < 0.0001 &&
+                     Math.abs(coords.longitude - selectedCoords.longitude) < 0.0001;
+            });
+
+            return (
+              <>
+                {nearbyStores.length > 1 && (
+                  <View style={styles.panelHeader}>
+                    <Text style={styles.panelHeaderText}>
+                      {nearbyStores.length} stores at this location
+                    </Text>
+                    <Text style={styles.panelHeaderSubtext}>
+                      Swipe to browse • Tap to view details
                     </Text>
                   </View>
                 )}
-                <View style={styles.storeCardInfo}>
-                  <Text style={styles.storeCardName}>{selectedStore.name}</Text>
-                  {selectedStore.category && (
-                    <Text style={styles.storeCardCategory}>
-                      {getCategoryInfo(selectedStore.category).name}
-                    </Text>
-                  )}
-                  <Text style={styles.storeCardAddress} numberOfLines={2}>
-                    {selectedStore.address}
-                  </Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setSelectedStore(null)}
-              >
-                <Ionicons name="close" size={20} color={Colors.text.secondary} />
-              </TouchableOpacity>
-            </TouchableOpacity>
-          </ScrollView>
+                
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.scrollContainer}
+                  contentContainerStyle={styles.scrollContent}
+                  pagingEnabled={nearbyStores.length > 1}
+                  snapToInterval={nearbyStores.length > 1 ? width - (Spacing.lg * 2) + Spacing.md : undefined}
+                  decelerationRate="fast"
+                >
+                  {nearbyStores.map((store, index) => (
+                    <TouchableOpacity
+                      key={store.id}
+                      style={[
+                        styles.storeCard,
+                        nearbyStores.length > 1 ? styles.storeCardInCluster : null,
+                        { 
+                          opacity: store.id === selectedStore.id ? 1 : 0.8,
+                          borderWidth: store.id === selectedStore.id ? 2 : 0,
+                          borderColor: Colors.primary
+                        }
+                      ]}
+                      onPress={() => {
+                        setSelectedStore(store);
+                        navigation.navigate('StoreDetails', { store });
+                      }}
+                    >
+                      <View style={styles.storeCardHeader}>
+                        {store.profileImage ? (
+                          <Image 
+                            source={{ uri: store.profileImage }} 
+                            style={styles.storeImage}
+                          />
+                        ) : (
+                          <View style={styles.storeImagePlaceholder}>
+                            <Text style={styles.storeImageEmoji}>
+                              {getCategoryInfo(store.category).emoji}
+                            </Text>
+                          </View>
+                        )}
+                        <View style={styles.storeCardInfo}>
+                          <View style={styles.storeCardTitleRow}>
+                            <Text style={styles.storeCardName}>{store.name}</Text>
+                            {nearbyStores.length > 1 && (
+                              <View style={styles.storeIndexBadge}>
+                                <Text style={styles.storeIndexText}>
+                                  {index + 1}/{nearbyStores.length}
+                                </Text>
+                              </View>
+                            )}
+                          </View>
+                          {store.category && (
+                            <Text style={styles.storeCardCategory}>
+                              {getCategoryInfo(store.category).name}
+                            </Text>
+                          )}
+                          <Text style={styles.storeCardAddress} numberOfLines={2}>
+                            {store.address}
+                          </Text>
+                        </View>
+                      </View>
+                      
+                      {/* Action buttons for clustered stores */}
+                      {nearbyStores.length > 1 && (
+                        <View style={styles.storeCardActions}>
+                          <TouchableOpacity
+                            style={styles.selectButton}
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              setSelectedStore(store);
+                            }}
+                          >
+                            <Ionicons 
+                              name={store.id === selectedStore.id ? "checkmark-circle" : "radio-button-off"} 
+                              size={20} 
+                              color={store.id === selectedStore.id ? Colors.success : Colors.text.secondary} 
+                            />
+                            <Text style={[
+                              styles.selectButtonText,
+                              { color: store.id === selectedStore.id ? Colors.success : Colors.text.secondary }
+                            ]}>
+                              {store.id === selectedStore.id ? "Selected" : "Select"}
+                            </Text>
+                          </TouchableOpacity>
+                          
+                          <TouchableOpacity
+                            style={styles.viewButton}
+                            onPress={(e) => {
+                              e.stopPropagation();
+                              navigation.navigate('StoreDetails', { store });
+                            }}
+                          >
+                            <Ionicons name="eye" size={20} color={Colors.primary} />
+                            <Text style={styles.viewButtonText}>View</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                      
+                      {/* Close button only on first card */}
+                      {index === 0 && (
+                        <TouchableOpacity
+                          style={styles.closeButton}
+                          onPress={() => setSelectedStore(null)}
+                        >
+                          <Ionicons name="close" size={20} color={Colors.text.secondary} />
+                        </TouchableOpacity>
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            );
+          })()}
         </View>
       )}
 
@@ -315,51 +462,81 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   
-  markerContainer: {
-    backgroundColor: Colors.background.card,
-    borderRadius: 20,
-    borderWidth: 2,
-    padding: Spacing.sm,
+  markerWrapper: {
+    position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    ...Shadows.base,
+    width: 40,
+    height: 40,
+  },
+
+  markerGlow: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    top: 0,
+    left: 0,
   },
   
+  markerContainer: {
+    width: 30,
+    height: 30,
+    borderRadius: 20,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 6,
+    position: 'relative',
+    zIndex: 1,
+  },
+
+  singleMarker: {
+    backgroundColor: Colors.background.card,
+    borderColor: Colors.primary,
+  },
+
+  clusterMarker: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primaryDark,
+  },
+
+  selectionDot: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: Colors.success,
+    borderWidth: 2,
+    borderColor: Colors.background.card,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3,
+    zIndex: 2,
+  },
+
   markerEmoji: {
     fontSize: 16,
+    textAlign: 'center',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+    textShadowColor: 'rgba(0,0,0,0.1)',
   },
-  
-  callout: {
-    width: 200,
-  },
-  
-  calloutContent: {
-    padding: Spacing.sm,
-  },
-  
-  calloutTitle: {
-    fontSize: Typography.fontSize.base,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.text.primary,
-    marginBottom: Spacing.xs,
-  },
-  
-  calloutCategory: {
-    fontSize: Typography.fontSize.sm,
-    color: Colors.primary,
-    marginBottom: Spacing.xs,
-  },
-  
-  calloutAddress: {
-    fontSize: Typography.fontSize.sm,
-    color: Colors.text.secondary,
-    marginBottom: Spacing.xs,
-  },
-  
-  calloutTap: {
-    fontSize: Typography.fontSize.xs,
-    color: Colors.text.light,
-    fontStyle: 'italic',
+
+  clusterText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: Colors.text.white,
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+    textShadowColor: 'rgba(0,0,0,0.3)',
   },
   
   storeInfoPanel: {
@@ -373,10 +550,31 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.sm,
     paddingBottom: Spacing.lg,
     paddingHorizontal: 0,
-    height: 200, // Fixed height instead of maxHeight
+    maxHeight: 280, // Increased height for clustered stores
     ...Shadows.large,
-    elevation: 10, // Ensure it appears above other elements on Android
-    zIndex: 1000, // Additional z-index for iOS
+    elevation: 10,
+    zIndex: 1000,
+  },
+
+  panelHeader: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border.light,
+  },
+
+  panelHeaderText: {
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.primary,
+    textAlign: 'center',
+  },
+
+  panelHeaderSubtext: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.secondary,
+    textAlign: 'center',
+    marginTop: 2,
   },
   
   panelHandle: {
@@ -397,11 +595,81 @@ const styles = StyleSheet.create({
   // },
   
   storeCard: {
-    backgroundColor: 'transparent', // Make transparent since panel already has background
+    backgroundColor: 'transparent',
     borderRadius: BorderRadius.lg,
     padding: Spacing.sm,
     marginHorizontal: Spacing.md,
     minWidth: width - (Spacing.lg * 2),
+  },
+
+  storeCardInCluster: {
+    backgroundColor: Colors.background.secondary,
+    marginHorizontal: Spacing.sm,
+    minWidth: width - (Spacing.lg * 3),
+  },
+
+  storeCardTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.xs,
+  },
+
+  storeIndexBadge: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.sm,
+  },
+
+  storeIndexText: {
+    fontSize: Typography.fontSize.xs,
+    color: Colors.text.white,
+    fontWeight: Typography.fontWeight.bold,
+  },
+
+  storeCardActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: Spacing.md,
+    paddingTop: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border.light,
+  },
+
+  selectButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.background.card,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    flex: 1,
+    marginRight: Spacing.sm,
+  },
+
+  selectButtonText: {
+    fontSize: Typography.fontSize.sm,
+    marginLeft: Spacing.sm,
+    fontWeight: Typography.fontWeight.medium,
+  },
+
+  viewButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primaryLight,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    flex: 1,
+    marginLeft: Spacing.sm,
+  },
+
+  viewButtonText: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.primary,
+    marginLeft: Spacing.sm,
+    fontWeight: Typography.fontWeight.medium,
   },
   
   storeCardHeader: {
@@ -438,7 +706,7 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.bold,
     color: Colors.text.primary,
-    marginBottom: Spacing.xs,
+    flex: 1,
   },
   
   storeCardCategory: {
