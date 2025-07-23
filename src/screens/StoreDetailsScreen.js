@@ -37,6 +37,7 @@ export default function StoreDetailsScreen({ route, navigation }) {
   const [averageRating, setAverageRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
   const [chatLoading, setChatLoading] = useState(false);
+  const [userHasReviewed, setUserHasReviewed] = useState(false);
   const { t } = useLanguage();
   const { currentUser, userProfile, isGuestUser } = useAuth();
 
@@ -145,13 +146,14 @@ export default function StoreDetailsScreen({ route, navigation }) {
         collection(db, 'storeReviews'),
         where('storeId', '==', store.id),
         orderBy('createdAt', 'desc'),
-        limit(3) // Show only latest 3 reviews in preview
+        limit(3) // Show only latest 3 reviews in preview  
       );
 
       const querySnapshot = await getDocs(reviewsQuery);
       const reviewsData = [];
       let totalRating = 0;
       let count = 0;
+      let userReviewed = false;
 
       // Get all reviews for average calculation
       const allReviewsQuery = query(
@@ -164,6 +166,11 @@ export default function StoreDetailsScreen({ route, navigation }) {
         const reviewData = doc.data();
         totalRating += reviewData.rating;
         count++;
+        
+        // Check if current user has already reviewed
+        if (currentUser && reviewData.userId === currentUser.uid) {
+          userReviewed = true;
+        }
       });
 
       // Get latest reviews for display
@@ -174,6 +181,7 @@ export default function StoreDetailsScreen({ route, navigation }) {
       setReviews(reviewsData);
       setReviewCount(count);
       setAverageRating(count > 0 ? totalRating / count : 0);
+      setUserHasReviewed(userReviewed);
     } catch (error) {
       console.error('Error fetching reviews:', error);
     }
@@ -500,8 +508,14 @@ export default function StoreDetailsScreen({ route, navigation }) {
                 style={styles.writeReviewButton}
                 onPress={() => navigation.navigate('StoreReview', { store })}
               >
-                <Ionicons name="create-outline" size={16} color="#3498db" />
-                <Text style={styles.writeReviewText}>{t('writeReview')}</Text>
+                <Ionicons 
+                  name={userHasReviewed ? "create" : "create-outline"} 
+                  size={16} 
+                  color="#3498db" 
+                />
+                <Text style={styles.writeReviewText}>
+                  {userHasReviewed ? (t('updateReview') || 'Update Review') : (t('writeReview') || 'Write Review')}
+                </Text>
               </TouchableOpacity>
             </View>
             
