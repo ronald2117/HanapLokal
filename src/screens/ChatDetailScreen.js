@@ -271,7 +271,6 @@ export default function ChatDetailScreen({ route, navigation }) {
       <KeyboardAvoidingView
         style={styles.chatContainer}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         {/* Messages List */}
         <FlatList
@@ -330,6 +329,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background.primary,
+    marginBottom: 100,
   },
   
   headerGradient: {
