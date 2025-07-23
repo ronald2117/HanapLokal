@@ -160,6 +160,8 @@ export const translations = {
     // Navigation
     home: 'Home',
     myStore: 'My Store',
+    chats: 'Chats',
+    startNewChat: 'Start New Chat',
     favorites: 'Favorites',
     profile: 'Profile',
     storeDetails: 'Store Details',
@@ -377,6 +379,8 @@ export const translations = {
     // Navigation
     home: 'Simula',
     myStore: 'Aking Tindahan',
+    chats: 'Mga Usapan',
+    startNewChat: 'Bagong Usapan',
     favorites: 'Paborito',
     profile: 'Profile',
     storeDetails: 'Detalye ng Tindahan',

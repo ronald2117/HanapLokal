@@ -40,6 +40,9 @@ import AddProductScreen from './src/screens/AddProductScreen';
 import EditProductScreen from './src/screens/EditProductScreen';
 import StoreSettingsScreen from './src/screens/StoreSettingsScreen';
 
+// Chat Navigation Stack
+import ChatStack from './src/navigation/ChatStack';
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -270,6 +273,8 @@ function MainTabs() {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'MyStore') {
             iconName = focused ? 'storefront' : 'storefront-outline';
+          } else if (route.name === 'Chats') {
+            iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
           } else if (route.name === 'Favorites') {
             iconName = focused ? 'heart' : 'heart-outline';
           } else if (route.name === 'Profile') {
@@ -310,6 +315,11 @@ function MainTabs() {
         name="MyStore" 
         component={MyStoreStack}
         options={{ title: t('myStore') }}
+      />
+      <Tab.Screen 
+        name="Chats" 
+        component={ChatStack}
+        options={{ title: t('chats'), headerShown: false }}
       />
       <Tab.Screen 
         name="Favorites" 
