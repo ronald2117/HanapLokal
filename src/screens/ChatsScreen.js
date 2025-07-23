@@ -177,6 +177,8 @@ export default function ChatsScreen({ navigation }) {
         <LinearGradient
           colors={[Colors.primary, Colors.primaryLight]}
           style={styles.guestGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         >
           <View style={styles.guestContainer}>
             <View style={styles.guestIconContainer}>
@@ -208,6 +210,8 @@ export default function ChatsScreen({ navigation }) {
       <LinearGradient
         colors={[Colors.primary, Colors.primaryLight]}
         style={styles.headerGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>{t('chats')}</Text>

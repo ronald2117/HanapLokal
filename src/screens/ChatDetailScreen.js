@@ -197,6 +197,8 @@ export default function ChatDetailScreen({ route, navigation }) {
     <LinearGradient
       colors={[Colors.primary, Colors.primaryLight]}
       style={styles.headerGradient}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
     >
       <View style={styles.header}>
         <TouchableOpacity
