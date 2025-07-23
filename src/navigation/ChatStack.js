@@ -11,37 +11,6 @@ import StartNewChatScreen from '../screens/StartNewChatScreen';
 
 const Stack = createNativeStackNavigator();
 
-// Modern header options generator
-const getModernHeaderOptions = (title, t) => ({
-  headerStyle: {
-    backgroundColor: 'transparent',
-  },
-  headerBackground: () => (
-    <LinearGradient
-      colors={[Colors.primary, Colors.primaryLight]}
-      style={{
-        flex: 1,
-        shadowColor: Colors.text.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-        elevation: 6,
-      }}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    />
-  ),
-  headerTintColor: Colors.text.white,
-  headerTitleStyle: {
-    fontSize: Typography.fontSize.xl,
-    fontWeight: Typography.fontWeight.bold,
-    color: Colors.text.white,
-  },
-  headerBackTitleVisible: false,
-  headerShadowVisible: false,
-  title: typeof title === 'function' ? title() : title,
-});
-
 export default function ChatStack() {
   const { t } = useLanguage();
   
