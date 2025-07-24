@@ -423,7 +423,7 @@ export default function StoreDetailsScreen({ route, navigation }) {
                 color="#fff"
               />
               <Text style={styles.chatButtonText}>
-                {chatLoading ? t('loading') || 'Loading...' : t('chat') || 'Chat'}
+                {chatLoading ? t('loading') : t('chats')}
               </Text>
             </TouchableOpacity>
           )}
@@ -514,7 +514,7 @@ export default function StoreDetailsScreen({ route, navigation }) {
                   color="#3498db" 
                 />
                 <Text style={styles.writeReviewText}>
-                  {userHasReviewed ? (t('updateReview') || 'Update Review') : (t('writeReview') || 'Write Review')}
+                  {userHasReviewed ? t('edit') + ' ' + t('review') : t('writeReview')}
                 </Text>
               </TouchableOpacity>
             </View>

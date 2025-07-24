@@ -117,17 +117,6 @@ export default function StoreReviewsScreen({ navigation, route }) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color={Colors.text.primary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('reviews')}</Text>
-        <View style={styles.placeholder} />
-      </View>
 
       <FlatList
         data={reviews}
