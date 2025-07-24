@@ -8,7 +8,8 @@ import {
   Alert,
   FlatList,
   Image,
-  Linking
+  Linking,
+  RefreshControl
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { 
@@ -19,12 +20,15 @@ import {
   orderBy, 
   limit, 
   addDoc, 
-  serverTimestamp 
+  serverTimestamp,
+  onSnapshot
 } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import ProductCard from '../components/ProductCard';
 import ReviewCard from '../components/ReviewCard';
+import Toast from '../components/Toast';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -38,6 +42,11 @@ export default function StoreDetailsScreen({ route, navigation }) {
   const [reviewCount, setReviewCount] = useState(0);
   const [chatLoading, setChatLoading] = useState(false);
   const [userHasReviewed, setUserHasReviewed] = useState(false);
+  const [reviewsListener, setReviewsListener] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [previousReviewCount, setPreviousReviewCount] = useState(0);
   const { t } = useLanguage();
   const { currentUser, userProfile, isGuestUser } = useAuth();
 
@@ -114,8 +123,79 @@ export default function StoreDetailsScreen({ route, navigation }) {
   useEffect(() => {
     fetchProducts();
     checkIfFavorite();
-    fetchReviews();
+    setupReviewsListener();
+    
+    // Cleanup listener on unmount
+    return () => {
+      if (reviewsListener) {
+        reviewsListener();
+      }
+    };
   }, []);
+
+  // Refresh reviews when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      // Refresh reviews when returning from review submission
+      fetchReviews();
+    }, [])
+  );
+
+  // Setup real-time listener for reviews
+  const setupReviewsListener = () => {
+    try {
+      const reviewsQuery = query(
+        collection(db, 'storeReviews'),
+        where('storeId', '==', store.id),
+        orderBy('createdAt', 'desc')
+      );
+
+      const unsubscribe = onSnapshot(reviewsQuery, (snapshot) => {
+        const reviewsData = [];
+        let totalRating = 0;
+        let count = 0;
+        let userReviewed = false;
+
+        snapshot.forEach((doc) => {
+          const reviewData = { id: doc.id, ...doc.data() };
+          reviewsData.push(reviewData);
+          totalRating += reviewData.rating;
+          count++;
+          
+          // Check if current user has already reviewed
+          if (currentUser && reviewData.userId === currentUser.uid) {
+            userReviewed = true;
+          }
+        });
+
+        // Show toast notification for new reviews (not on first load)
+        if (previousReviewCount > 0 && count > previousReviewCount) {
+          const newReviews = count - previousReviewCount;
+          setToastMessage(
+            newReviews === 1 
+              ? 'New review added!' 
+              : `${newReviews} new reviews added!`
+          );
+          setShowToast(true);
+        }
+
+        // Show only latest 3 reviews in preview
+        const latestReviews = reviewsData.slice(0, 3);
+        
+        setReviews(latestReviews);
+        setReviewCount(count);
+        setAverageRating(count > 0 ? totalRating / count : 0);
+        setUserHasReviewed(userReviewed);
+        setPreviousReviewCount(count);
+      });
+
+      setReviewsListener(() => unsubscribe);
+    } catch (error) {
+      console.error('Error setting up reviews listener:', error);
+      // Fallback to regular fetch if real-time fails
+      fetchReviews();
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -184,6 +264,22 @@ export default function StoreDetailsScreen({ route, navigation }) {
       setUserHasReviewed(userReviewed);
     } catch (error) {
       console.error('Error fetching reviews:', error);
+    }
+  };
+
+  // Manual refresh function for pull-to-refresh
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        fetchProducts(),
+        fetchReviews(),
+        checkIfFavorite()
+      ]);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -374,6 +470,14 @@ export default function StoreDetailsScreen({ route, navigation }) {
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={['#3498db']}
+          tintColor="#3498db"
+        />
+      }
     >
       {/* Cover Photo */}
       {store.coverImage ? (
@@ -559,6 +663,15 @@ export default function StoreDetailsScreen({ route, navigation }) {
           </View>
         )}
       </View>
+
+      {/* Toast Notification */}
+      <Toast
+        message={toastMessage}
+        type="success"
+        visible={showToast}
+        onHide={() => setShowToast(false)}
+        duration={3000}
+      />
     </ScrollView>
   );
 }

@@ -8,9 +8,10 @@ import {
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useFocusEffect } from '@react-navigation/native';
 import ReviewCard from '../components/ReviewCard';
 import { Colors, Typography, Spacing, BorderRadius } from '../styles/theme';
 
@@ -20,11 +21,67 @@ export default function StoreReviewsScreen({ navigation, route }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [averageRating, setAverageRating] = useState(0);
+  const [reviewsListener, setReviewsListener] = useState(null);
   const { t } = useLanguage();
 
   useEffect(() => {
-    fetchReviews();
+    setupReviewsListener();
+    
+    // Cleanup listener on unmount
+    return () => {
+      if (reviewsListener) {
+        reviewsListener();
+      }
+    };
   }, []);
+
+  // Refresh reviews when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      // Refresh reviews when returning from review submission
+      fetchReviews();
+    }, [])
+  );
+
+  // Setup real-time listener for reviews
+  const setupReviewsListener = () => {
+    try {
+      setLoading(true);
+      const reviewsQuery = query(
+        collection(db, 'storeReviews'),
+        where('storeId', '==', store.id),
+        orderBy('createdAt', 'desc')
+      );
+
+      const unsubscribe = onSnapshot(reviewsQuery, (snapshot) => {
+        const reviewsData = [];
+        let totalRating = 0;
+
+        snapshot.forEach((doc) => {
+          const reviewData = { id: doc.id, ...doc.data() };
+          reviewsData.push(reviewData);
+          totalRating += reviewData.rating;
+        });
+
+        setReviews(reviewsData);
+        
+        if (reviewsData.length > 0) {
+          setAverageRating(totalRating / reviewsData.length);
+        } else {
+          setAverageRating(0);
+        }
+        
+        setLoading(false);
+      });
+
+      setReviewsListener(() => unsubscribe);
+    } catch (error) {
+      console.error('Error setting up reviews listener:', error);
+      setLoading(false);
+      // Fallback to regular fetch if real-time fails
+      fetchReviews();
+    }
+  };
 
   const fetchReviews = async () => {
     try {
