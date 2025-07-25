@@ -35,7 +35,7 @@ export const translations = {
     enterLastName: 'Enter your last name',
     forgotPassword: 'Forgot Password?',
     guestMode: 'Guest Mode (No registration required)',
-    loginTitle: 'Welcome Back!',
+    loginTitle: 'Welcome to LocalFinds!',
     loginSubtitle: 'Sign in to discover local stores near you',
     signupTitle: 'Join LokalFinds!',
     signupSubtitle: 'Join our community and discover local stores',

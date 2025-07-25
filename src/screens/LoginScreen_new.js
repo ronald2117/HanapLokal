@@ -95,13 +95,11 @@ export default function LoginScreen({ navigation }) {
           >
             {/* Header */}
             <View style={styles.header}>
-              <View style={styles.iconContainer}>
                 <Image 
                   source={require('../../assets/lokalfinds-logo.png')} 
                   style={styles.logo}
                   resizeMode="contain"
                 />
-              </View>
               <Text style={styles.title}>{t('loginTitle')}</Text>
               <Text style={styles.subtitle}>
                 {t('loginSubtitle')}
@@ -208,8 +206,8 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   iconContainer: {
-    width: 120,
-    height: 120,
+    width: 150,
+    height: 150,
     borderRadius: 60,
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
@@ -219,8 +217,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   logo: {
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
   },
   title: {
     fontSize: Typography.fontSize['4xl'],
