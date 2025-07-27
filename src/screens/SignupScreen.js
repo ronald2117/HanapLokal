@@ -179,8 +179,8 @@ export default function SignupScreen({ navigation }) {
                   <View style={styles.termsTextContainer}>
                     <Text style={styles.termsText}>
                       {t('agreeToTerms')} 
-                      <Text style={styles.termsLink}>{t('termsOfService')} </Text>
-                      {t('andPrivacyPolicy')}
+                      <Text style={styles.termsLink}>{t('termsOfService')} {t('andPrivacyPolicy')}</Text>
+                      
                     </Text>
                   </View>
                 </TouchableOpacity>
