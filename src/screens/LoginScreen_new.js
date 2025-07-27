@@ -271,6 +271,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: Spacing.md,
   },
   signUpText: {
     fontSize: Typography.fontSize.base,
