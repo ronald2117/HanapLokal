@@ -151,7 +151,7 @@ export default function LoginScreen({ navigation }) {
 
                 <View style={styles.divider}>
                   <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>o</Text>
+                  <Text style={styles.dividerText}>{t('or')}</Text>
                   <View style={styles.dividerLine} />
                 </View>
 
