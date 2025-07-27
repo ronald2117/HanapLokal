@@ -204,20 +204,10 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 40,
   },
-  iconContainer: {
-    width: 150,
-    height: 150,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.xl,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
   logo: {
     width: 100,
     height: 100,
+    marginBottom: Spacing.md,
   },
   title: {
     fontSize: Typography.fontSize['4xl'],
@@ -291,7 +281,7 @@ const styles = StyleSheet.create({
   },
   signUpLinkText: {
     fontSize: Typography.fontSize.base,
-    color: Colors.primary,
+    color: 'white',
     fontWeight: Typography.fontWeight.bold,
     textDecorationLine: 'underline',
   },
