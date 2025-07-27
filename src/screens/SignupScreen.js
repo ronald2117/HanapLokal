@@ -97,13 +97,11 @@ export default function SignupScreen({ navigation }) {
           >
             {/* Header */}
             <View style={styles.header}>
-              <View style={styles.iconContainer}>
                 <Image 
                   source={require('../../assets/lokalfinds-logo.png')} 
                   style={styles.logo}
                   resizeMode="contain"
                 />
-              </View>
               <Text style={styles.title}>{t('signupTitle')}</Text>
               <Text style={styles.subtitle}>
                 {t('signupSubtitle')}
@@ -172,7 +170,7 @@ export default function SignupScreen({ navigation }) {
 
                 <View style={styles.divider}>
                   <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>o</Text>
+                  <Text style={styles.dividerText}>{t('or')}</Text>
                   <View style={styles.dividerLine} />
                 </View>
 
@@ -237,8 +235,8 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   logo: {
-    width: 80,
-    height: 80,
+    width: 90,
+    height: 90,
   },
   title: {
     fontSize: Typography.fontSize['4xl'],
@@ -280,7 +278,6 @@ const styles = StyleSheet.create({
   },
   signupButton: {
     marginTop: Spacing.md,
-    marginBottom: Spacing.lg,
   },
   divider: {
     flexDirection: 'row',
@@ -312,7 +309,7 @@ const styles = StyleSheet.create({
   },
   signInLinkText: {
     fontSize: Typography.fontSize.base,
-    color: Colors.primary,
+    color: 'white',
     fontWeight: Typography.fontWeight.bold,
     textDecorationLine: 'underline',
   },
