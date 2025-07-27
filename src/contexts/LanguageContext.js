@@ -52,6 +52,18 @@ export const translations = {
     andPrivacyPolicy: 'and Privacy Policy',
     mustAcceptTerms: 'You must accept the Terms of Service to continue',
     
+    // Login Errors
+    emailRequired: 'Email is required',
+    passwordRequired: 'Password is required',
+    invalidEmailFormat: 'Please enter a valid email address',
+    userNotFound: 'No account found with this email address',
+    wrongPassword: 'Incorrect password. Please try again.',
+    accountDisabled: 'This account has been disabled. Please contact support.',
+    tooManyAttempts: 'Too many login attempts. Please try again later.',
+    networkError: 'Network error. Please check your connection.',
+    invalidCredentials: 'Invalid email or password. Please try again.',
+    loginFailed: 'Login failed. Please try again.',
+    
     // Home
     greeting: 'Hello!',
     welcomeUser: 'Hello, {name}!',
@@ -278,6 +290,18 @@ export const translations = {
     privacyPolicy: 'Privacy Policy',
     andPrivacyPolicy: 'at Privacy Policy',
     mustAcceptTerms: 'Dapat kayong sumang-ayon sa Terms of Service para magtuloy',
+    
+    // Login Errors
+    emailRequired: 'Kailangan ang email',
+    passwordRequired: 'Kailangan ang password',
+    invalidEmailFormat: 'Maglagay ng tamang email address',
+    userNotFound: 'Walang account na nakita sa email na ito',
+    wrongPassword: 'Mali ang password. Subukan ulit.',
+    accountDisabled: 'Na-disable ang account na ito. Makipag-ugnayan sa support.',
+    tooManyAttempts: 'Sobrang daming attempts. Subukan ulit mamaya.',
+    networkError: 'May problema sa network. Tignan ang connection.',
+    invalidCredentials: 'Mali ang email o password. Subukan ulit.',
+    loginFailed: 'Hindi naka-login. Subukan ulit.',
     
     // Home
     greeting: 'Kumusta!',

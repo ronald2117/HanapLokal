@@ -24,6 +24,9 @@ export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [generalError, setGeneralError] = useState('');
   const { login, loginAnonymously } = useAuth();
   const { t } = useLanguage();
 
@@ -45,13 +48,21 @@ export default function LoginScreen({ navigation }) {
   }, [navigation]);
 
   async function handleSubmit() {
+    // Clear previous errors
+    setEmailError('');
+    setPasswordError('');
+    setGeneralError('');
+
     if (!email || !password) {
-      Alert.alert(t('error'), t('completeAllFields'));
+      if (!email) setEmailError(t('emailRequired'));
+      if (!password) setPasswordError(t('passwordRequired'));
       return;
     }
 
-    if (!termsAccepted) {
-      Alert.alert(t('error'), t('mustAcceptTerms'));
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError(t('invalidEmailFormat'));
       return;
     }
 
@@ -59,7 +70,34 @@ export default function LoginScreen({ navigation }) {
       setLoading(true);
       await login(email, password);
     } catch (error) {
-      Alert.alert('Login Failed', error.message);
+      console.log('Login error:', error);
+      
+      // Handle specific Firebase auth errors
+      switch (error.code) {
+        case 'auth/user-not-found':
+          setEmailError(t('userNotFound'));
+          break;
+        case 'auth/wrong-password':
+          setPasswordError(t('wrongPassword'));
+          break;
+        case 'auth/invalid-email':
+          setEmailError(t('invalidEmailFormat'));
+          break;
+        case 'auth/user-disabled':
+          setGeneralError(t('accountDisabled'));
+          break;
+        case 'auth/too-many-requests':
+          setGeneralError(t('tooManyAttempts'));
+          break;
+        case 'auth/network-request-failed':
+          setGeneralError(t('networkError'));
+          break;
+        case 'auth/invalid-credential':
+          setGeneralError(t('invalidCredentials'));
+          break;
+        default:
+          setGeneralError(error.message || t('loginFailed'));
+      }
     } finally {
       setLoading(false);
     }
@@ -78,6 +116,19 @@ export default function LoginScreen({ navigation }) {
 
   function handleForgotPassword() {
     navigation.navigate('ForgotPassword');
+  }
+
+  // Clear errors when user starts typing
+  function handleEmailChange(text) {
+    setEmail(text);
+    if (emailError) setEmailError('');
+    if (generalError) setGeneralError('');
+  }
+
+  function handlePasswordChange(text) {
+    setPassword(text);
+    if (passwordError) setPasswordError('');
+    if (generalError) setGeneralError('');
   }
 
   return (
@@ -118,20 +169,22 @@ export default function LoginScreen({ navigation }) {
                 <ModernInput
                   label={t('email')}
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={handleEmailChange}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   icon="mail-outline"
                   placeholder="Enter your email"
+                  error={emailError}
                 />
 
                 <ModernInput
                   label={t('password')}
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={handlePasswordChange}
                   secureTextEntry
                   icon="lock-closed-outline"
                   placeholder="Enter your password"
+                  error={passwordError}
                 />
 
                 {/* Forgot Password Link */}
@@ -144,6 +197,14 @@ export default function LoginScreen({ navigation }) {
                     {t('forgotPassword')}
                   </Text>
                 </TouchableOpacity>
+
+                {/* General Error Message */}
+                {generalError ? (
+                  <View style={styles.errorContainer}>
+                    <Ionicons name="alert-circle" size={16} color={Colors.error} />
+                    <Text style={styles.errorText}>{generalError}</Text>
+                  </View>
+                ) : null}
 
                 <ModernButton
                   title={t('login')}
@@ -301,5 +362,21 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: Typography.fontWeight.medium,
     textDecorationLine: 'underline',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(244, 67, 54, 0.3)',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  errorText: {
+    fontSize: Typography.fontSize.sm,
+    color: '#D32F2F',
+    marginLeft: Spacing.xs,
+    flex: 1,
   },
 });
