@@ -325,6 +325,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.xl,
+    marginTop: 100,
     borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
