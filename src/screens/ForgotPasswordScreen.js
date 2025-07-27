@@ -233,7 +233,6 @@ const styles = StyleSheet.create({
   centeredScrollContent: {
     flexGrow: 1,
     paddingHorizontal: Spacing.lg,
-    justifyContent: 'center', // Vertically center content
     paddingBottom: Spacing['2xl'], // Add some bottom padding
     paddingTop: Spacing['2xl'], // Add some top padding
   },
@@ -257,6 +256,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.xl,
+    marginTop: Spacing['4xl'],
     borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   },
   loginLinkText: {
     fontSize: Typography.fontSize.base,
-    color: Colors.accent,
+    color: 'white',
     fontWeight: Typography.fontWeight.bold,
     textDecorationLine: 'underline',
   },
