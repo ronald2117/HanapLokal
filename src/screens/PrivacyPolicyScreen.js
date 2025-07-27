@@ -75,7 +75,7 @@ export default function PrivacyPolicyScreen({ navigation }) {
             </Text>
             <Text style={styles.bulletPoint}>• Provide and maintain our services</Text>
             <Text style={styles.bulletPoint}>• Personalize your experience</Text>
-            <Text style={styles.bulletPoint}>• Connect you with local stores</Text>
+            <Text style={styles.bulletPoint}>• Connect you with local stores and service providers</Text>
             <Text style={styles.bulletPoint}>• Send important notifications</Text>
             <Text style={styles.bulletPoint}>• Improve our app and services</Text>
             <Text style={styles.bulletPoint}>• Ensure security and prevent fraud</Text>
@@ -84,7 +84,7 @@ export default function PrivacyPolicyScreen({ navigation }) {
             <Text style={styles.paragraph}>
               We do not sell, trade, or rent your personal information to third parties. We may share your information only in the following circumstances:
             </Text>
-            <Text style={styles.bulletPoint}>• With store owners when you interact with their listings</Text>
+            <Text style={styles.bulletPoint}>• With store owners and service providers when you interact with their listings</Text>
             <Text style={styles.bulletPoint}>• With service providers who help us operate the app</Text>
             <Text style={styles.bulletPoint}>• When required by law or to protect our rights</Text>
             <Text style={styles.bulletPoint}>• In case of a business transfer or merger</Text>

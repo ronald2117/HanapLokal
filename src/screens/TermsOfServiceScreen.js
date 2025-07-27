@@ -53,7 +53,7 @@ export default function TermsOfServiceScreen({ navigation }) {
 
             <Text style={styles.sectionTitle}>2. Description of Service</Text>
             <Text style={styles.paragraph}>
-              LocalFind is a mobile application that connects local stores with nearby customers in the Philippines. The app allows users to discover local businesses, browse products, and interact with store owners.
+              LocalFind is a mobile application that connects local stores and service providers with nearby customers in the Philippines. The app allows users to discover local businesses, browse products and services, and interact with store owners and service providers.
             </Text>
 
             <Text style={styles.sectionTitle}>3. User Accounts</Text>
@@ -70,9 +70,9 @@ export default function TermsOfServiceScreen({ navigation }) {
             <Text style={styles.bulletPoint}>• Violating any local, state, or national laws</Text>
             <Text style={styles.bulletPoint}>• Attempting to gain unauthorized access to the App</Text>
 
-            <Text style={styles.sectionTitle}>5. Store Listings and Products</Text>
+            <Text style={styles.sectionTitle}>5. Store Listings, Products and Services</Text>
             <Text style={styles.paragraph}>
-              Store owners are responsible for the accuracy of their business information and product listings. LocalFind does not guarantee the availability, quality, or pricing of products listed on the App.
+              Store owners and service providers are responsible for the accuracy of their business information, product listings, and service descriptions. LocalFind does not guarantee the availability, quality, or pricing of products and services listed on the App.
             </Text>
 
             <Text style={styles.sectionTitle}>6. Privacy and Data Protection</Text>
@@ -97,7 +97,7 @@ export default function TermsOfServiceScreen({ navigation }) {
 
             <Text style={styles.sectionTitle}>10. Transactions</Text>
             <Text style={styles.paragraph}>
-              LocalFind facilitates connections between customers and local stores but is not responsible for the completion of transactions, payment processing, or dispute resolution between users and store owners.
+              LocalFind facilitates connections between customers and local stores/service providers but is not responsible for the completion of transactions, payment processing, or dispute resolution between users and business owners.
             </Text>
 
             <Text style={styles.sectionTitle}>11. Termination</Text>

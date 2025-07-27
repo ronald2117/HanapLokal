@@ -1,9 +1,9 @@
 <!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
 
-# SariFinds - Local Store Discovery App
+# LocalFind - Local Business & Service Discovery App
 
 ## Project Overview
-SariFinds is a React Native Expo application that connects local stores with nearby customers. The app focuses on discovery and basic store/product management.
+LocalFind is a React Native Expo application that connects local stores and service providers with nearby customers. The app focuses on discovery and basic business/product/service management.
 
 ## Technology Stack
 - **Frontend**: React Native Expo (JavaScript)
@@ -14,11 +14,11 @@ SariFinds is a React Native Expo application that connects local stores with nea
 
 ## Key Features
 - User authentication (email/password and anonymous)
-- Store discovery with search functionality
-- Store and product management for sellers
+- Store and service discovery with search functionality
+- Store, product, and service management for business owners
 - Favorites system
 - Location-based services
-- Product browsing and details
+- Product and service browsing and details
 
 ## Code Guidelines
 - Use functional components with hooks
@@ -31,6 +31,7 @@ SariFinds is a React Native Expo application that connects local stores with nea
 ## Firebase Collections Structure
 - **stores**: Store information (name, address, hours, contact, description, ownerId)
 - **products**: Product information (name, price, description, inStock, storeId, imageUrl)
+- **services**: Service information (name, price, description, available, providerId, category)
 
 ## Important Notes
 - This is an MVP - image upload functionality uses placeholder URLs

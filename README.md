@@ -2,22 +2,22 @@
 
 **Tuklasin at Suportahan ang mga Lokal na Negosyo** 🇵🇭
 
-A modern, Filipino-inspired React Native mobile application that connects local stores with nearby customers. Built with love for the Filipino community to support local businesses and strengthen neighborhood commerce.
+A modern, Filipino-inspired React Native mobile application that connects local stores and service providers with nearby customers. Built with love for the Filipino community to support local businesses and strengthen neighborhood commerce.
 
 ## ✨ Features
 
 ### 👥 For Customers (Mga Mamimili)
-- **🗺️ Store Discovery**: Hanapin ang mga malapit na tindahan
-- **🔍 Smart Search**: Maghanap ng tindahan o produkto gamit ang Tagalog at English
+- **🗺️ Store & Service Discovery**: Hanapin ang mga malapit na tindahan at serbisyo
+- **🔍 Smart Search**: Maghanap ng tindahan, produkto o serbisyo gamit ang Tagalog at English
 - **📍 Location-based**: Makita ang distansya at direksyon
-- **❤️ Favorites (Paborito)**: I-save ang mga paboritong tindahan
+- **❤️ Favorites (Paborito)**: I-save ang mga paboritong tindahan at serbisyo
 - **📱 Modern UI**: Filipino-inspired design na madaling gamitin
-- **🛒 Product Browsing**: Tingnan ang mga produkto at presyo
+- **🛒 Product & Service Browsing**: Tingnan ang mga produkto, serbisyo at presyo
 
-### 🏪 For Store Owners (Mga Negosyante)
-- **🆕 Easy Setup**: Madaling gumawa ng tindahan profile
-- **📝 Store Management**: I-edit ang impormasyon ng tindahan
-- **📦 Product Management**: Magdagdag at mag-update ng mga produkto
+### 🏪 For Store Owners & Service Providers (Mga Negosyante)
+- **🆕 Easy Setup**: Madaling gumawa ng tindahan o serbisyo profile
+- **📝 Business Management**: I-edit ang impormasyon ng negosyo
+- **📦 Product & Service Management**: Magdagdag at mag-update ng mga produkto at serbisyo
 - **📸 Image Upload**: Mag-upload ng mga larawan gamit ang camera o gallery
 - **📊 Inventory Tracking**: Bantayan kung meron o wala sa stock
 - **💰 Pricing in Pesos**: Presyo sa Pilipinong piso (₱)
