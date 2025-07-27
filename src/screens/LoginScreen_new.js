@@ -287,7 +287,6 @@ const styles = StyleSheet.create({
   },
   forgotPasswordContainer: {
     alignSelf: 'flex-end',
-    marginTop: Spacing.sm,
     marginBottom: Spacing.md,
     paddingVertical: Spacing.xs,
   },
