@@ -1,10 +1,10 @@
-# Firebase Setup Guide for LokalFinds
+# Firebase Setup Guide for LocalFind
 
 ## 1. Create a Firebase Project
 
 1. Go to [Firebase Console](https://console.firebase.google.com/)
 2. Click "Create a project" or "Add project"
-3. Enter project name: `lokalfinds` (or your preferred name)
+3. Enter project name: `sarifinds` (or your preferred name)
 4. Follow the setup wizard
 
 ## 2. Enable Authentication
@@ -23,8 +23,8 @@
 
 1. Go to **Project Settings** (gear icon)
 2. In the "Your apps" section, click **Web** (`</>` icon)
-3. Register your app with nickname: `lokalfinds-app`
-4. Copy the configuration object
+3. Register your app with nickname: `sarifinds-app`
+4. Download the configuration file:
 
 ## 5. Configure Your App
 

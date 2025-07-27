@@ -101,7 +101,7 @@ const Toast = ({
 export const filipinoToasts = {
   success: {
     login: 'Matagumpay na nakapasok! 🎉',
-    signup: 'Welcome sa LokalFinds! 👋',
+    signup: 'Welcome sa LocalFind! 👋',
     storeCreated: 'Nagawa na ang tindahan! 🏪',
     productAdded: 'Naidagdag na ang produkto! 📦',
     favoriteAdded: 'Naidagdag sa paborito! ❤️',

@@ -1,4 +1,4 @@
-# 🏪 LokalFinds
+# 🏪 LocalFind
 
 **Tuklasin at Suportahan ang mga Lokal na Negosyo** 🇵🇭
 
@@ -80,7 +80,7 @@ Our design celebrates Filipino culture while maintaining modern UX standards:
 1. Clone the repository:
    ```bash
    git clone <repository-url>
-   cd lokalfinds
+   cd localfind
    ```
 
 2. Install dependencies:

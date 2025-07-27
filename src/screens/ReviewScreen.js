@@ -56,10 +56,10 @@ export default function ReviewScreen({ navigation }) {
       
       const ratingText = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][rating];
       
-      const emailSubject = `LokalFinds App Review - ${rating} Star${rating !== 1 ? 's' : ''} from ${userName}`;
+      const emailSubject = `LocalFind App Review - ${rating} Star${rating !== 1 ? 's' : ''} from ${userName}`;
       
       const emailBody = `
-LokalFinds App Review
+LocalFind App Review
 ====================
 
 User: ${userName}
@@ -71,7 +71,7 @@ Review:
 ${review || 'No additional comments provided.'}
 
 ---
-Sent from LokalFinds Mobile App
+Sent from LocalFind Mobile App
       `.trim();
 
       // Send email
@@ -153,7 +153,7 @@ Sent from LokalFinds Mobile App
           <View style={styles.appIcon}>
             <Ionicons name="storefront" size={48} color={Colors.primary} />
           </View>
-          <Text style={styles.appName}>LokalFinds</Text>
+          <Text style={styles.appName}>LocalFind</Text>
           <Text style={styles.appDescription}>
             {t('helpUsImprove')}
           </Text>

@@ -1,4 +1,4 @@
-// Modern Filipino-inspired design system for LokalFinds
+// Modern Filipino-inspired design system for LocalFind
 export const Colors = {
   // Primary Colors - Inspired by Philippine sunset and sea
   primary: '#FF6B35', // Vibrant orange-red (like sunset over Manila Bay)

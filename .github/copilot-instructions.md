@@ -1,9 +1,9 @@
 <!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
 
-# LokalFinds - Local Store Discovery App
+# SariFinds - Local Store Discovery App
 
 ## Project Overview
-LokalFinds is a React Native Expo application that connects local stores with nearby customers. The app focuses on discovery and basic store/product management.
+SariFinds is a React Native Expo application that connects local stores with nearby customers. The app focuses on discovery and basic store/product management.
 
 ## Technology Stack
 - **Frontend**: React Native Expo (JavaScript)
