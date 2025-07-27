@@ -156,14 +156,11 @@ export default function ForgotPasswordScreen({ navigation }) {
               >
                 <Ionicons name="arrow-back" size={24} color={Colors.text.white} />
               </TouchableOpacity>
-              
-              <View style={styles.iconContainer}>
                 <Image 
                   source={require('../../assets/lokalfinds-logo.png')} 
                   style={styles.logo}
                   resizeMode="contain"
                 />
-              </View>
               
               <Text style={styles.title}>Forgot Password?</Text>
               <Text style={styles.subtitle}>
@@ -248,21 +245,11 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     zIndex: 10,
   },
-  iconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.xl,
-    marginTop: Spacing['4xl'],
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
   logo: {
     width: 80,
     height: 80,
+    marginBottom: Spacing.xl,
+    marginTop: Spacing['4xl'],
   },
   title: {
     fontSize: Typography.fontSize['3xl'],
