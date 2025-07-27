@@ -80,7 +80,6 @@ export default function SignupScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor={Colors.primary} />
       <LinearGradient
         colors={[Colors.primary, Colors.primaryLight]}
         style={styles.gradient}
