@@ -46,6 +46,12 @@ export const translations = {
     noAccount: "Don't have an account? ",
     signUpHere: 'Sign up here',
     
+    // Terms and Conditions
+    agreeToTerms: 'I agree to the',
+    termsOfService: 'Terms of Service',
+    andPrivacyPolicy: 'and Privacy Policy',
+    mustAcceptTerms: 'You must accept the Terms of Service to continue',
+    
     // Home
     greeting: 'Hello!',
     welcomeUser: 'Hello, {name}!',
@@ -265,6 +271,12 @@ export const translations = {
     signInHere: 'Mag-log in dito',
     noAccount: 'Wala pang account? ',
     signUpHere: 'Mag-register dito',
+    
+    // Terms and Conditions
+    agreeToTerms: 'Sumasang-ayon ako sa ',
+    termsOfService: 'Terms of Service',
+    andPrivacyPolicy: 'at Privacy Policy',
+    mustAcceptTerms: 'Dapat kayong sumang-ayon sa Terms of Service para magtuloy',
     
     // Home
     greeting: 'Kumusta!',

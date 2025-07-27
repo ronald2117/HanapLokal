@@ -26,12 +26,18 @@ export default function SignupScreen({ navigation }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const { signup, loginAnonymously } = useAuth();
   const { t } = useLanguage();
 
   async function handleSubmit() {
     if (!email || !password || !confirmPassword || !firstName || !lastName) {
       Alert.alert(t('error'), t('completeAllFields'));
+      return;
+    }
+
+    if (!termsAccepted) {
+      Alert.alert(t('error'), t('mustAcceptTerms'));
       return;
     }
 
@@ -158,6 +164,26 @@ export default function SignupScreen({ navigation }) {
                   icon="lock-closed-outline"
                   placeholder={t('confirmYourPassword')}
                 />
+
+                {/* Terms of Service Checkbox */}
+                <TouchableOpacity 
+                  style={styles.termsContainer}
+                  onPress={() => setTermsAccepted(!termsAccepted)}
+                  disabled={loading}
+                >
+                  <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]}>
+                    {termsAccepted && (
+                      <Ionicons name="checkmark" size={16} color={Colors.text.white} />
+                    )}
+                  </View>
+                  <View style={styles.termsTextContainer}>
+                    <Text style={styles.termsText}>
+                      {t('agreeToTerms')} 
+                      <Text style={styles.termsLink}>{t('termsOfService')} </Text>
+                      {t('andPrivacyPolicy')}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
 
                 <ModernButton
                   title={t('signup')}
@@ -312,6 +338,41 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.base,
     color: 'white',
     fontWeight: Typography.fontWeight.bold,
+    textDecorationLine: 'underline',
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: Spacing.lg,
+    paddingHorizontal: Spacing.xs,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    borderRadius: 4,
+    marginRight: Spacing.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    marginTop: 2,
+  },
+  checkboxChecked: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  termsTextContainer: {
+    flex: 1,
+  },
+  termsText: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.secondary,
+    lineHeight: 20,
+  },
+  termsLink: {
+    color: Colors.primary,
+    fontWeight: Typography.fontWeight.medium,
     textDecorationLine: 'underline',
   },
 });
