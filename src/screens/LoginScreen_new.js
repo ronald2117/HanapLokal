@@ -50,6 +50,11 @@ export default function LoginScreen({ navigation }) {
       return;
     }
 
+    if (!termsAccepted) {
+      Alert.alert(t('error'), t('mustAcceptTerms'));
+      return;
+    }
+
     try {
       setLoading(true);
       await login(email, password);

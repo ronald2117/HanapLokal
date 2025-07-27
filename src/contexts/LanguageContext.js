@@ -7,7 +7,6 @@ export const translations = {
   en: {
     // Common
     loading: 'Loading...',
-    error: 'Error',
     success: 'Success',
     ok: 'OK',
     cancel: 'Cancel',
@@ -49,6 +48,7 @@ export const translations = {
     // Terms and Conditions
     agreeToTerms: 'I agree to the',
     termsOfService: 'Terms of Service',
+    privacyPolicy: 'Privacy Policy',
     andPrivacyPolicy: 'and Privacy Policy',
     mustAcceptTerms: 'You must accept the Terms of Service to continue',
     
@@ -275,6 +275,7 @@ export const translations = {
     // Terms and Conditions
     agreeToTerms: 'Sumasang-ayon ako sa ',
     termsOfService: 'Terms of Service',
+    privacyPolicy: 'Privacy Policy',
     andPrivacyPolicy: 'at Privacy Policy',
     mustAcceptTerms: 'Dapat kayong sumang-ayon sa Terms of Service para magtuloy',
     

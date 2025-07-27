@@ -179,9 +179,14 @@ export default function SignupScreen({ navigation }) {
                   <View style={styles.termsTextContainer}>
                     <Text style={styles.termsText}>
                       {t('agreeToTerms')} 
-                      <Text style={styles.termsLink}>{t('termsOfService')} {t('andPrivacyPolicy')}</Text>
-                      
                     </Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('TermsOfService')}>
+                      <Text style={styles.termsLink}>{t('termsOfService')}</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.termsText}> and </Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('PrivacyPolicy')}>
+                      <Text style={styles.termsLink}>{t('privacyPolicy')}</Text>
+                    </TouchableOpacity>
                   </View>
                 </TouchableOpacity>
 
@@ -364,6 +369,9 @@ const styles = StyleSheet.create({
   },
   termsTextContainer: {
     flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
   },
   termsText: {
     fontSize: Typography.fontSize.sm,
