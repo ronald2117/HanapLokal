@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     marginTop: Spacing.md,
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.m,
   },
   divider: {
     flexDirection: 'row',
