@@ -44,27 +44,41 @@ export default function StoreMapScreen({ route, navigation }) {
 
   useEffect(() => {
     if (stores.length > 0 && mapRef.current) {
-      // Fit map to show all stores using actual GPS coordinates
-      const coordinates = stores.map(store => {
-        const storeCoords = getStoreCoordinates(store);
-        return {
+      // If only one store (from StoreDetailsScreen), focus on that store immediately
+      if (stores.length === 1) {
+        const storeCoords = getStoreCoordinates(stores[0]);
+        mapRef.current.animateToRegion({
           latitude: storeCoords.latitude,
-          longitude: storeCoords.longitude
-        };
-      });
-
-      if (userLocation) {
-        coordinates.push({
-          latitude: userLocation.latitude,
-          longitude: userLocation.longitude
+          longitude: storeCoords.longitude,
+          latitudeDelta: 0.01, // Zoom in close to the store
+          longitudeDelta: 0.01,
+        }, 1000);
+        
+        // Auto-select the store
+        setSelectedStore(stores[0]);
+      } else {
+        // For multiple stores, fit map to show all stores using actual GPS coordinates
+        const coordinates = stores.map(store => {
+          const storeCoords = getStoreCoordinates(store);
+          return {
+            latitude: storeCoords.latitude,
+            longitude: storeCoords.longitude
+          };
         });
-      }
 
-      if (coordinates.length > 1) {
-        mapRef.current.fitToCoordinates(coordinates, {
-          edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-          animated: true
-        });
+        if (userLocation) {
+          coordinates.push({
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude
+          });
+        }
+
+        if (coordinates.length > 1) {
+          mapRef.current.fitToCoordinates(coordinates, {
+            edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+            animated: true
+          });
+        }
       }
     }
   }, [stores, userLocation]);
@@ -244,12 +258,24 @@ export default function StoreMapScreen({ route, navigation }) {
       <MapView
         ref={mapRef}
         style={styles.map}
-        initialRegion={userLocation || {
-          latitude: 14.5995,
-          longitude: 120.9842,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}
+        initialRegion={
+          stores.length === 1 
+            ? (() => {
+                const storeCoords = getStoreCoordinates(stores[0]);
+                return {
+                  latitude: storeCoords.latitude,
+                  longitude: storeCoords.longitude,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                };
+              })()
+            : userLocation || {
+                latitude: 14.5995,
+                longitude: 120.9842,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+              }
+        }
         showsUserLocation={true}
         showsMyLocationButton={true}
         loadingEnabled={loading}

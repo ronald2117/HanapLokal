@@ -532,6 +532,21 @@ export default function StoreDetailsScreen({ route, navigation }) {
             </TouchableOpacity>
           )}
           
+          {/* Map button to view store location */}
+          <TouchableOpacity
+            style={styles.mapButton}
+            onPress={() => navigation.navigate('StoreMap', { stores: [store] })}
+          >
+            <Ionicons
+              name="map"
+              size={20}
+              color="#fff"
+            />
+            <Text style={styles.mapButtonText}>
+              {t('storeMap')}
+            </Text>
+          </TouchableOpacity>
+          
           <TouchableOpacity
             style={styles.favoriteButton}
             onPress={toggleFavorite}
@@ -783,6 +798,25 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   chatButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  mapButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#27ae60',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  mapButtonText: {
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
