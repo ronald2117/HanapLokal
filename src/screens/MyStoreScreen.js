@@ -296,36 +296,30 @@ export default function MyStoreScreen({ navigation }) {
         <View style={styles.storeNameContainer}>
           <Text style={styles.storeName}>{myBusinessProfile.name}</Text>
           
-          {/* Business Type Badges */}
+          {/* Business Type Badge */}
           <View style={styles.businessTypesContainer}>
-            {myBusinessProfile.profileTypes?.map((typeId) => {
-              const typeInfo = getProfileTypeInfo(typeId);
-              const isPrimary = typeId === myBusinessProfile.primaryType;
-              return (
-                <View 
-                  key={typeId} 
-                  style={[
-                    styles.businessTypeBadge, 
-                    isPrimary && styles.primaryBusinessTypeBadge,
-                    { borderColor: typeInfo.color }
-                  ]}
-                >
-                  <Ionicons 
-                    name={typeInfo.icon} 
-                    size={12} 
-                    color={isPrimary ? '#fff' : typeInfo.color} 
-                  />
-                  <Text style={[
-                    styles.businessTypeText,
-                    isPrimary && styles.primaryBusinessTypeText,
-                    { color: isPrimary ? '#fff' : typeInfo.color }
-                  ]}>
-                    {typeInfo.name}
-                  </Text>
-                  {isPrimary && <Text style={styles.primaryLabel}>PRIMARY</Text>}
-                </View>
-              );
-            })}
+            {myBusinessProfile.profileType && (
+              <View 
+                style={[
+                  styles.businessTypeBadge, 
+                  styles.primaryBusinessTypeBadge,
+                  { borderColor: getProfileTypeInfo(myBusinessProfile.profileType).color }
+                ]}
+              >
+                <Ionicons 
+                  name={getProfileTypeInfo(myBusinessProfile.profileType).icon} 
+                  size={12} 
+                  color="#fff"
+                />
+                <Text style={[
+                  styles.businessTypeText,
+                  styles.primaryBusinessTypeText,
+                  { color: '#fff' }
+                ]}>
+                  {getProfileTypeInfo(myBusinessProfile.profileType).name}
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Business Categories */}
@@ -767,13 +761,6 @@ const styles = StyleSheet.create({
   },
   primaryBusinessTypeText: {
     color: '#fff',
-  },
-  primaryLabel: {
-    fontSize: 8,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginLeft: 4,
-    opacity: 0.8,
   },
   categoriesContainer: {
     flexDirection: 'row',

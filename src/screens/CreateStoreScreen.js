@@ -1403,51 +1403,6 @@ const styles = StyleSheet.create({
     padding: 4,
   },
 
-  // Primary Type Selection
-  primaryTypeSection: {
-    marginTop: 24,
-    padding: 20,
-    backgroundColor: Colors.background.card,
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.primary,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  primaryTypeContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginTop: 12,
-  },
-  primaryTypeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    borderWidth: 1,
-    borderColor: Colors.border.light,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  primaryTypeButtonSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  primaryTypeButtonText: {
-    fontSize: 12,
-    color: Colors.text.secondary,
-    marginLeft: 6,
-    fontWeight: '500',
-  },
-  primaryTypeButtonTextSelected: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-
   // Mobile Service Styles
   mobileServiceContainer: {
     marginTop: 10,

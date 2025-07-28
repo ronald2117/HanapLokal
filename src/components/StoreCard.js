@@ -85,27 +85,6 @@ export default function StoreCard({
     }
   };
 
-  // Get category information
-  const getCategoryInfo = () => {
-    const categories = {
-      'sari-sari': { name: 'Sari-sari Store', icon: 'storefront', emoji: '🏪' },
-      'kainan': { name: 'Restaurant', icon: 'restaurant', emoji: '🍽️' },
-      'laundry': { name: 'Laundry Shop', icon: 'shirt', emoji: '👕' },
-      'vegetables': { name: 'Vegetable Store', icon: 'leaf', emoji: '🥬' },
-      'meat': { name: 'Meat Shop', icon: 'fish', emoji: '🥩' },
-      'bakery': { name: 'Bakery', icon: 'cafe', emoji: '🍞' },
-      'pharmacy': { name: 'Pharmacy', icon: 'medical', emoji: '💊' },
-      'hardware': { name: 'Hardware Store', icon: 'hammer', emoji: '🔨' },
-      'clothing': { name: 'Clothing Store', icon: 'shirt-outline', emoji: '👔' },
-      'electronics': { name: 'Electronics', icon: 'phone-portrait', emoji: '📱' },
-      'beauty': { name: 'Beauty Salon', icon: 'cut', emoji: '✂️' },
-      'automotive': { name: 'Automotive Shop', icon: 'car', emoji: '🚗' },
-      'other': { name: 'Other', icon: 'business', emoji: '🏪' },
-    };
-    
-    return categories[store.category] || categories['other'];
-  };
-
   const renderStars = (rating) => {
     const stars = [];
     const fullStars = Math.floor(rating);
@@ -150,9 +129,60 @@ export default function StoreCard({
   };
 
   const getStoreTypeIcon = () => {
-    // Try to get icon from category first
+    // Debug: Let's see what data we have
+    console.log('Store data:', {
+      id: store.id,
+      name: store.name,
+      profileType: store.profileType,
+      profileTypes: store.profileTypes,
+      primaryType: store.primaryType,
+      category: store.category,
+      allKeys: Object.keys(store)
+    });
+    
+    // Try to get icon from new single profileType field
+    if (store.profileType) {
+      const profileTypeInfo = getProfileTypeInfo(store.profileType);
+      console.log('Using new profileType:', store.profileType, 'Icon:', profileTypeInfo.icon);
+      return (
+        <Ionicons 
+          name={profileTypeInfo.icon} 
+          size={24} 
+          color={profileTypeInfo.color} 
+        />
+      );
+    }
+    
+    // Fallback: Try to get icon from old primaryType field (for backward compatibility)
+    if (store.primaryType) {
+      const profileTypeInfo = getProfileTypeInfo(store.primaryType);
+      console.log('Using old primaryType:', store.primaryType, 'Icon:', profileTypeInfo.icon);
+      return (
+        <Ionicons 
+          name={profileTypeInfo.icon} 
+          size={24} 
+          color={profileTypeInfo.color} 
+        />
+      );
+    }
+    
+    // Fallback: Try to get icon from old profileTypes array (first element)
+    if (store.profileTypes && store.profileTypes.length > 0) {
+      const profileTypeInfo = getProfileTypeInfo(store.profileTypes[0]);
+      console.log('Using old profileTypes[0]:', store.profileTypes[0], 'Icon:', profileTypeInfo.icon);
+      return (
+        <Ionicons 
+          name={profileTypeInfo.icon} 
+          size={24} 
+          color={profileTypeInfo.color} 
+        />
+      );
+    }
+    
+    // Try to get icon from category if no profile type
     if (store.category) {
-      const categoryInfo = getStoreCategoryInfo();
+      const categoryInfo = getCategoryInfo(store.category);
+      console.log('Using category:', store.category, 'Icon:', categoryInfo.icon);
       return (
         <Ionicons 
           name={categoryInfo.icon} 
@@ -162,19 +192,8 @@ export default function StoreCard({
       );
     }
     
-    // Try to get icon from profile type
-    if (store.profileType) {
-      const profileTypeInfo = getProfileTypeInfo(store.profileType);
-      return (
-        <Ionicons 
-          name={profileTypeInfo.icon} 
-          size={24} 
-          color={Colors.primary} 
-        />
-      );
-    }
-    
     // Default fallback icon
+    console.log('Using default business icon');
     return (
       <Ionicons 
         name="business" 
@@ -194,9 +213,7 @@ export default function StoreCard({
               style={styles.profileImage}
             />
           ) : (
-            <View style={styles.storeIconContainer}>
-              {getStoreTypeIcon()}
-            </View>
+            getStoreTypeIcon()
           )}
         </View>
         
@@ -204,8 +221,8 @@ export default function StoreCard({
           <Text style={styles.storeName}>{store.name}</Text>
           {store.category && (
             <View style={styles.categoryRow}>
-              <Ionicons name={getCategoryInfo().icon} size={12} color={Colors.primary} />
-              <Text style={styles.categoryText}>{getCategoryInfo().name}</Text>
+              <Ionicons name={getCategoryInfo(store.category).icon} size={12} color={Colors.primary} />
+              <Text style={styles.categoryText}>{getCategoryInfo(store.category).name}</Text>
             </View>
           )}
           <View style={styles.locationRow}>
@@ -291,13 +308,16 @@ const styles = StyleSheet.create({
   storeIconContainer: {
     width: 48,
     height: 48,
-    backgroundColor: Colors.primaryLight,
     borderRadius: BorderRadius.lg,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: Spacing.md,
     marginTop: 5,
-    
+    borderWidth: 1,
+    borderRadius: BorderRadius.lg,
+    borderColor: Colors.border.medium,
+    overflow: 'hidden',
+    backgroundColor: Colors.background.light,
   },
   
   storeIcon: {
