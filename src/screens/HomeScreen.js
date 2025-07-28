@@ -32,6 +32,7 @@ export default function HomeScreen({ navigation }) {
   const [searchRadius, setSearchRadius] = useState(10); // Default 10km radius
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showRadiusModal, setShowRadiusModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const { location, refreshLocation, isLoading } = useLocation();
@@ -178,6 +179,7 @@ export default function HomeScreen({ navigation }) {
   const onRefresh = async () => {
     setRefreshing(true);
     await Promise.all([fetchStores(), fetchProducts()]);
+    setRefreshTrigger(prev => prev + 1); // Trigger review refresh
     setRefreshing(false);
   };
 
@@ -247,11 +249,13 @@ export default function HomeScreen({ navigation }) {
 
     return (
       <StoreCard
+        key={`${item.id}-${location?.latitude}-${location?.longitude}`}
         store={item}
         onPress={() => navigation.navigate('StoreDetails', { store: item })}
         userLocation={location}
         matchingProducts={matchingProducts}
         searchQuery={searchQuery}
+        refreshTrigger={refreshTrigger}
       />
     );
   };

@@ -18,14 +18,15 @@ export default function StoreCard({
   userLocation, 
   showFavoriteIcon = false, 
   matchingProducts = [], 
-  searchQuery = '' 
+  searchQuery = '',
+  refreshTrigger = 0
 }) {
   const [rating, setRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
 
   useEffect(() => {
     fetchStoreRating();
-  }, [store.id]);
+  }, [store.id, refreshTrigger]);
 
   const fetchStoreRating = async () => {
     try {
