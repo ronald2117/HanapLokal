@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
+import { getCategoryInfo } from '../config/categories';
 
 const { width, height } = Dimensions.get('window');
 
@@ -145,25 +146,8 @@ export default function StoreMapScreen({ route, navigation }) {
     return Object.values(groups);
   };
 
-  const getCategoryInfo = (category) => {
-    const categories = {
-      'sari-sari': { name: 'Sari-sari Store', icon: 'storefront', emoji: '🏪' },
-      'kainan': { name: 'Kainan/Restaurant', icon: 'restaurant', emoji: '🍽️' },
-      'laundry': { name: 'Laundry Shop', icon: 'shirt', emoji: '👕' },
-      'vegetables': { name: 'Vegetable Store', icon: 'leaf', emoji: '🥬' },
-      'meat': { name: 'Meat Shop', icon: 'fish', emoji: '🥩' },
-      'bakery': { name: 'Bakery', icon: 'cafe', emoji: '🍞' },
-      'pharmacy': { name: 'Pharmacy', icon: 'medical', emoji: '💊' },
-      'hardware': { name: 'Hardware Store', icon: 'hammer', emoji: '🔨' },
-      'clothing': { name: 'Clothing Store', icon: 'shirt-outline', emoji: '👔' },
-      'electronics': { name: 'Electronics', icon: 'phone-portrait', emoji: '📱' },
-      'beauty': { name: 'Beauty Salon', icon: 'cut', emoji: '✂️' },
-      'automotive': { name: 'Automotive Shop', icon: 'car', emoji: '🚗' },
-      'other': { name: 'Other', icon: 'business', emoji: '🏪' },
-    };
-    
-    return categories[category] || categories['other'];
-  };
+  // Remove the local getCategoryInfo function - we'll use the centralized one
+  // and handle markers with a simpler approach for now
 
   const renderMarker = (group, groupIndex) => {
     const { coordinate, stores } = group;
@@ -171,9 +155,9 @@ export default function StoreMapScreen({ route, navigation }) {
     const isCluster = storeCount > 1;
     const isSelected = selectedStore && stores.some(store => store.id === selectedStore.id);
 
-    // For single store, show category emoji
-    // For cluster, show count
-    const displayContent = isCluster ? storeCount : getCategoryInfo(stores[0].category).emoji;
+    // For single store, show a simple dot, for cluster show count
+    // Icons in map markers are complex, so we'll use simple markers
+    const displayContent = isCluster ? storeCount : '•';
 
     return (
       <Marker
@@ -220,7 +204,7 @@ export default function StoreMapScreen({ route, navigation }) {
               </Text>
             ) : (
               <Text style={[
-                styles.markerEmoji,
+                styles.markerText,
                 { fontSize: isSelected ? 20 : 18 }
               ]}>
                 {displayContent}
@@ -332,9 +316,11 @@ export default function StoreMapScreen({ route, navigation }) {
                           />
                         ) : (
                           <View style={styles.storeImagePlaceholder}>
-                            <Text style={styles.storeImageEmoji}>
-                              {getCategoryInfo(store.category).emoji}
-                            </Text>
+                            <Ionicons 
+                              name={getCategoryInfo(store.category).icon} 
+                              size={24} 
+                              color={Colors.primary} 
+                            />
                           </View>
                         )}
                         <View style={styles.storeCardInfo}>
@@ -532,7 +518,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
 
-  markerEmoji: {
+  markerText: {
     fontSize: 16,
     textAlign: 'center',
     textShadowOffset: { width: 0, height: 1 },
@@ -705,7 +691,7 @@ const styles = StyleSheet.create({
     marginRight: Spacing.md,
   },
   
-  storeImageEmoji: {
+  storeImageIcon: {
     fontSize: 24,
   },
   

@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
+import { getCategoryInfo, getProfileTypeInfo } from '../config/categories';
 
 export default function StoreCard({ 
   store, 
@@ -149,17 +150,38 @@ export default function StoreCard({
   };
 
   const getStoreTypeIcon = () => {
+    // Try to get icon from category first
     if (store.category) {
-      return getCategoryInfo().emoji;
+      const categoryInfo = getStoreCategoryInfo();
+      return (
+        <Ionicons 
+          name={categoryInfo.icon} 
+          size={24} 
+          color={Colors.primary} 
+        />
+      );
     }
     
-    // Fallback logic for stores without category
-    const storeType = store.name?.toLowerCase() || '';
-    if (storeType.includes('sari') || storeType.includes('tindahan')) return '🏪';
-    if (storeType.includes('resto') || storeType.includes('kain')) return '🍽️';
-    if (storeType.includes('repair') || storeType.includes('vulca')) return '🔧';
-    if (storeType.includes('barbero') || storeType.includes('salon')) return '✂️';
-    return '🏪'; // Default store icon
+    // Try to get icon from profile type
+    if (store.profileType) {
+      const profileTypeInfo = getProfileTypeInfo(store.profileType);
+      return (
+        <Ionicons 
+          name={profileTypeInfo.icon} 
+          size={24} 
+          color={Colors.primary} 
+        />
+      );
+    }
+    
+    // Default fallback icon
+    return (
+      <Ionicons 
+        name="business" 
+        size={24} 
+        color={Colors.primary} 
+      />
+    );
   };
 
   return (
@@ -172,7 +194,9 @@ export default function StoreCard({
               style={styles.profileImage}
             />
           ) : (
-            <Text style={styles.storeIcon}>{getStoreTypeIcon()}</Text>
+            <View style={styles.storeIconContainer}>
+              {getStoreTypeIcon()}
+            </View>
           )}
         </View>
         

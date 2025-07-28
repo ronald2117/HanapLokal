@@ -591,12 +591,31 @@ export default function CreateStoreScreen({ navigation }) {
                       color={profileTypes.includes(type.id) ? '#fff' : type.color} 
                     />
                   </View>
-                  <Text style={[
-                    styles.profileTypeButtonText,
-                    profileTypes.includes(type.id) && styles.profileTypeButtonTextSelected
-                  ]}>
-                    {type.name}
-                  </Text>
+                  <View style={styles.profileTypeContent}>
+                    <Text style={[
+                      styles.profileTypeButtonText,
+                      profileTypes.includes(type.id) && styles.profileTypeButtonTextSelected
+                    ]}>
+                      {type.name}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.infoButton}
+                      onPress={() => {
+                        Alert.alert(
+                          type.name,
+                          type.description,
+                          [{ text: 'OK', style: 'default' }]
+                        );
+                      }}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                      <Ionicons 
+                        name="information-circle-outline" 
+                        size={20} 
+                        color={profileTypes.includes(type.id) ? 'rgba(255, 255, 255, 0.8)' : '#7f8c8d'} 
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </TouchableOpacity>
               ))}
             </View>
@@ -1453,15 +1472,26 @@ const styles = StyleSheet.create({
   profileTypeIcon: {
     marginRight: 12,
   },
+  profileTypeContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   profileTypeButtonText: {
     fontSize: 16,
     color: '#2c3e50',
     fontWeight: '600',
     lineHeight: 20,
+    flex: 1,
   },
   profileTypeButtonTextSelected: {
     color: '#fff',
     fontWeight: '700',
+  },
+  infoButton: {
+    marginLeft: 8,
+    padding: 4,
   },
 
   // Primary Type Selection
