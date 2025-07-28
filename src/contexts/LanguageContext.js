@@ -184,6 +184,20 @@ export const translations = {
     languageChangedMessage: 'Language has been changed successfully!',
     languageChangeNote: 'App interface will switch to your selected language immediately.',
     
+    // Dynamic Greetings
+    greetingMorning: 'Good morning!',
+    greetingMorningPersonalized: 'Good morning, {name}!',
+    greetingAfternoon: 'Good afternoon!',
+    greetingAfternoonPersonalized: 'Good afternoon, {name}!',
+    greetingEvening: 'Good evening!',
+    greetingEveningPersonalized: 'Good evening, {name}!',
+    greetingCasual: 'Hey there!',
+    greetingCasualPersonalized: 'Hey {name}!',
+    greetingFriendly: 'Welcome back!',
+    greetingFriendlyPersonalized: 'Welcome back, {name}!',
+    greetingEnthusiastic: 'Great to see you!',
+    greetingEnthusiasticPersonalized: 'Great to see you, {name}!',
+    
     // Navigation
     home: 'Home',
     myStore: 'My Store',
@@ -430,6 +444,20 @@ export const translations = {
     languageChanged: 'Nabago na ang Wika',
     languageChangedMessage: 'Matagumpay na nabago ang wika!',
     languageChangeNote: 'Ang interface ng app ay agad na magiging sa napiling wika.',
+    
+    // Dynamic Greetings
+    greetingMorning: 'Magandang umaga!',
+    greetingMorningPersonalized: 'Magandang umaga, {name}!',
+    greetingAfternoon: 'Magandang hapon!',
+    greetingAfternoonPersonalized: 'Magandang hapon, {name}!',
+    greetingEvening: 'Magandang gabi!',
+    greetingEveningPersonalized: 'Magandang gabi, {name}!',
+    greetingCasual: 'Kumusta!',
+    greetingCasualPersonalized: 'Kumusta, {name}!',
+    greetingFriendly: 'Balik ka na!',
+    greetingFriendlyPersonalized: 'Balik ka na, {name}!',
+    greetingEnthusiastic: 'Masaya kitang makita!',
+    greetingEnthusiasticPersonalized: 'Masaya kitang makita, {name}!',
     
     // Navigation
     home: 'Simula',
