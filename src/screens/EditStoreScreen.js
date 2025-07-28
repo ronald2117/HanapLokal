@@ -157,17 +157,21 @@ export default function EditStoreScreen({ route, navigation }) {
       // Filter out empty social links
       const validSocialLinks = socialLinks.filter(link => link.url.trim() !== '');
       
-      const storeRef = doc(db, 'stores', store.id);
-      await updateDoc(storeRef, {
+      const businessProfileRef = doc(db, 'businessProfiles', store.id);
+      await updateDoc(businessProfileRef, {
         name: storeName,
         address: address,
         hours: hours,
         description: description,
-        category: category,
+        categories: categories, // Update to use new categories array
         profileImage: profileImage || '',
         coverImage: coverImage || '',
-        coordinates: storeCoordinates, // Update GPS coordinates for accurate map positioning
-        socialLinks: validSocialLinks, // Add social links to store data
+        location: storeCoordinates ? {
+          latitude: storeCoordinates.latitude,
+          longitude: storeCoordinates.longitude,
+          accuracy: 10
+        } : null,
+        socialLinks: validSocialLinks,
         updatedAt: new Date()
       });
 

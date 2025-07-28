@@ -13,13 +13,13 @@ import { db } from '../services/firebaseConfig';
 import { Colors } from '../styles/theme';
 
 export default function StoreSettingsScreen({ navigation, route }) {
-  const { store } = route.params;
+  const { businessProfile } = route.params;
   const [loading, setLoading] = useState(false);
 
-  const deleteStore = async () => {
+  const deleteBusinessProfile = async () => {
     Alert.alert(
-      'Tanggalin ang Tindahan',
-      'Sigurado ka ba na gusto mong tanggalin ang inyong tindahan? Hindi na pwedeng ibalik ang lahat ng produkto at impormasyon.',
+      'Tanggalin ang Business Profile',
+      'Sigurado ka ba na gusto mong tanggalin ang inyong business profile? Hindi na pwedeng ibalik ang lahat ng produkto at impormasyon.',
       [
         {
           text: 'Huwag na lang',
@@ -33,10 +33,10 @@ export default function StoreSettingsScreen({ navigation, route }) {
               try {
                 setLoading(true);
                 
-                // First, delete all products associated with this store
+                // First, delete all products associated with this business profile
                 const productsQuery = query(
                   collection(db, 'products'),
-                  where('storeId', '==', store.id)
+                  where('storeId', '==', businessProfile.id)
                 );
                 
                 const productsSnapshot = await getDocs(productsQuery);
@@ -47,13 +47,13 @@ export default function StoreSettingsScreen({ navigation, route }) {
                 await Promise.all(deleteProductPromises);
                 console.log('🗑️ Deleted', productsSnapshot.docs.length, 'products');
                 
-                // Then delete the store itself
-                await deleteDoc(doc(db, 'stores', store.id));
-                console.log('🗑️ Store deleted successfully');
+                // Then delete the business profile itself
+                await deleteDoc(doc(db, 'businessProfiles', businessProfile.id));
+                console.log('🗑️ Business profile deleted successfully');
                 
                 Alert.alert(
                   'Matagumpay!',
-                  'Ang inyong tindahan at lahat ng produkto ay natanggal na.',
+                  'Ang inyong business profile at lahat ng produkto ay natanggal na.',
                   [{ 
                     text: 'OK',
                     onPress: () => {
@@ -84,19 +84,19 @@ export default function StoreSettingsScreen({ navigation, route }) {
   const settingsOptions = [
     {
       id: 'edit',
-      title: 'I-edit ang Tindahan',
-      subtitle: 'Baguhin ang impormasyon ng tindahan',
+      title: 'I-edit ang Business Profile',
+      subtitle: 'Baguhin ang impormasyon ng business profile',
       icon: 'pencil',
       iconColor: Colors.primary,
-      onPress: () => navigation.navigate('EditStore', { store }),
+      onPress: () => navigation.navigate('EditStore', { store: businessProfile }),
     },
     {
       id: 'delete',
-      title: 'Tanggalin ang Tindahan',
-      subtitle: 'Permanenteng tanggalin ang tindahan at lahat ng produkto',
+      title: 'Tanggalin ang Business Profile',
+      subtitle: 'Permanenteng tanggalin ang business profile at lahat ng produkto',
       icon: 'trash',
       iconColor: '#e74c3c',
-      onPress: deleteStore,
+      onPress: deleteBusinessProfile,
       disabled: loading,
     },
   ];
@@ -109,12 +109,12 @@ export default function StoreSettingsScreen({ navigation, route }) {
     >
       <View style={styles.storeInfo}>
         <Ionicons name="storefront" size={48} color={Colors.primary} />
-        <Text style={styles.storeName}>{store.name}</Text>
-        <Text style={styles.storeAddress}>{store.address}</Text>
+        <Text style={styles.storeName}>{businessProfile.name}</Text>
+        <Text style={styles.storeAddress}>{businessProfile.address}</Text>
       </View>
 
       <View style={styles.settingsSection}>
-        <Text style={styles.sectionTitle}>Mga Setting ng Tindahan</Text>
+        <Text style={styles.sectionTitle}>Mga Setting ng Business Profile</Text>
         
         {settingsOptions.map((option) => (
           <TouchableOpacity

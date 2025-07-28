@@ -36,9 +36,9 @@ export default function FavoritesScreen({ navigation }) {
         const storesData = [];
         
         for (const storeId of favoriteIds) {
-          const storeDoc = await getDoc(doc(db, 'stores', storeId));
-          if (storeDoc.exists()) {
-            storesData.push({ id: storeDoc.id, ...storeDoc.data() });
+          const businessProfileDoc = await getDoc(doc(db, 'businessProfiles', storeId));
+          if (businessProfileDoc.exists()) {
+            storesData.push({ id: businessProfileDoc.id, ...businessProfileDoc.data() });
           }
         }
         

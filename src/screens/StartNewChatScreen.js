@@ -50,24 +50,24 @@ export default function StartNewChatScreen({ navigation }) {
 
   const fetchStores = async () => {
     try {
-      const storesRef = collection(db, 'stores');
-      const q = query(storesRef, orderBy('name'));
+      const businessProfilesRef = collection(db, 'businessProfiles');
+      const q = query(businessProfilesRef, orderBy('name'));
       const querySnapshot = await getDocs(q);
       const storesData = [];
       
       querySnapshot.forEach((doc) => {
-        const storeData = { id: doc.id, ...doc.data() };
-        // Don't show current user's own store
-        if (storeData.userId !== currentUser.uid) {
-          storesData.push(storeData);
+        const businessData = { id: doc.id, ...doc.data() };
+        // Don't show current user's own business profile
+        if (businessData.ownerId !== currentUser.uid) {
+          storesData.push(businessData);
         }
       });
       
       setStores(storesData);
       setFilteredStores(storesData);
     } catch (error) {
-      console.error('Error fetching stores:', error);
-      Alert.alert('Error', 'Failed to load stores');
+      console.error('Error fetching business profiles:', error);
+      Alert.alert('Error', 'Failed to load business profiles');
     } finally {
       setLoading(false);
     }

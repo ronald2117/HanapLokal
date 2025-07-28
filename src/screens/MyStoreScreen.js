@@ -19,9 +19,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useFocusEffect } from '@react-navigation/native';
 import ProductCard from '../components/ProductCard';
+import { PROFILE_TYPES, BUSINESS_CATEGORIES } from '../config/categories';
 
 export default function MyStoreScreen({ navigation }) {
-  const [myStore, setMyStore] = useState(null);
+  const [myBusinessProfile, setMyBusinessProfile] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [productLoading, setProductLoading] = useState(false);
@@ -29,25 +30,14 @@ export default function MyStoreScreen({ navigation }) {
   const { currentUser, isGuestUser, logoutGuestAndSignup } = useAuth();
   const { t } = useLanguage();
 
-  // Get category information
-  const getCategoryInfo = (category) => {
-    const categories = {
-      'sari-sari': { name: t('sariSari'), icon: 'storefront', emoji: '🏪' },
-      'kainan': { name: t('restaurant'), icon: 'restaurant', emoji: '🍽️' },
-      'laundry': { name: t('laundry'), icon: 'shirt', emoji: '👕' },
-      'vegetables': { name: t('vegetables'), icon: 'leaf', emoji: '🥬' },
-      'meat': { name: t('meatShop'), icon: 'fish', emoji: '🥩' },
-      'bakery': { name: t('bakery'), icon: 'cafe', emoji: '🍞' },
-      'pharmacy': { name: t('pharmacy'), icon: 'medical', emoji: '💊' },
-      'hardware': { name: t('hardware'), icon: 'hammer', emoji: '🔨' },
-      'clothing': { name: t('clothing'), icon: 'shirt-outline', emoji: '👔' },
-      'electronics': { name: t('electronics'), icon: 'phone-portrait', emoji: '📱' },
-      'beauty': { name: t('beauty'), icon: 'cut', emoji: '✂️' },
-      'automotive': { name: t('automotive'), icon: 'car', emoji: '🚗' },
-      'other': { name: t('other'), icon: 'business', emoji: '🏪' },
-    };
-    
-    return categories[category] || categories['other'];
+  // Helper function to get profile type info
+  const getProfileTypeInfo = (typeId) => {
+    return PROFILE_TYPES.find(type => type.id === typeId) || { name: 'Unknown Type', icon: 'business', color: '#666' };
+  };
+
+  // Helper function to get category info
+  const getCategoryInfo = (categoryId) => {
+    return BUSINESS_CATEGORIES.find(cat => cat.id === categoryId) || { name: 'Unknown Category', icon: 'business' };
   };
 
   // Function to get platform icon for social links
@@ -99,46 +89,46 @@ export default function MyStoreScreen({ navigation }) {
     }
   };
 
-  // Refresh store data whenever the screen comes into focus
+  // Refresh business profile data whenever the screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
       if (currentUser) {
-        fetchMyStore();
+        fetchMyBusinessProfile();
       }
     }, [currentUser])
   );
 
   useEffect(() => {
-    if (myStore) {
+    if (myBusinessProfile) {
       fetchMyProducts();
     }
-  }, [myStore]);
+  }, [myBusinessProfile]);
 
-  const fetchMyStore = async () => {
+  const fetchMyBusinessProfile = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Fetching store for user:', currentUser.uid);
+      console.log('🔍 Fetching business profile for user:', currentUser.uid);
       
-      const storesQuery = query(
-        collection(db, 'stores'),
+      const businessProfilesQuery = query(
+        collection(db, 'businessProfiles'),
         where('ownerId', '==', currentUser.uid)
       );
-      const querySnapshot = await getDocs(storesQuery);
+      const querySnapshot = await getDocs(businessProfilesQuery);
       
-      console.log('📊 Query result:', querySnapshot.size, 'stores found');
+      console.log('📊 Query result:', querySnapshot.size, 'business profiles found');
       
       if (!querySnapshot.empty) {
-        const storeDoc = querySnapshot.docs[0];
-        const storeData = { id: storeDoc.id, ...storeDoc.data() };
-        console.log('✅ Store found:', storeData.name);
-        setMyStore(storeData);
+        const profileDoc = querySnapshot.docs[0];
+        const profileData = { id: profileDoc.id, ...profileDoc.data() };
+        console.log('✅ Business profile found:', profileData.name);
+        setMyBusinessProfile(profileData);
       } else {
-        console.log('❌ No store found for user');
-        setMyStore(null);
+        console.log('❌ No business profile found for user');
+        setMyBusinessProfile(null);
       }
     } catch (error) {
       Alert.alert(t('error'), t('failedToFetchStore'));
-      console.error('Error fetching store:', error);
+      console.error('Error fetching business profile:', error);
     } finally {
       setLoading(false);
     }
@@ -148,7 +138,7 @@ export default function MyStoreScreen({ navigation }) {
     try {
       const productsQuery = query(
         collection(db, 'products'),
-        where('storeId', '==', myStore.id)
+        where('storeId', '==', myBusinessProfile.id)
       );
       const querySnapshot = await getDocs(productsQuery);
       const productsData = [];
@@ -168,7 +158,7 @@ export default function MyStoreScreen({ navigation }) {
   const onRefresh = async () => {
     setRefreshing(true);
     if (currentUser) {
-      await fetchMyStore();
+      await fetchMyBusinessProfile();
     }
     setRefreshing(false);
   };
@@ -176,7 +166,7 @@ export default function MyStoreScreen({ navigation }) {
   const renderProduct = ({ item }) => (
     <ProductCard 
       product={item} 
-      onPress={() => navigation.navigate('EditProduct', { product: item, storeId: myStore.id })}
+      onPress={() => navigation.navigate('EditProduct', { product: item, storeId: myBusinessProfile.id })}
       showEditIcon={true}
     />
   );
@@ -189,7 +179,7 @@ export default function MyStoreScreen({ navigation }) {
     );
   }
 
-  if (!myStore) {
+  if (!myBusinessProfile) {
     // Show different content for guest users
     if (isGuestUser()) {
       return (
@@ -246,7 +236,7 @@ export default function MyStoreScreen({ navigation }) {
       );
     }
 
-    // Regular user without store
+    // Regular user without business profile
     return (
       <View style={styles.noStoreContainer}>
         <Ionicons name="storefront-outline" size={80} color="#bdc3c7" />
@@ -283,8 +273,8 @@ export default function MyStoreScreen({ navigation }) {
       }
     >
       {/* Cover Photo */}
-      {myStore.coverImage ? (
-        <Image source={{ uri: myStore.coverImage }} style={styles.coverImage} />
+      {myBusinessProfile.coverImage ? (
+        <Image source={{ uri: myBusinessProfile.coverImage }} style={styles.coverImage} />
       ) : (
         <View style={styles.coverPlaceholder} />
       )}
@@ -292,30 +282,74 @@ export default function MyStoreScreen({ navigation }) {
       <View style={styles.storeHeader}>
         {/* Profile Picture */}
         <View style={styles.profileContainer}>
-          {myStore.profileImage ? (
-            <Image source={{ uri: myStore.profileImage }} style={styles.profileImage} />
+          {myBusinessProfile.profileImage ? (
+            <Image source={{ uri: myBusinessProfile.profileImage }} style={styles.profileImage} />
           ) : (
             <View style={styles.profilePlaceholder}>
               <Text style={styles.profileInitial}>
-                {myStore.name ? myStore.name.charAt(0).toUpperCase() : '?'}
+                {myBusinessProfile.name ? myBusinessProfile.name.charAt(0).toUpperCase() : '?'}
               </Text>
             </View>
           )}
         </View>
         
         <View style={styles.storeNameContainer}>
-          <Text style={styles.storeName}>{myStore.name}</Text>
-          {myStore.category && (
-            <View style={styles.categoryContainer}>
-              <Ionicons name={getCategoryInfo(myStore.category).icon} size={14} color="#3498db" />
-              <Text style={styles.categoryText}>{getCategoryInfo(myStore.category).name}</Text>
+          <Text style={styles.storeName}>{myBusinessProfile.name}</Text>
+          
+          {/* Business Type Badges */}
+          <View style={styles.businessTypesContainer}>
+            {myBusinessProfile.profileTypes?.map((typeId) => {
+              const typeInfo = getProfileTypeInfo(typeId);
+              const isPrimary = typeId === myBusinessProfile.primaryType;
+              return (
+                <View 
+                  key={typeId} 
+                  style={[
+                    styles.businessTypeBadge, 
+                    isPrimary && styles.primaryBusinessTypeBadge,
+                    { borderColor: typeInfo.color }
+                  ]}
+                >
+                  <Ionicons 
+                    name={typeInfo.icon} 
+                    size={12} 
+                    color={isPrimary ? '#fff' : typeInfo.color} 
+                  />
+                  <Text style={[
+                    styles.businessTypeText,
+                    isPrimary && styles.primaryBusinessTypeText,
+                    { color: isPrimary ? '#fff' : typeInfo.color }
+                  ]}>
+                    {typeInfo.name}
+                  </Text>
+                  {isPrimary && <Text style={styles.primaryLabel}>PRIMARY</Text>}
+                </View>
+              );
+            })}
+          </View>
+
+          {/* Business Categories */}
+          {myBusinessProfile.categories && myBusinessProfile.categories.length > 0 && (
+            <View style={styles.categoriesContainer}>
+              {myBusinessProfile.categories.slice(0, 3).map((categoryId) => {
+                const categoryInfo = getCategoryInfo(categoryId);
+                return (
+                  <View key={categoryId} style={styles.categoryChip}>
+                    <Ionicons name={categoryInfo.icon} size={12} color="#3498db" />
+                    <Text style={styles.categoryChipText}>{categoryInfo.name}</Text>
+                  </View>
+                );
+              })}
+              {myBusinessProfile.categories.length > 3 && (
+                <Text style={styles.moreCategoriesText}>+{myBusinessProfile.categories.length - 3} more</Text>
+              )}
             </View>
           )}
         </View>
         
         <TouchableOpacity
           style={styles.settingsButton}
-          onPress={() => navigation.navigate('StoreSettings', { store: myStore })}
+          onPress={() => navigation.navigate('StoreSettings', { businessProfile: myBusinessProfile })}
         >
           <Ionicons name="settings" size={20} color="#7f8c8d" />
           <Text style={styles.settingsButtonText}>{t('settings')}</Text>
@@ -323,17 +357,34 @@ export default function MyStoreScreen({ navigation }) {
       </View>
 
       <View style={styles.storeInfo}>
-        <Text style={styles.storeAddress}>📍 {myStore.address}</Text>
-        <Text style={styles.storeHours}>🕒 {myStore.hours}</Text>
-        {myStore.contact && <Text style={styles.storeContact}>📞 {myStore.contact}</Text>}
+        <Text style={styles.storeAddress}>📍 {myBusinessProfile.address}</Text>
+        <Text style={styles.storeHours}>🕒 {myBusinessProfile.hours}</Text>
+        
+        {/* Contact Numbers */}
+        {myBusinessProfile.contactNumbers && myBusinessProfile.contactNumbers.length > 0 && (
+          <View style={styles.contactNumbersContainer}>
+            {myBusinessProfile.contactNumbers.map((contact, index) => (
+              <Text key={index} style={styles.storeContact}>
+                📞 {contact.label}: {contact.number}
+              </Text>
+            ))}
+          </View>
+        )}
+        
+        {/* Mobile Service Info */}
+        {myBusinessProfile.isMobile && (
+          <Text style={styles.mobileServiceText}>
+            🚗 Mobile Service (Radius: {myBusinessProfile.serviceRadius}km)
+          </Text>
+        )}
       </View>
 
       {/* Social Links Section */}
-      {myStore.socialLinks && myStore.socialLinks.length > 0 && (
+      {myBusinessProfile.socialLinks && myBusinessProfile.socialLinks.length > 0 && (
         <View style={styles.socialLinksSection}>
-          <Text style={styles.sectionTitle}>Social Links</Text>
+          <Text style={styles.sectionTitle}>Social Links & Online Presence</Text>
           <View style={styles.socialLinksContainer}>
-            {myStore.socialLinks.map((link, index) => {
+            {myBusinessProfile.socialLinks.map((link, index) => {
               const platform = link.platform || 'link';
               const platformIcon = getPlatformIcon(platform);
               const platformColor = getPlatformColor(platform);
@@ -365,7 +416,7 @@ export default function MyStoreScreen({ navigation }) {
           <Text style={styles.sectionTitle}>{t('myProducts')} ({products.length})</Text>
           <TouchableOpacity
             style={styles.addButton}
-            onPress={() => navigation.navigate('AddProduct', { storeId: myStore.id })}
+            onPress={() => navigation.navigate('AddProduct', { storeId: myBusinessProfile.id })}
           >
             <Ionicons name="add" size={20} color="#fff" />
             <Text style={styles.addButtonText}>{t('addProduct')}</Text>
@@ -688,5 +739,76 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
     flex: 1,
+  },
+  businessTypesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  businessTypeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1.5,
+    borderRadius: 20,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    marginRight: 8,
+    marginBottom: 6,
+  },
+  primaryBusinessTypeBadge: {
+    backgroundColor: '#3498db',
+  },
+  businessTypeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+  primaryBusinessTypeText: {
+    color: '#fff',
+  },
+  primaryLabel: {
+    fontSize: 8,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginLeft: 4,
+    opacity: 0.8,
+  },
+  categoriesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 6,
+  },
+  categoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e3f2fd',
+    borderRadius: 15,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    marginRight: 6,
+    marginBottom: 4,
+  },
+  categoryChipText: {
+    fontSize: 11,
+    color: '#1976d2',
+    marginLeft: 4,
+    fontWeight: '500',
+  },
+  moreCategoriesText: {
+    fontSize: 11,
+    color: '#7f8c8d',
+    fontStyle: 'italic',
+    alignSelf: 'center',
+  },
+  contactNumbersContainer: {
+    marginTop: 5,
+  },
+  mobileServiceText: {
+    fontSize: 14,
+    color: '#27ae60',
+    marginTop: 5,
+    fontWeight: '500',
   },
 });

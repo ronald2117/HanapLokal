@@ -140,18 +140,20 @@ export default function HomeScreen({ navigation }) {
   const fetchStores = async () => {
     try {
       setLoading(true);
-      const storesQuery = query(collection(db, 'stores'), orderBy('name'));
-      const querySnapshot = await getDocs(storesQuery);
+      console.log('🔍 Fetching business profiles...');
+      const businessProfilesQuery = query(collection(db, 'businessProfiles'), orderBy('name'));
+      const querySnapshot = await getDocs(businessProfilesQuery);
       const storesData = [];
       
       querySnapshot.forEach((doc) => {
         storesData.push({ id: doc.id, ...doc.data() });
       });
       
+      console.log('📊 Business profiles found:', storesData.length);
       setStores(storesData);
     } catch (error) {
-      Alert.alert('Hindi mahanap', 'Hindi makuha ang mga tindahan');
-      console.error('Error fetching stores:', error);
+      Alert.alert('Hindi mahanap', 'Hindi makuha ang mga business profiles');
+      console.error('Error fetching business profiles:', error);
     } finally {
       setLoading(false);
     }
