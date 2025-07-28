@@ -64,16 +64,7 @@ export default function StoreCard({
   };
 
   const getDistanceText = () => {
-    // Debug: Let's see what location data we have
-    console.log('Location data:', {
-      storeName: store.name,
-      storeLocation: store.location,
-      storeCoordinates: store.coordinates,
-      userLocation: userLocation
-    });
-    
     if (!userLocation) {
-      console.log('No user location available');
       return '';
     }
     
@@ -83,16 +74,13 @@ export default function StoreCard({
     // Check new location structure
     if (store.location && store.location.latitude && store.location.longitude) {
       storeLocation = store.location;
-      console.log('Using store.location:', storeLocation);
     }
     // Check old coordinates structure
     else if (store.coordinates && store.coordinates.latitude && store.coordinates.longitude) {
       storeLocation = store.coordinates;
-      console.log('Using store.coordinates:', storeLocation);
     }
     
     if (!storeLocation) {
-      console.log('No store location data found');
       return '';
     }
     
@@ -102,8 +90,6 @@ export default function StoreCard({
       storeLocation.latitude,
       storeLocation.longitude
     );
-    
-    console.log('Calculated distance:', distance, 'km');
     
     // Format distance nicely
     if (distance < 1) {
@@ -159,21 +145,9 @@ export default function StoreCard({
   };
 
   const getStoreTypeIcon = () => {
-    // Debug: Let's see what data we have
-    console.log('Store data:', {
-      id: store.id,
-      name: store.name,
-      profileType: store.profileType,
-      profileTypes: store.profileTypes,
-      primaryType: store.primaryType,
-      category: store.category,
-      allKeys: Object.keys(store)
-    });
-    
     // Try to get icon from new single profileType field
     if (store.profileType) {
       const profileTypeInfo = getProfileTypeInfo(store.profileType);
-      console.log('Using new profileType:', store.profileType, 'Icon:', profileTypeInfo.icon);
       return (
         <Ionicons 
           name={profileTypeInfo.icon} 
@@ -186,7 +160,6 @@ export default function StoreCard({
     // Fallback: Try to get icon from old primaryType field (for backward compatibility)
     if (store.primaryType) {
       const profileTypeInfo = getProfileTypeInfo(store.primaryType);
-      console.log('Using old primaryType:', store.primaryType, 'Icon:', profileTypeInfo.icon);
       return (
         <Ionicons 
           name={profileTypeInfo.icon} 
@@ -199,7 +172,6 @@ export default function StoreCard({
     // Fallback: Try to get icon from old profileTypes array (first element)
     if (store.profileTypes && store.profileTypes.length > 0) {
       const profileTypeInfo = getProfileTypeInfo(store.profileTypes[0]);
-      console.log('Using old profileTypes[0]:', store.profileTypes[0], 'Icon:', profileTypeInfo.icon);
       return (
         <Ionicons 
           name={profileTypeInfo.icon} 
@@ -212,7 +184,6 @@ export default function StoreCard({
     // Try to get icon from category if no profile type
     if (store.category) {
       const categoryInfo = getCategoryInfo(store.category);
-      console.log('Using category:', store.category, 'Icon:', categoryInfo.icon);
       return (
         <Ionicons 
           name={categoryInfo.icon} 
@@ -223,7 +194,6 @@ export default function StoreCard({
     }
     
     // Default fallback icon
-    console.log('Using default business icon');
     return (
       <Ionicons 
         name="business" 
@@ -249,6 +219,9 @@ export default function StoreCard({
         
         <View style={styles.storeInfo}>
           <Text style={styles.storeName}>{store.name}</Text>
+          {getDistanceText() ? (
+            <Text style={styles.distance}>{getDistanceText()}</Text>
+          ) : null}
           {store.category && (
             <View style={styles.categoryRow}>
               <Ionicons name={getCategoryInfo(store.category).icon} size={12} color={Colors.primary} />
@@ -259,12 +232,6 @@ export default function StoreCard({
             <Ionicons name="location-outline" size={14} color={Colors.text.secondary} />
             <Text style={styles.storeAddress}>{store.address}</Text>
           </View>
-          {userLocation && (
-            <View style={styles.distanceRow}>
-              <Ionicons name="walk-outline" size={12} color={Colors.success} />
-              <Text style={styles.distance}>{getDistanceText()}</Text>
-            </View>
-          )}
           <View style={styles.ratingRow}>
             {reviewCount > 0 ? (
               <>
