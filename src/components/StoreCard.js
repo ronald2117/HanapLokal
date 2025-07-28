@@ -145,63 +145,28 @@ export default function StoreCard({
     );
   };
 
-  const getStoreTypeIcon = () => {
-    // Try to get icon from new single profileType field
+  const getStoreInitial = () => {
+    return store.name ? store.name.charAt(0).toUpperCase() : '?';
+  };
+
+  const getProfileTypeColor = () => {
+    // Try to get color from new single profileType field
     if (store.profileType) {
-      const profileTypeInfo = getProfileTypeInfo(store.profileType);
-      return (
-        <Ionicons 
-          name={profileTypeInfo.icon} 
-          size={24} 
-          color={profileTypeInfo.color} 
-        />
-      );
+      return getProfileTypeInfo(store.profileType).color;
     }
     
-    // Fallback: Try to get icon from old primaryType field (for backward compatibility)
+    // Fallback: Try to get color from old primaryType field (for backward compatibility)
     if (store.primaryType) {
-      const profileTypeInfo = getProfileTypeInfo(store.primaryType);
-      return (
-        <Ionicons 
-          name={profileTypeInfo.icon} 
-          size={24} 
-          color={profileTypeInfo.color} 
-        />
-      );
+      return getProfileTypeInfo(store.primaryType).color;
     }
     
-    // Fallback: Try to get icon from old profileTypes array (first element)
+    // Fallback: Try to get color from old profileTypes array (first element)
     if (store.profileTypes && store.profileTypes.length > 0) {
-      const profileTypeInfo = getProfileTypeInfo(store.profileTypes[0]);
-      return (
-        <Ionicons 
-          name={profileTypeInfo.icon} 
-          size={24} 
-          color={profileTypeInfo.color} 
-        />
-      );
+      return getProfileTypeInfo(store.profileTypes[0]).color;
     }
     
-    // Try to get icon from category if no profile type
-    if (store.category) {
-      const categoryInfo = getCategoryInfo(store.category);
-      return (
-        <Ionicons 
-          name={categoryInfo.icon} 
-          size={24} 
-          color={Colors.primary} 
-        />
-      );
-    }
-    
-    // Default fallback icon
-    return (
-      <Ionicons 
-        name="business" 
-        size={24} 
-        color={Colors.primary} 
-      />
-    );
+    // Default fallback color
+    return Colors.primary;
   };
 
   return (
@@ -214,7 +179,14 @@ export default function StoreCard({
               style={styles.profileImage}
             />
           ) : (
-            getStoreTypeIcon()
+            <View style={[
+              styles.storeInitialContainer,
+              { backgroundColor: getProfileTypeColor() }
+            ]}>
+              <Text style={styles.storeInitial}>
+                {getStoreInitial()}
+              </Text>
+            </View>
           )}
         </View>
         
@@ -347,6 +319,20 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: BorderRadius.lg,
     backgroundColor: Colors.primaryLight,
+  },
+
+  storeInitialContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  storeInitial: {
+    fontSize: 20,
+    fontWeight: Typography.fontWeight.bold,
+    color: '#fff',
   },
   
   storeInfo: {
