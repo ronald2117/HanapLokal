@@ -33,8 +33,10 @@ export default function StoreMapScreen({ route, navigation }) {
     console.log('🏪 Stores received in StoreMapScreen:', stores.length);
     stores.forEach(store => {
       console.log(`Store: ${store.name}`, {
-        hasCoordinates: !!store.coordinates,
-        coordinates: store.coordinates
+        hasBusinessProfileLocation: !!(store.location && store.location.latitude),
+        hasLegacyCoordinates: !!(store.coordinates && store.coordinates.latitude),
+        businessProfileLocation: store.location,
+        legacyCoordinates: store.coordinates
       });
     });
   }, [stores]);
@@ -94,9 +96,18 @@ export default function StoreMapScreen({ route, navigation }) {
   };
 
   const getStoreCoordinates = (store) => {
-    // Use actual GPS coordinates if available
+    // Use new business profile location format first (this is what CreateStoreScreen saves)
+    if (store.location && store.location.latitude && store.location.longitude) {
+      console.log(`📍 Using business profile GPS coordinates for ${store.name}:`, store.location);
+      return {
+        latitude: store.location.latitude,
+        longitude: store.location.longitude
+      };
+    }
+    
+    // Fallback to legacy coordinates format for backward compatibility
     if (store.coordinates && store.coordinates.latitude && store.coordinates.longitude) {
-      console.log(`📍 Using stored GPS coordinates for ${store.name}:`, store.coordinates);
+      console.log(`📍 Using legacy GPS coordinates for ${store.name}:`, store.coordinates);
       return {
         latitude: store.coordinates.latitude,
         longitude: store.coordinates.longitude
