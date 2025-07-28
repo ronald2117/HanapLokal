@@ -458,6 +458,80 @@ export default function StoreDetailsScreen({ route, navigation }) {
     }
   };
 
+  const handleReportStore = () => {
+    // Check if user is guest
+    if (isGuestUser()) {
+      Alert.alert(
+        'Sign Up Required',
+        'You need to create an account to report stores.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Sign Up', 
+            onPress: () => navigation.navigate('Auth', { screen: 'Signup' })
+          }
+        ]
+      );
+      return;
+    }
+
+    const reportReasons = [
+      { key: 'inappropriate_content', label: 'Inappropriate Content' },
+      { key: 'false_information', label: 'False Information' },
+      { key: 'spam', label: 'Spam' },
+      { key: 'harassment', label: 'Harassment' },
+      { key: 'fraud', label: 'Fraudulent Activity' },
+      { key: 'closed_permanently', label: 'Store Permanently Closed' },
+      { key: 'wrong_location', label: 'Wrong Location' },
+      { key: 'other', label: 'Other' }
+    ];
+
+    Alert.alert(
+      'Report Store',
+      'Why are you reporting this store?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        ...reportReasons.map(reason => ({
+          text: reason.label,
+          onPress: () => submitReport(reason.key, reason.label)
+        }))
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const submitReport = async (reasonKey, reasonLabel) => {
+    try {
+      const reportData = {
+        storeId: store.id,
+        storeName: store.name,
+        storeOwnerId: store.ownerId,
+        reportedBy: currentUser.uid,
+        reporterName: userProfile?.firstName ? `${userProfile.firstName} ${userProfile.lastName || ''}`.trim() : currentUser.email || 'User',
+        reason: reasonKey,
+        reasonLabel: reasonLabel,
+        createdAt: serverTimestamp(),
+        status: 'pending', // pending, reviewed, resolved, dismissed
+        additionalInfo: null
+      };
+
+      await addDoc(collection(db, 'storeReports'), reportData);
+      
+      Alert.alert(
+        'Report Submitted',
+        'Thank you for your report. Our team will review it and take appropriate action.',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      Alert.alert(
+        'Error', 
+        'Failed to submit report. Please try again.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
   const renderProduct = ({ item }) => (
     <ProductCard 
       product={item} 
@@ -546,6 +620,23 @@ export default function StoreDetailsScreen({ route, navigation }) {
               {t('storeMap')}
             </Text>
           </TouchableOpacity>
+          
+          {/* Report button - only show if not the store owner */}
+          {store.ownerId !== currentUser?.uid && (
+            <TouchableOpacity
+              style={styles.reportButton}
+              onPress={handleReportStore}
+            >
+              <Ionicons
+                name="flag"
+                size={20}
+                color="#fff"
+              />
+              <Text style={styles.reportButtonText}>
+                Report
+              </Text>
+            </TouchableOpacity>
+          )}
           
           <TouchableOpacity
             style={styles.favoriteButton}
@@ -817,6 +908,25 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   mapButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  reportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#e74c3c',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  reportButtonText: {
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
