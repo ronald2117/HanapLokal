@@ -220,15 +220,26 @@ export default function StoreCard({
         
         <View style={styles.storeInfo}>
           <Text style={styles.storeName}>{store.name}</Text>
-          {getDistanceText() ? (
-            <Text style={styles.distance}>{getDistanceText()}</Text>
-          ) : null}
-          {store.category && (
-            <View style={styles.categoryRow}>
-              <Ionicons name={getCategoryInfo(store.category).icon} size={12} color={Colors.primary} />
-              <Text style={styles.categoryText}>{getCategoryInfo(store.category).name}</Text>
+          
+          {/* Business Profile Type - Highlighted */}
+          {(store.profileType || store.primaryType || (store.profileTypes && store.profileTypes.length > 0)) && (
+            <View style={styles.profileTypeRow}>
+              <View style={[
+                styles.profileTypeBadge,
+                { backgroundColor: getProfileTypeInfo(store.profileType || store.primaryType || (store.profileTypes && store.profileTypes[0])).color || Colors.primary }
+              ]}>
+                <Ionicons 
+                  name={getProfileTypeInfo(store.profileType || store.primaryType || (store.profileTypes && store.profileTypes[0])).icon} 
+                  size={12} 
+                  color="#fff"
+                />
+                <Text style={styles.profileTypeText}>
+                  {getProfileTypeInfo(store.profileType || store.primaryType || (store.profileTypes && store.profileTypes[0])).name}
+                </Text>
+              </View>
             </View>
           )}
+          
           <View style={styles.locationRow}>
             <Ionicons name="location-outline" size={14} color={Colors.text.secondary} />
             <Text style={styles.storeAddress}>{store.address}</Text>
@@ -247,6 +258,15 @@ export default function StoreCard({
               <Text style={styles.noReviewsText}>No reviews</Text>
             )}
           </View>
+          {getDistanceText() ? (
+            <Text style={styles.distance}>{getDistanceText()}</Text>
+          ) : null}
+          {store.category && (
+            <View style={styles.categoryRow}>
+              <Ionicons name={getCategoryInfo(store.category).icon} size={12} color={Colors.primary} />
+              <Text style={styles.categoryText}>{getCategoryInfo(store.category).name}</Text>
+            </View>
+          )}
         </View>
         
         {showFavoriteIcon && (
@@ -338,6 +358,27 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeight.bold,
     color: Colors.text.primary,
     marginBottom: Spacing.xs,
+  },
+  
+  profileTypeRow: {
+    marginBottom: Spacing.xs,
+  },
+  
+  profileTypeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.secondaryLight,
+    borderRadius: 20,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    alignSelf: 'flex-start',
+  },
+  
+  profileTypeText: {
+    fontSize: Typography.fontSize.xs,
+    color: Colors.text.white,
+    fontWeight: Typography.fontWeight.semibold,
+    marginLeft: 4,
   },
   
   categoryRow: {
