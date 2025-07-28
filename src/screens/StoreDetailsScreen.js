@@ -553,221 +553,251 @@ export default function StoreDetailsScreen({ route, navigation }) {
         />
       }
     >
-      {/* Cover Photo */}
-      {store.coverImage ? (
-        <Image source={{ uri: store.coverImage }} style={styles.coverImage} />
-      ) : (
-        <View style={styles.coverPlaceholder} />
-      )}
-      
-      <View style={styles.header}>
-        {/* Profile Picture */}
-        <View style={styles.profileContainer}>
-          {store.profileImage ? (
-            <Image source={{ uri: store.profileImage }} style={styles.profileImage} />
-          ) : (
-            <View style={styles.profilePlaceholder}>
-              <Text style={styles.profileInitial}>
-                {store.name ? store.name.charAt(0).toUpperCase() : '?'}
-              </Text>
-            </View>
-          )}
-        </View>
+      {/* Hero Section with Cover and Profile */}
+      <View style={styles.heroSection}>
+        {/* Cover Photo */}
+        {store.coverImage ? (
+          <Image source={{ uri: store.coverImage }} style={styles.coverImage} />
+        ) : (
+          <View style={styles.coverPlaceholder} />
+        )}
         
-        <View style={styles.storeInfo}>
-          <Text style={styles.storeName}>{store.name}</Text>
-          {store.category && (
-            <View style={styles.categoryContainer}>
-              <Ionicons name={getCategoryInfo().icon} size={16} color="#3498db" />
-              <Text style={styles.categoryText}>{getCategoryInfo().name}</Text>
+        {/* Profile Section Overlay */}
+        <View style={styles.profileSection}>
+          {/* Profile and Actions Row */}
+          <View style={styles.profileAndActionsContainer}>
+            {/* Profile Picture */}
+            <View style={styles.profileContainer}>
+              {store.profileImage ? (
+                <Image source={{ uri: store.profileImage }} style={styles.profileImage} />
+              ) : (
+                <View style={styles.profilePlaceholder}>
+                  <Text style={styles.profileInitial}>
+                    {store.name ? store.name.charAt(0).toUpperCase() : '?'}
+                  </Text>
+                </View>
+              )}
             </View>
-          )}
-          <Text style={styles.storeAddress}>📍 {store.address}</Text>
-          <Text style={styles.storeHours}>🕒 {store.hours}</Text>
-          {store.contact && <Text style={styles.storeContact}>📞 {store.contact}</Text>}
-        </View>
-        
-        <View style={styles.actionButtons}>
-          {/* Only show chat button if store has owner and it's not the current user's store */}
-          {store.ownerId && store.ownerId !== currentUser?.uid && (
-            <TouchableOpacity
-              style={styles.chatButton}
-              onPress={startChatWithStore}
-              disabled={chatLoading}
-            >
-              <Ionicons
-                name={chatLoading ? "hourglass" : "chatbubble"}
-                size={20}
-                color="#fff"
-              />
-              <Text style={styles.chatButtonText}>
-                {chatLoading ? t('loading') : t('chats')}
-              </Text>
-            </TouchableOpacity>
-          )}
-          
-          {/* Map button to view store location */}
-          <TouchableOpacity
-            style={styles.mapButton}
-            onPress={() => navigation.navigate('StoreMap', { stores: [store] })}
-          >
-            <Ionicons
-              name="map"
-              size={20}
-              color="#fff"
-            />
-            <Text style={styles.mapButtonText}>
-              {t('storeMap')}
-            </Text>
-          </TouchableOpacity>
-          
-          {/* Report button - only show if not the store owner */}
-          {store.ownerId !== currentUser?.uid && (
-            <TouchableOpacity
-              style={styles.reportButton}
-              onPress={handleReportStore}
-            >
-              <Ionicons
-                name="flag"
-                size={20}
-                color="#fff"
-              />
-              <Text style={styles.reportButtonText}>
-                Report
-              </Text>
-            </TouchableOpacity>
-          )}
-          
-          <TouchableOpacity
-            style={styles.favoriteButton}
-            onPress={toggleFavorite}
-          >
-            <Ionicons
-              name={isFavorite ? 'heart' : 'heart-outline'}
-              size={24}
-              color={isFavorite ? '#e74c3c' : '#7f8c8d'}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.aboutSection}>
-        <Text style={styles.sectionTitle}>{t('about')}</Text>
-        <Text style={styles.description}>{store.description}</Text>
-      </View>
-
-      {/* Social Links Section */}
-      {store.socialLinks && store.socialLinks.length > 0 && (
-        <View style={styles.socialLinksSection}>
-          <Text style={styles.sectionTitle}>Social Links</Text>
-          <View style={styles.socialLinksContainer}>
-            {store.socialLinks.map((link, index) => {
-              const platform = link.platform || 'link';
-              const platformIcon = getPlatformIcon(platform);
-              const platformColor = getPlatformColor(platform);
-              
-              return (
+            
+            {/* Action Buttons */}
+            <View style={styles.actionButtons}>
+              {/* All Actions in One Row */}
+              <View style={styles.horizontalActionsRow}>
+                {/* Report Button */}
+                {store.ownerId !== currentUser?.uid && (
+                  <TouchableOpacity
+                    style={styles.roundActionButton}
+                    onPress={handleReportStore}
+                  >
+                    <Ionicons name="flag" size={18} color="#e74c3c" />
+                  </TouchableOpacity>
+                )}
+                
+                {/* Map Button */}
                 <TouchableOpacity
-                  key={index}
-                  style={[styles.socialLinkItem, { borderColor: platformColor }]}
-                  onPress={() => openSocialLink(link.url)}
+                  style={styles.roundActionButton}
+                  onPress={() => navigation.navigate('StoreMap', { stores: [store] })}
+                >
+                  <Ionicons name="map" size={18} color="#27ae60" />
+                </TouchableOpacity>
+                
+                {/* Chat Button */}
+                {store.ownerId && store.ownerId !== currentUser?.uid && (
+                  <TouchableOpacity
+                    style={styles.roundActionButton}
+                    onPress={startChatWithStore}
+                    disabled={chatLoading}
+                  >
+                    <Ionicons
+                      name={chatLoading ? "hourglass" : "chatbubble"}
+                      size={18}
+                      color="#3498db"
+                    />
+                  </TouchableOpacity>
+                )}
+                
+                {/* Favorite Button */}
+                <TouchableOpacity
+                  style={styles.roundActionButton}
+                  onPress={toggleFavorite}
                 >
                   <Ionicons
-                    name={platformIcon}
-                    size={20}
-                    color={platformColor}
-                    style={styles.socialLinkIcon}
+                    name={isFavorite ? 'heart' : 'heart-outline'}
+                    size={18}
+                    color={isFavorite ? '#e74c3c' : '#7f8c8d'}
                   />
-                  <Text style={[styles.socialLinkText, { color: platformColor }]} numberOfLines={1}>
-                    {link.url.replace(/^https?:\/\//, '')}
-                  </Text>
                 </TouchableOpacity>
-              );
-            })}
+              </View>
+            </View>
           </View>
-        </View>
-      )}
-
-      {/* Reviews Section */}
-      <View style={styles.reviewsSection}>
-        <View style={styles.reviewsHeader}>
-          <Text style={styles.sectionTitle}>{t('reviews')}</Text>
-          <TouchableOpacity
-            style={styles.seeAllButton}
-            onPress={() => navigation.navigate('StoreReviews', { store })}
-          >
-            <Text style={styles.seeAllText}>{t('seeAll')}</Text>
-          </TouchableOpacity>
-        </View>
-        
-        {reviewCount > 0 ? (
-          <>
-            <View style={styles.ratingOverview}>
-              <View style={styles.ratingStats}>
-                <Text style={styles.averageRating}>
-                  {averageRating.toFixed(1)}
-                </Text>
-                <View style={styles.starsContainer}>
+          
+          {/* Store Basic Info */}
+          <View style={styles.storeBasicInfo}>
+            <Text style={styles.storeName}>{store.name}</Text>
+            
+            {/* Category Badge */}
+            {store.category && (
+              <View style={styles.categoryBadge}>
+                <Ionicons name={getCategoryInfo().icon} size={14} color="#3498db" />
+                <Text style={styles.categoryText}>{getCategoryInfo().name}</Text>
+              </View>
+            )}
+            
+            {/* Rating */}
+            {reviewCount > 0 && (
+              <View style={styles.ratingContainer}>
+                <View style={styles.stars}>
                   {renderStars(averageRating)}
                 </View>
-                <Text style={styles.reviewCount}>
-                  {reviewCount} {reviewCount === 1 ? t('review') : t('reviews')}
+                <Text style={styles.ratingText}>
+                  {averageRating.toFixed(1)} ({reviewCount} reviews)
                 </Text>
               </View>
+            )}
+          </View>
+        </View>
+      </View>
+
+      {/* Content Sections */}
+      <View style={styles.contentContainer}>
+        
+        {/* Store Info Card */}
+        <View style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <Ionicons name="location" size={20} color="#3498db" />
+            <Text style={styles.infoText}>{store.address}</Text>
+          </View>
+          
+          <View style={styles.infoRow}>
+            <Ionicons name="time" size={20} color="#3498db" />
+            <Text style={styles.infoText}>{store.hours}</Text>
+          </View>
+          
+          {store.contact && (
+            <View style={styles.infoRow}>
+              <Ionicons name="call" size={20} color="#3498db" />
+              <Text style={styles.infoText}>{store.contact}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* About Section */}
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>{t('about')}</Text>
+          <Text style={styles.description}>{store.description}</Text>
+        </View>
+
+        {/* Social Links Section */}
+        {store.socialLinks && store.socialLinks.length > 0 && (
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>Social Links</Text>
+            <View style={styles.socialLinksGrid}>
+              {store.socialLinks.map((link, index) => {
+                const platform = link.platform || 'link';
+                const platformIcon = getPlatformIcon(platform);
+                const platformColor = getPlatformColor(platform);
+                
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={[styles.socialLinkItem, { borderColor: platformColor }]}
+                    onPress={() => openSocialLink(link.url)}
+                  >
+                    <Ionicons
+                      name={platformIcon}
+                      size={18}
+                      color={platformColor}
+                    />
+                    <Text style={[styles.socialLinkText, { color: platformColor }]} numberOfLines={1}>
+                      {link.url.replace(/^https?:\/\//, '')}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
+        {/* Reviews Section */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{t('reviews')}</Text>
+            {reviewCount > 0 && (
               <TouchableOpacity
-                style={styles.writeReviewButton}
+                style={styles.seeAllButton}
+                onPress={() => navigation.navigate('StoreReviews', { store })}
+              >
+                <Text style={styles.seeAllText}>{t('seeAll')}</Text>
+                <Ionicons name="chevron-forward" size={16} color="#3498db" />
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {reviewCount > 0 ? (
+            <>
+              <TouchableOpacity
+                style={styles.writeReviewCard}
                 onPress={() => navigation.navigate('StoreReview', { store })}
               >
                 <Ionicons 
                   name={userHasReviewed ? "create" : "create-outline"} 
-                  size={16} 
+                  size={20} 
                   color="#3498db" 
                 />
                 <Text style={styles.writeReviewText}>
-                  {userHasReviewed ? t('edit') + ' ' + t('review') : t('writeReview')}
+                  {userHasReviewed ? 'Edit Your Review' : 'Write a Review'}
+                </Text>
+                <Ionicons name="chevron-forward" size={16} color="#3498db" />
+              </TouchableOpacity>
+              
+              <View style={styles.reviewsList}>
+                {reviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
+              </View>
+            </>
+          ) : (
+            <View style={styles.noReviewsContainer}>
+              <Ionicons name="star-outline" size={48} color="#bdc3c7" />
+              <Text style={styles.noReviewsText}>{t('noReviewsYet')}</Text>
+              <Text style={styles.noReviewsSubtext}>{t('beFirstToReview')}</Text>
+              <TouchableOpacity
+                style={styles.firstReviewButton}
+                onPress={() => navigation.navigate('StoreReview', { store })}
+              >
+                <Text style={styles.firstReviewButtonText}>
+                  {t('writeFirstReview')}
                 </Text>
               </TouchableOpacity>
             </View>
-            
-            {reviews.map((review) => (
-              <ReviewCard key={review.id} review={review} />
-            ))}
-          </>
-        ) : (
-          <View style={styles.noReviewsContainer}>
-            <Ionicons name="star-outline" size={32} color="#bdc3c7" />
-            <Text style={styles.noReviewsText}>{t('noReviewsYet')}</Text>
-            <TouchableOpacity
-              style={styles.firstReviewButton}
-              onPress={() => navigation.navigate('StoreReview', { store })}
-            >
-              <Text style={styles.firstReviewButtonText}>
-                {t('writeFirstReview')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+          )}
+        </View>
 
-      <View style={styles.productsSection}>
-        <Text style={styles.sectionTitle}>{t('products')}</Text>
-        {loading ? (
-          <Text style={styles.loadingText}>{t('loadingProducts')}</Text>
-        ) : products.length > 0 ? (
-          <FlatList
-            data={products}
-            renderItem={renderProduct}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            scrollEnabled={false}
-            columnWrapperStyle={styles.productRow}
-          />
-        ) : (
-          <View style={styles.emptyProducts}>
-            <Ionicons name="cube-outline" size={48} color="#bdc3c7" />
-            <Text style={styles.emptyText}>{t('noProductsAvailable')}</Text>
-          </View>
-        )}
+        {/* Products Section */}
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>{t('products')}</Text>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>{t('loadingProducts')}</Text>
+            </View>
+          ) : products.length > 0 ? (
+            <FlatList
+              data={products}
+              renderItem={renderProduct}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              scrollEnabled={false}
+              columnWrapperStyle={styles.productRow}
+              contentContainerStyle={styles.productsGrid}
+            />
+          ) : (
+            <View style={styles.emptyProducts}>
+              <Ionicons name="cube-outline" size={48} color="#bdc3c7" />
+              <Text style={styles.emptyText}>{t('noProductsAvailable')}</Text>
+            </View>
+          )}
+        </View>
+        
       </View>
 
       {/* Toast Notification */}
@@ -790,6 +820,11 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 100,
   },
+  
+  // Hero Section
+  heroSection: {
+    position: 'relative',
+  },
   coverImage: {
     width: '100%',
     height: 200,
@@ -800,31 +835,43 @@ const styles = StyleSheet.create({
     height: 200,
     backgroundColor: '#ecf0f1',
   },
-  header: {
+  
+  // Profile Section
+  profileSection: {
     backgroundColor: '#fff',
-    padding: 20,
+    marginTop: -30,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  profileAndActionsContainer: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    borderBottomWidth: 1,
-    borderBottomColor: '#ecf0f1',
-    marginTop: -40, // Pull up over cover image
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
   },
   profileContainer: {
-    marginRight: 15,
-    marginTop: -20, // Pull up over cover image
+    marginTop: -50,
   },
   profileImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     borderWidth: 4,
     borderColor: '#fff',
     backgroundColor: '#f8f9fa',
   },
   profilePlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     borderWidth: 4,
     borderColor: '#fff',
     backgroundColor: '#3498db',
@@ -836,19 +883,27 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
   },
-  storeInfo: {
-    flex: 1,
+  
+  // Store Basic Info
+  storeBasicInfo: {
+    alignItems: 'center',
+    marginBottom: 0,
   },
   storeName: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#2c3e50',
     marginBottom: 8,
+    textAlign: 'center',
   },
-  categoryContainer: {
+  categoryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    backgroundColor: '#e3f2fd',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 8,
   },
   categoryText: {
     fontSize: 14,
@@ -856,243 +911,215 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     fontWeight: '600',
   },
-  storeAddress: {
-    fontSize: 16,
-    color: '#7f8c8d',
-    marginBottom: 4,
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
   },
-  storeHours: {
-    fontSize: 16,
-    color: '#7f8c8d',
-    marginBottom: 4,
+  stars: {
+    flexDirection: 'row',
+    marginRight: 8,
   },
-  storeContact: {
-    fontSize: 16,
+  ratingText: {
+    fontSize: 14,
     color: '#7f8c8d',
+    fontWeight: '500',
   },
+  
+  // Action Buttons
   actionButtons: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 8,
+    marginTop: -20,
+    paddingLeft: 10,
   },
-  chatButton: {
+  horizontalActionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#3498db',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
+    gap: 13,
+  },
+  roundActionButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#f8f9fa',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#e9ecef',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  chatButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 6,
+  
+  // Content Container
+  contentContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    gap: 20,
   },
-  mapButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#27ae60',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  mapButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 6,
-  },
-  reportButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#e74c3c',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  reportButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 6,
-  },
-  favoriteButton: {
-    padding: 8,
-  },
-  aboutSection: {
+  
+  // Cards
+  sectionCard: {
     backgroundColor: '#fff',
+    borderRadius: 16,
     padding: 20,
-    marginTop: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  infoCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    gap: 12,
+  },
+  
+  // Info Rows
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  infoText: {
+    fontSize: 16,
+    color: '#2c3e50',
+    marginLeft: 12,
+    flex: 1,
+  },
+  
+  // Section Headers
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#2c3e50',
-    marginBottom: 10,
   },
+  seeAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  seeAllText: {
+    color: '#3498db',
+    fontSize: 16,
+    fontWeight: '600',
+    marginRight: 4,
+  },
+  
+  // Description
   description: {
     fontSize: 16,
     color: '#7f8c8d',
     lineHeight: 24,
   },
-  productsSection: {
-    backgroundColor: '#fff',
-    padding: 20,
-    marginTop: 10,
-  },
-  loadingText: {
-    textAlign: 'center',
-    color: '#7f8c8d',
-    fontSize: 16,
-    padding: 20,
-  },
-  productRow: {
-    justifyContent: 'space-between',
-  },
-  emptyProducts: {
-    alignItems: 'center',
-    padding: 40,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#7f8c8d',
-    marginTop: 10,
-  },
-  reviewsSection: {
-    backgroundColor: '#fff',
-    padding: 20,
-    marginTop: 10,
-  },
-  reviewsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  seeAllButton: {
-    padding: 5,
-  },
-  seeAllText: {
-    color: '#3498db',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  ratingOverview: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ecf0f1',
-  },
-  ratingStats: {
-    alignItems: 'center',
-  },
-  averageRating: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2c3e50',
-  },
-  starsContainer: {
-    flexDirection: 'row',
-    marginVertical: 5,
-  },
-  reviewCount: {
-    fontSize: 12,
-    color: '#7f8c8d',
-  },
-  writeReviewButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#3498db',
-  },
-  writeReviewText: {
-    color: '#3498db',
-    fontSize: 14,
-    fontWeight: '600',
-    marginLeft: 5,
-  },
-  noReviewsContainer: {
-    alignItems: 'center',
-    padding: 30,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 10,
-  },
-  noReviewsText: {
-    fontSize: 16,
-    color: '#7f8c8d',
-    marginTop: 10,
-    marginBottom: 15,
-  },
-  firstReviewButton: {
-    backgroundColor: '#3498db',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 6,
-  },
-  firstReviewButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  socialLinksSection: {
-    backgroundColor: '#fff',
-    padding: 15,
-    marginHorizontal: 15,
-    marginVertical: 10,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  socialLinksContainer: {
+  
+  // Social Links
+  socialLinksGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 10,
+    gap: 12,
   },
   socialLinkItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f8f9fa',
     borderWidth: 1.5,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginRight: 10,
-    marginBottom: 8,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     flex: 1,
     minWidth: '45%',
     maxWidth: '48%',
   },
-  socialLinkIcon: {
-    marginRight: 8,
-  },
   socialLinkText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
+    marginLeft: 8,
     flex: 1,
+  },
+  
+  // Reviews
+  writeReviewCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  writeReviewText: {
+    fontSize: 16,
+    color: '#3498db',
+    fontWeight: '600',
+    marginLeft: 12,
+    flex: 1,
+  },
+  reviewsList: {
+    gap: 12,
+  },
+  noReviewsContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  noReviewsText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#7f8c8d',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  noReviewsSubtext: {
+    fontSize: 14,
+    color: '#95a5a6',
+    marginBottom: 20,
+  },
+  firstReviewButton: {
+    backgroundColor: '#3498db',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+  },
+  firstReviewButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  
+  // Products
+  loadingContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#7f8c8d',
+  },
+  productsGrid: {
+    gap: 12,
+  },
+  productRow: {
+    justifyContent: 'space-between',
+  },
+  emptyProducts: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#7f8c8d',
+    marginTop: 12,
   },
 });
