@@ -103,7 +103,7 @@ export default function HomeScreen({ navigation }) {
   const filterOptions = [
     {
       type: 'header',
-      title: 'Profile Types',
+      title: t('profileTypes'),
       items: PROFILE_TYPES.map(type => ({
         id: `profile:${type.id}`,
         name: type.name,
@@ -114,7 +114,7 @@ export default function HomeScreen({ navigation }) {
     },
     {
       type: 'header', 
-      title: 'Business Categories',
+      title: t('businessCategories'),
       items: BUSINESS_CATEGORIES.map(category => ({
         id: `category:${category.id}`,
         name: category.name,
@@ -297,7 +297,7 @@ export default function HomeScreen({ navigation }) {
         return getCategoryInfo(value).name;
       }
     } else {
-      return `${selectedCategories.length} selected`;
+      return `${selectedCategories.length} ${t('selected')}`;
     }
   };
 
@@ -389,7 +389,7 @@ export default function HomeScreen({ navigation }) {
             <View style={styles.modalHeaderActions}>
               {selectedCategories.length > 0 && (
                 <TouchableOpacity onPress={clearAllCategories} style={styles.clearButton}>
-                  <Text style={styles.clearButtonText}>Clear All</Text>
+                  <Text style={styles.clearButtonText}>{t('clearAll')}</Text>
                 </TouchableOpacity>
               )}
               <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
@@ -437,7 +437,7 @@ export default function HomeScreen({ navigation }) {
               onPress={() => setShowCategoryModal(false)}
             >
               <Text style={styles.applyButtonText}>
-                Apply {selectedCategories.length > 0 ? `(${selectedCategories.length})` : ''}
+                {t('apply')} {selectedCategories.length > 0 ? `(${selectedCategories.length})` : ''}
               </Text>
             </TouchableOpacity>
           </View>

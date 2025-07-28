@@ -144,6 +144,14 @@ export const translations = {
     // Modals
     selectSearchRadius: 'Select Search Radius',
     selectCategory: 'Select Category',
+    selectFilters: 'Select Filters',
+    clearAll: 'Clear All',
+    apply: 'Apply',
+    selected: 'selected',
+    
+    // Filter sections
+    profileTypes: 'Profile Types',
+    businessCategories: 'Business Categories',
     
     // Alerts
     logoutConfirm: 'Are you sure you want to logout?',
@@ -383,6 +391,14 @@ export const translations = {
     // Modals
     selectSearchRadius: 'Piliin ang Search Radius',
     selectCategory: 'Piliin ang Kategorya',
+    selectFilters: 'Piliin ang mga Filter',
+    clearAll: 'Burahin Lahat',
+    apply: 'I-apply',
+    selected: 'napili',
+    
+    // Filter sections
+    profileTypes: 'Mga Uri ng Profile',
+    businessCategories: 'Mga Kategorya ng Negosyo',
     
     // Alerts
     logoutConfirm: 'Sigurado ba kayong mag-logout?',
