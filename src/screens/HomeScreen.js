@@ -22,13 +22,14 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
 import StoreCard from '../components/StoreCard';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
+import { PROFILE_TYPES, BUSINESS_CATEGORIES, getProfileTypeInfo, getCategoryInfo } from '../config/categories';
 
 export default function HomeScreen({ navigation }) {
   const [stores, setStores] = useState([]);
   const [products, setProducts] = useState([]);
   const [filteredStores, setFilteredStores] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [searchRadius, setSearchRadius] = useState(10); // Default 10km radius
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -98,22 +99,30 @@ export default function HomeScreen({ navigation }) {
     { value: -1, label: t('noLimit') }, // -1 means no distance filtering
   ];
 
-  // Store categories for filtering
-  const storeCategories = [
-    { id: '', name: t('all'), icon: 'apps' },
-    { id: 'sari-sari', name: t('sariSari'), icon: 'storefront' },
-    { id: 'kainan', name: t('restaurant'), icon: 'restaurant' },
-    { id: 'laundry', name: t('laundry'), icon: 'shirt' },
-    { id: 'vegetables', name: t('vegetables'), icon: 'leaf' },
-    { id: 'meat', name: t('meatShop'), icon: 'fish' },
-    { id: 'bakery', name: t('bakery'), icon: 'cafe' },
-    { id: 'pharmacy', name: t('pharmacy'), icon: 'medical' },
-    { id: 'hardware', name: t('hardware'), icon: 'hammer' },
-    { id: 'clothing', name: t('clothing'), icon: 'shirt-outline' },
-    { id: 'electronics', name: t('electronics'), icon: 'phone-portrait' },
-    { id: 'beauty', name: t('beauty'), icon: 'cut' },
-    { id: 'automotive', name: t('automotive'), icon: 'car' },
-    { id: 'other', name: t('other'), icon: 'business' },
+  // Combined filter options: Profile Types + Business Categories
+  const filterOptions = [
+    {
+      type: 'header',
+      title: 'Profile Types',
+      items: PROFILE_TYPES.map(type => ({
+        id: `profile:${type.id}`,
+        name: type.name,
+        icon: type.icon,
+        color: type.color,
+        filterType: 'profileType'
+      }))
+    },
+    {
+      type: 'header', 
+      title: 'Business Categories',
+      items: BUSINESS_CATEGORIES.map(category => ({
+        id: `category:${category.id}`,
+        name: category.name,
+        icon: category.icon,
+        color: Colors.primary,
+        filterType: 'category'
+      }))
+    }
   ];
 
   useEffect(() => {
@@ -123,7 +132,7 @@ export default function HomeScreen({ navigation }) {
 
   useEffect(() => {
     filterStores();
-  }, [searchQuery, selectedCategory, searchRadius, stores, products, location]);
+  }, [searchQuery, selectedCategories, searchRadius, stores, products, location]);
 
   // Calculate distance between two coordinates using Haversine formula
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -204,9 +213,26 @@ export default function HomeScreen({ navigation }) {
       });
     }
 
-    // Filter by category
-    if (selectedCategory) {
-      filtered = filtered.filter(store => store.category === selectedCategory);
+    // Filter by selected categories (profile types and business categories)
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(store => {
+        return selectedCategories.some(selectedId => {
+          const [filterType, value] = selectedId.split(':');
+          
+          if (filterType === 'profile') {
+            // Check profile type
+            return store.profileType === value || 
+                   store.primaryType === value || 
+                   (store.profileTypes && store.profileTypes.includes(value));
+          } else if (filterType === 'category') {
+            // Check business category
+            return store.category === value ||
+                   (store.categories && store.categories.includes(value));
+          }
+          
+          return false;
+        });
+      });
     }
 
     // Smart search: Filter by search query (stores AND products)
@@ -261,8 +287,18 @@ export default function HomeScreen({ navigation }) {
   };
 
   const getSelectedCategoryName = () => {
-    const category = storeCategories.find(cat => cat.id === selectedCategory);
-    return category ? category.name : t('all');
+    if (selectedCategories.length === 0) {
+      return t('all');
+    } else if (selectedCategories.length === 1) {
+      const [filterType, value] = selectedCategories[0].split(':');
+      if (filterType === 'profile') {
+        return getProfileTypeInfo(value).name;
+      } else {
+        return getCategoryInfo(value).name;
+      }
+    } else {
+      return `${selectedCategories.length} selected`;
+    }
   };
 
   const getSelectedRadiusLabel = () => {
@@ -276,7 +312,19 @@ export default function HomeScreen({ navigation }) {
   };
 
   const handleCategorySelect = (id) => {
-    setSelectedCategory(id);
+    setSelectedCategories(prev => {
+      if (prev.includes(id)) {
+        // Remove if already selected
+        return prev.filter(categoryId => categoryId !== id);
+      } else {
+        // Add if not selected
+        return [...prev, id];
+      }
+    });
+  };
+
+  const clearAllCategories = () => {
+    setSelectedCategories([]);
     setShowCategoryModal(false);
   };
 
@@ -337,38 +385,62 @@ export default function HomeScreen({ navigation }) {
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{t('selectCategory')}</Text>
-            <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
-              <Ionicons name="close" size={24} color={Colors.text.secondary} />
-            </TouchableOpacity>
+            <Text style={styles.modalTitle}>{t('selectFilters')}</Text>
+            <View style={styles.modalHeaderActions}>
+              {selectedCategories.length > 0 && (
+                <TouchableOpacity onPress={clearAllCategories} style={styles.clearButton}>
+                  <Text style={styles.clearButtonText}>Clear All</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity onPress={() => setShowCategoryModal(false)}>
+                <Ionicons name="close" size={24} color={Colors.text.secondary} />
+              </TouchableOpacity>
+            </View>
           </View>
           <ScrollView style={styles.modalContent}>
-            {storeCategories.map((category) => (
-              <TouchableOpacity
-                key={category.id}
-                style={[
-                  styles.modalItem,
-                  selectedCategory === category.id && styles.modalItemSelected
-                ]}
-                onPress={() => handleCategorySelect(category.id)}
-              >
-                <Ionicons 
-                  name={category.icon} 
-                  size={20} 
-                  color={selectedCategory === category.id ? Colors.primary : Colors.text.secondary} 
-                />
-                <Text style={[
-                  styles.modalItemText,
-                  selectedCategory === category.id && styles.modalItemTextSelected
-                ]}>
-                  {category.name}
-                </Text>
-                {selectedCategory === category.id && (
-                  <Ionicons name="checkmark" size={20} color={Colors.primary} />
-                )}
-              </TouchableOpacity>
+            {filterOptions.map((section, sectionIndex) => (
+              <View key={sectionIndex}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionHeaderText}>{section.title}</Text>
+                </View>
+                {section.items.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[
+                      styles.modalItem,
+                      selectedCategories.includes(item.id) && styles.modalItemSelected
+                    ]}
+                    onPress={() => handleCategorySelect(item.id)}
+                  >
+                    <Ionicons 
+                      name={item.icon} 
+                      size={20} 
+                      color={selectedCategories.includes(item.id) ? Colors.primary : Colors.text.secondary} 
+                    />
+                    <Text style={[
+                      styles.modalItemText,
+                      selectedCategories.includes(item.id) && styles.modalItemTextSelected
+                    ]}>
+                      {item.name}
+                    </Text>
+                    {selectedCategories.includes(item.id) && (
+                      <Ionicons name="checkmark" size={20} color={Colors.primary} />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
             ))}
           </ScrollView>
+          <View style={styles.modalFooter}>
+            <TouchableOpacity 
+              style={styles.applyButton}
+              onPress={() => setShowCategoryModal(false)}
+            >
+              <Text style={styles.applyButtonText}>
+                Apply {selectedCategories.length > 0 ? `(${selectedCategories.length})` : ''}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>
@@ -583,6 +655,60 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: Colors.text.light,
+  },
+
+  modalHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+
+  clearButton: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    backgroundColor: Colors.error,
+    borderRadius: BorderRadius.sm,
+  },
+
+  clearButtonText: {
+    color: Colors.text.white,
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.semibold,
+  },
+
+  sectionHeader: {
+    backgroundColor: Colors.background.light,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border.light,
+  },
+
+  sectionHeaderText: {
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.bold,
+    color: Colors.text.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  modalFooter: {
+    padding: Spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border.light,
+  },
+
+  applyButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+  },
+
+  applyButtonText: {
+    color: Colors.text.white,
+    fontSize: Typography.fontSize.base,
+    fontWeight: Typography.fontWeight.semibold,
   },
 
   modalTitle: {
