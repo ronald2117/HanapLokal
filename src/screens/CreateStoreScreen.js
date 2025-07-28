@@ -19,42 +19,59 @@ import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import { Colors, Typography, Spacing, BorderRadius } from '../styles/theme';
+import { 
+  PROFILE_TYPES, 
+  BUSINESS_CATEGORIES, 
+  getCategoriesForProfileType,
+  getProfileTypeInfo 
+} from '../config/categories';
+
+// Helper function to get category info by ID
+const getCategoryInfo = (categoryId) => {
+  return BUSINESS_CATEGORIES.find(cat => cat.id === categoryId) || { name: 'Unknown Category' };
+};
 
 export default function CreateStoreScreen({ navigation }) {
-  const [storeName, setStoreName] = useState('');
+  const [businessName, setBusinessName] = useState('');
   const [address, setAddress] = useState('');
   const [hours, setHours] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('');
+  const [profileTypes, setProfileTypes] = useState([]); // Multi-select
+  const [primaryType, setPrimaryType] = useState(''); // Main business type
+  const [categories, setCategories] = useState([]); // Multi-select categories
   const [profileImage, setProfileImage] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
-  const [storeCoordinates, setStoreCoordinates] = useState(null);
+  const [coordinates, setCoordinates] = useState(null);
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [serviceRadius, setServiceRadius] = useState(5);
   const [socialLinks, setSocialLinks] = useState([
     { id: 1, url: '', platform: 'link' },
     { id: 2, url: '', platform: 'link' },
     { id: 3, url: '', platform: 'link' },
     { id: 4, url: '', platform: 'link' }
   ]);
+  const [contactNumbers, setContactNumbers] = useState([
+    { id: 1, number: '', label: 'Mobile', type: 'mobile' },
+    { id: 2, number: '', label: 'Landline', type: 'landline' }
+  ]);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const { currentUser, isGuestUser } = useAuth();
 
-  // Store categories
-  const storeCategories = [
-    { id: 'sari-sari', name: 'Sari-sari Store', icon: 'storefront' },
-    { id: 'kainan', name: 'Kainan/Restaurant', icon: 'restaurant' },
-    { id: 'laundry', name: 'Laundry Shop', icon: 'shirt' },
-    { id: 'vegetables', name: 'Vegetable Store', icon: 'leaf' },
-    { id: 'meat', name: 'Meat Shop', icon: 'fish' },
-    { id: 'bakery', name: 'Bakery', icon: 'cafe' },
-    { id: 'pharmacy', name: 'Pharmacy', icon: 'medical' },
-    { id: 'hardware', name: 'Hardware Store', icon: 'hammer' },
-    { id: 'clothing', name: 'Clothing Store', icon: 'shirt-outline' },
-    { id: 'electronics', name: 'Electronics', icon: 'phone-portrait' },
-    { id: 'beauty', name: 'Beauty Salon', icon: 'cut' },
-    { id: 'automotive', name: 'Automotive Shop', icon: 'car' },
-    { id: 'other', name: 'Other', icon: 'business' },
-  ];
+  // Get available categories based on selected profile types
+  const getAvailableCategories = () => {
+    if (profileTypes.length === 0) return BUSINESS_CATEGORIES;
+    
+    const availableCategories = new Set();
+    profileTypes.forEach(typeId => {
+      getCategoriesForProfileType(typeId).forEach(cat => {
+        availableCategories.add(cat);
+      });
+    });
+    
+    return Array.from(availableCategories);
+  };
 
   // Function to detect social platform from URL
   const detectPlatform = (url) => {
@@ -138,6 +155,69 @@ export default function CreateStoreScreen({ navigation }) {
     );
   };
 
+  // Contact Number Management Functions
+  const updateContactNumber = (id, number) => {
+    setContactNumbers(prev => 
+      prev.map(contact => 
+        contact.id === id 
+          ? { ...contact, number: number.trim() }
+          : contact
+      )
+    );
+  };
+
+  const updateContactLabel = (id, label, type) => {
+    setContactNumbers(prev => 
+      prev.map(contact => 
+        contact.id === id 
+          ? { ...contact, label, type }
+          : contact
+      )
+    );
+  };
+
+  const addContactNumber = () => {
+    if (contactNumbers.length < 3) {
+      const newId = Math.max(...contactNumbers.map(c => c.id)) + 1;
+      setContactNumbers(prev => [...prev, { 
+        id: newId, 
+        number: '', 
+        label: 'Mobile', 
+        type: 'mobile' 
+      }]);
+    }
+  };
+
+  const removeContactNumber = (id) => {
+    if (contactNumbers.length > 1) {
+      setContactNumbers(prev => prev.filter(contact => contact.id !== id));
+    }
+  };
+
+  const getContactIcon = (type) => {
+    const icons = {
+      mobile: 'phone-portrait',
+      landline: 'call',
+      whatsapp: 'logo-whatsapp',
+      viber: 'chatbubble',
+      telegram: 'send',
+      fax: 'document-text'
+    };
+    return icons[type] || 'call';
+  };
+
+  const getContactColor = (type) => {
+    const colors = {
+      mobile: '#3498db',
+      landline: '#2c3e50',
+      whatsapp: '#25D366',
+      viber: '#665CAC',
+      telegram: '#0088CC',
+      fax: '#7f8c8d'
+    };
+    return colors[type] || '#3498db';
+  };
+
   // If user is a guest, show the guest restriction screen
   if (isGuestUser()) {
     return (
@@ -159,39 +239,39 @@ export default function CreateStoreScreen({ navigation }) {
                     resizeMode="contain"
                   />
                 </View>
-                <Text style={styles.guestTitle}>Gusto mo bang magkaroon ng sariling tindahan?</Text>
+                <Text style={styles.guestTitle}>Ready to start your business journey?</Text>
                 <Text style={styles.guestSubtitle}>
-                  Mga guest user ay hindi pwedeng mag-create ng store. Mag-register muna para sa full access!
+                  Join LocalFinds as a Store Owner, Service Provider, Freelancer, or any type of local entrepreneur!
                 </Text>
               </View>
 
               {/* Benefits Section */}
               <View style={styles.benefitsContainer}>
-                <Text style={styles.benefitsTitle}>Benefits ng pagkakaroon ng Store:</Text>
+                <Text style={styles.benefitsTitle}>What you can do on LocalFinds:</Text>
                 
                 <View style={styles.benefitItem}>
-                  <Ionicons name="cash" size={24} color={Colors.accent} />
-                  <Text style={styles.benefitText}>Mag-earn ng extra income</Text>
+                  <Ionicons name="storefront" size={24} color={Colors.accent} />
+                  <Text style={styles.benefitText}>Sell products from your store or home</Text>
+                </View>
+                
+                <View style={styles.benefitItem}>
+                  <Ionicons name="construct" size={24} color={Colors.accent} />
+                  <Text style={styles.benefitText}>Offer services and skilled work</Text>
+                </View>
+                
+                <View style={styles.benefitItem}>
+                  <Ionicons name="laptop" size={24} color={Colors.accent} />
+                  <Text style={styles.benefitText}>Freelance and showcase your portfolio</Text>
                 </View>
                 
                 <View style={styles.benefitItem}>
                   <Ionicons name="people" size={24} color={Colors.accent} />
-                  <Text style={styles.benefitText}>Maging kilala sa inyong community</Text>
+                  <Text style={styles.benefitText}>Connect with your local community</Text>
                 </View>
                 
                 <View style={styles.benefitItem}>
                   <Ionicons name="trending-up" size={24} color={Colors.accent} />
-                  <Text style={styles.benefitText}>Palakihin ang inyong business</Text>
-                </View>
-                
-                <View style={styles.benefitItem}>
-                  <Ionicons name="phone-portrait" size={24} color={Colors.accent} />
-                  <Text style={styles.benefitText}>Madaling ma-contact ng mga customers</Text>
-                </View>
-                
-                <View style={styles.benefitItem}>
-                  <Ionicons name="shield-checkmark" size={24} color={Colors.accent} />
-                  <Text style={styles.benefitText}>Secure at trusted platform</Text>
+                  <Text style={styles.benefitText}>Grow your income and customer base</Text>
                 </View>
               </View>
 
@@ -219,16 +299,38 @@ export default function CreateStoreScreen({ navigation }) {
     );
   }
 
-  const handleCreateStore = async () => {
+  const handleCreateBusinessProfile = async () => {
     try {
       if (!currentUser) {
-        Alert.alert('Error', 'You must be logged in to create a store');
+        Alert.alert('Error', 'You must be logged in to create a business profile');
         return;
       }
 
       // Validate form data
-      if (!storeName.trim() || !address.trim() || !hours.trim() || !description.trim() || !category) {
-        Alert.alert('Error', 'Please fill in all required fields including store category');
+      if (!businessName.trim() || !address.trim() || !hours.trim() || !description.trim()) {
+        Alert.alert('Error', 'Please fill in all required fields');
+        return;
+      }
+
+      if (profileTypes.length === 0) {
+        Alert.alert('Error', 'Please select at least one business type');
+        return;
+      }
+
+      if (categories.length === 0) {
+        Alert.alert('Error', 'Please select at least one business category');
+        return;
+      }
+
+      if (profileTypes.length > 1 && !primaryType) {
+        Alert.alert('Error', 'Please select a primary business type');
+        return;
+      }
+
+      // Validate contact numbers (minimum 1)
+      const validContactNumbers = contactNumbers.filter(contact => contact.number.trim() !== '');
+      if (validContactNumbers.length < 1) {
+        Alert.alert('Error', 'Please provide at least 1 contact number for your business');
         return;
       }
 
@@ -237,25 +339,63 @@ export default function CreateStoreScreen({ navigation }) {
       // Filter out empty social links
       const validSocialLinks = socialLinks.filter(link => link.url.trim() !== '');
 
-      const storeData = {
-        name: storeName.trim(),
-        address: address.trim(),
-        hours: hours.trim(),
+      // Generate search tags from business info
+      const searchTags = [
+        ...businessName.toLowerCase().split(' '),
+        ...description.toLowerCase().split(' ').slice(0, 10), // First 10 words
+        ...categories.map(cat => getCategoryInfo(cat).name.toLowerCase()),
+        ...profileTypes.map(type => getProfileTypeInfo(type).name.toLowerCase()),
+        address.toLowerCase().split(',')[1]?.trim() || '', // City from address
+      ].filter(tag => tag.length > 2); // Remove short words
+
+      const businessProfileData = {
+        name: businessName.trim(),
         description: description.trim(),
-        category: category,
-        profileImage: profileImage || '', // Store the image URI or empty string as placeholder
-        coverImage: coverImage || '', // Store the image URI or empty string as placeholder
-        coordinates: storeCoordinates, // Store GPS coordinates for accurate map positioning
-        socialLinks: validSocialLinks, // Add social links to store data
+        address: address.trim(),
+        location: coordinates ? {
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude,
+          accuracy: 10
+        } : null,
+        
+        // Profile Configuration
+        profileTypes: profileTypes,
+        primaryType: primaryType || profileTypes[0],
+        categories: categories,
+        
+        // Business Details
+        hours: hours.trim(),
+        isActive: true,
+        isMobile: isMobile,
+        serviceRadius: isMobile ? serviceRadius : 0,
+        
+        // Media
+        profileImage: profileImage || '',
+        coverImage: coverImage || '',
+        
+        // Contact & Social
+        contactNumbers: validContactNumbers,
+        socialLinks: validSocialLinks,
+        
+        // Metadata
         ownerId: currentUser.uid,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        
+        // Stats
+        totalListings: 0,
+        totalViews: 0,
+        rating: 0,
+        reviewCount: 0,
+        
+        // Search optimization
+        searchTags: [...new Set(searchTags)] // Remove duplicates
       };
 
-      const docRef = await addDoc(collection(db, 'stores'), storeData);
-      console.log('✅ Store created with ID:', docRef.id);
+      const docRef = await addDoc(collection(db, 'businessProfiles'), businessProfileData);
+      console.log('✅ Business profile created with ID:', docRef.id);
       
-      Alert.alert('Success', 'Store created successfully!', [
+      Alert.alert('Success', 'Business profile created successfully!', [
         { 
           text: 'OK', 
           onPress: () => {
@@ -266,8 +406,8 @@ export default function CreateStoreScreen({ navigation }) {
       ]);
 
     } catch (error) {
-      console.error('❌ Error creating store:', error);
-      Alert.alert('Error', `Failed to create store: ${error.message}`);
+      console.error('❌ Error creating business profile:', error);
+      Alert.alert('Error', `Failed to create business profile: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -349,11 +489,11 @@ export default function CreateStoreScreen({ navigation }) {
       });
 
       // Store coordinates for the store
-      const coordinates = {
+      const coords = {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude
       };
-      setStoreCoordinates(coordinates);
+      setCoordinates(coords);
 
       // Reverse geocode to get address
       const addresses = await Location.reverseGeocodeAsync({
@@ -380,7 +520,7 @@ export default function CreateStoreScreen({ navigation }) {
           setAddress(formattedAddress);
           Alert.alert(
             'Location Detected!', 
-            `Address: ${formattedAddress}\n\nCoordinates: ${coordinates.latitude.toFixed(6)}, ${coordinates.longitude.toFixed(6)}\nAccuracy: ${Math.round(location.coords.accuracy)}m`
+            `Address: ${formattedAddress}\n\nCoordinates: ${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}\nAccuracy: ${Math.round(location.coords.accuracy)}m`
           );
         } else {
           throw new Error('Could not format address');
@@ -401,41 +541,6 @@ export default function CreateStoreScreen({ navigation }) {
     }
   };
 
-  // For testing: Allow manual coordinate input (development only)
-  const setTestCoordinates = () => {
-    Alert.prompt(
-      'Set Test Coordinates',
-      'Enter coordinates as: latitude,longitude\n(Example: 14.5995,120.9842 for Manila)',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Set',
-          onPress: (input) => {
-            try {
-              const [lat, lng] = input.split(',').map(coord => parseFloat(coord.trim()));
-              if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
-                setStoreCoordinates({ latitude: lat, longitude: lng });
-                Alert.alert(
-                  'Test Coordinates Set!', 
-                  `Latitude: ${lat}\nLongitude: ${lng}\n\nNote: This is for testing only.`
-                );
-              } else {
-                Alert.alert('Error', 'Invalid format. Use: latitude,longitude');
-              }
-            } catch (error) {
-              Alert.alert('Error', 'Invalid format. Use: latitude,longitude');
-            }
-          },
-        },
-      ],
-      'plain-text',
-      '14.5995,120.9842'
-    );
-  };
-
   return (
     <KeyboardAvoidingView 
       style={styles.container}
@@ -448,54 +553,205 @@ export default function CreateStoreScreen({ navigation }) {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.form}>
-          <Text style={styles.title}>Create Your Store</Text>
+          <Text style={styles.title}>Create Your Business Profile</Text>
           <Text style={styles.subtitle}>
-            Set up your store profile to start connecting with local customers
+            Set up your profile to start connecting with local customers - whether you're a store owner, service provider, freelancer, or entrepreneur!
           </Text>
 
+          {/* Business Type Selection */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Store Name *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your store name"
-              value={storeName}
-              onChangeText={setStoreName}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Store Category *</Text>
-            <Text style={styles.subtitle}>Select what type of store you have</Text>
-            <View style={styles.categoryContainer}>
-              {storeCategories.map((cat) => (
+            <Text style={styles.label}>What type of business are you? *</Text>
+            <Text style={styles.sectionSubtitle}>Select all that apply to your business</Text>
+            <View style={styles.profileTypeContainer}>
+              {PROFILE_TYPES.map((type) => (
                 <TouchableOpacity
-                  key={cat.id}
+                  key={type.id}
                   style={[
-                    styles.categoryButton,
-                    category === cat.id && styles.categoryButtonSelected
+                    styles.profileTypeButton,
+                    profileTypes.includes(type.id) && styles.profileTypeButtonSelected
                   ]}
-                  onPress={() => setCategory(cat.id)}
+                  onPress={() => {
+                    if (profileTypes.includes(type.id)) {
+                      setProfileTypes(prev => prev.filter(t => t !== type.id));
+                      if (primaryType === type.id) {
+                        setPrimaryType('');
+                      }
+                    } else {
+                      setProfileTypes(prev => [...prev, type.id]);
+                      if (!primaryType) {
+                        setPrimaryType(type.id);
+                      }
+                    }
+                  }}
                 >
-                  <Ionicons 
-                    name={cat.icon} 
-                    size={20} 
-                    color={category === cat.id ? '#fff' : '#3498db'} 
-                  />
+                  <View style={styles.profileTypeIcon}>
+                    <Ionicons 
+                      name={type.icon} 
+                      size={28} 
+                      color={profileTypes.includes(type.id) ? '#fff' : type.color} 
+                    />
+                  </View>
                   <Text style={[
-                    styles.categoryButtonText,
-                    category === cat.id && styles.categoryButtonTextSelected
+                    styles.profileTypeButtonText,
+                    profileTypes.includes(type.id) && styles.profileTypeButtonTextSelected
                   ]}>
-                    {cat.name}
+                    {type.name}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
+            
+            {/* Primary Type Selection */}
+            {profileTypes.length > 1 && (
+              <View style={styles.primaryTypeSection}>
+                <Text style={styles.label}>Primary Business Type</Text>
+                <Text style={styles.sectionSubtitle}>Which one best describes your main business?</Text>
+                <View style={styles.primaryTypeContainer}>
+                  {profileTypes.map((typeId) => {
+                    const type = getProfileTypeInfo(typeId);
+                    return (
+                      <TouchableOpacity
+                        key={typeId}
+                        style={[
+                          styles.primaryTypeButton,
+                          primaryType === typeId && styles.primaryTypeButtonSelected
+                        ]}
+                        onPress={() => setPrimaryType(typeId)}
+                      >
+                        <Ionicons 
+                          name={type.icon} 
+                          size={16} 
+                          color={primaryType === typeId ? '#fff' : type.color} 
+                        />
+                        <Text style={[
+                          styles.primaryTypeButtonText,
+                          primaryType === typeId && styles.primaryTypeButtonTextSelected
+                        ]}>
+                          {type.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
           </View>
 
-          {/* Store Images Section */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Store Images</Text>
-            <Text style={styles.subtitle}>Add profile and cover photos to make your store more attractive</Text>
+            <Text style={styles.label}>Business Name *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your business name"
+              value={businessName}
+              onChangeText={setBusinessName}
+            />
+          </View>
+
+          {/* Business Categories */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Business Categories *</Text>
+            <Text style={styles.sectionSubtitle}>What categories best describe your business?</Text>
+            
+            {/* Category Dropdown */}
+            <TouchableOpacity 
+              style={styles.categoryDropdownButton}
+              onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+            >
+              <View style={styles.categoryDropdownHeader}>
+                <Ionicons name="apps" size={20} color={Colors.primary} />
+                <Text style={styles.categoryDropdownText}>
+                  {categories.length === 0 
+                    ? 'Select business categories' 
+                    : `${categories.length} categor${categories.length === 1 ? 'y' : 'ies'} selected`
+                  }
+                </Text>
+                <Ionicons 
+                  name={showCategoryDropdown ? "chevron-up" : "chevron-down"} 
+                  size={20} 
+                  color="#7f8c8d" 
+                />
+              </View>
+            </TouchableOpacity>
+            
+            {/* Selected Categories Preview */}
+            {categories.length > 0 && (
+              <View style={styles.selectedCategoriesContainer}>
+                <Text style={styles.selectedCategoriesLabel}>Selected:</Text>
+                <View style={styles.selectedCategoriesGrid}>
+                  {categories.map((catId) => {
+                    const cat = getAvailableCategories().find(c => c.id === catId);
+                    return cat ? (
+                      <View key={catId} style={styles.selectedCategoryChip}>
+                        <Ionicons name={cat.icon} size={14} color={Colors.primary} />
+                        <Text style={styles.selectedCategoryText}>{cat.name}</Text>
+                        <TouchableOpacity
+                          onPress={() => setCategories(prev => prev.filter(c => c !== catId))}
+                          style={styles.removeCategoryButton}
+                        >
+                          <Ionicons name="close" size={14} color="#e74c3c" />
+                        </TouchableOpacity>
+                      </View>
+                    ) : null;
+                  })}
+                </View>
+              </View>
+            )}
+            
+            {/* Category Dropdown Content */}
+            {showCategoryDropdown && (
+              <View style={styles.categoryDropdownContent}>
+                <View style={styles.categoryDropdownHeader}>
+                  <Text style={styles.categoryDropdownTitle}>Available Categories</Text>
+                  <TouchableOpacity 
+                    onPress={() => setShowCategoryDropdown(false)}
+                    style={styles.closeDropdownButton}
+                  >
+                    <Ionicons name="close" size={20} color="#7f8c8d" />
+                  </TouchableOpacity>
+                </View>
+                <ScrollView style={styles.categoryScrollView} nestedScrollEnabled>
+                  <View style={styles.categoryGrid}>
+                    {getAvailableCategories().map((cat) => (
+                      <TouchableOpacity
+                        key={cat.id}
+                        style={[
+                          styles.categoryGridItem,
+                          categories.includes(cat.id) && styles.categoryGridItemSelected
+                        ]}
+                        onPress={() => {
+                          if (categories.includes(cat.id)) {
+                            setCategories(prev => prev.filter(c => c !== cat.id));
+                          } else {
+                            setCategories(prev => [...prev, cat.id]);
+                          }
+                        }}
+                      >
+                        <Ionicons 
+                          name={cat.icon} 
+                          size={20} 
+                          color={categories.includes(cat.id) ? '#fff' : Colors.primary} 
+                        />
+                        <Text style={[
+                          styles.categoryGridItemText,
+                          categories.includes(cat.id) && styles.categoryGridItemTextSelected
+                        ]}>
+                          {cat.name}
+                        </Text>
+                        {categories.includes(cat.id) && (
+                          <Ionicons name="checkmark-circle" size={16} color="#fff" style={styles.categoryCheckmark} />
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </ScrollView>
+              </View>
+            )}
+          </View>
+
+          {/* Business Images Section */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Business Images</Text>
+            <Text style={styles.sectionSubtitle}>Add profile and cover photos to make your business more attractive</Text>
             
             {/* Profile Image */}
             <View style={styles.imageSection}>
@@ -550,6 +806,54 @@ export default function CreateStoreScreen({ navigation }) {
             </View>
           </View>
 
+          {/* Service Area & Mobility */}
+          {(profileTypes.includes('service-provider') || profileTypes.includes('freelancer') || profileTypes.includes('informal-worker')) && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Service Options</Text>
+              
+              <View style={styles.mobileServiceContainer}>
+                <TouchableOpacity
+                  style={styles.checkboxContainer}
+                  onPress={() => setIsMobile(!isMobile)}
+                >
+                  <Ionicons 
+                    name={isMobile ? "checkbox" : "square-outline"} 
+                    size={24} 
+                    color={isMobile ? "#27ae60" : "#7f8c8d"} 
+                  />
+                  <Text style={styles.checkboxText}>
+                    I can travel to customers (Mobile Service)
+                  </Text>
+                </TouchableOpacity>
+                
+                {isMobile && (
+                  <View style={styles.radiusContainer}>
+                    <Text style={styles.radiusLabel}>Service Radius: {serviceRadius} km</Text>
+                    <View style={styles.radiusButtons}>
+                      {[3, 5, 10, 15, 20].map(radius => (
+                        <TouchableOpacity
+                          key={radius}
+                          style={[
+                            styles.radiusButton,
+                            serviceRadius === radius && styles.radiusButtonSelected
+                          ]}
+                          onPress={() => setServiceRadius(radius)}
+                        >
+                          <Text style={[
+                            styles.radiusButtonText,
+                            serviceRadius === radius && styles.radiusButtonTextSelected
+                          ]}>
+                            {radius}km
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
+
           <View style={styles.inputGroup}>
             <View style={styles.labelRow}>
               <Text style={styles.label}>Address *</Text>
@@ -570,25 +874,17 @@ export default function CreateStoreScreen({ navigation }) {
             </View>
             <TextInput
               style={styles.input}
-              placeholder="Enter your store address"
+              placeholder="Enter your business address"
               value={address}
               onChangeText={setAddress}
               multiline
             />
             
-            {/* Test coordinate button for development */}
-            <TouchableOpacity 
-              style={[styles.button, styles.testButton]} 
-              onPress={setTestCoordinates}
-            >
-              <Text style={styles.buttonText}>Set Test Coordinates (Dev)</Text>
-            </TouchableOpacity>
-            
             {/* Display current coordinates */}
-            {storeCoordinates && (
+            {coordinates && (
               <View style={styles.coordinateDisplay}>
                 <Text style={styles.coordinateText}>
-                  📍 GPS Coordinates: {storeCoordinates.latitude.toFixed(6)}, {storeCoordinates.longitude.toFixed(6)}
+                  📍 GPS Coordinates: {coordinates.latitude.toFixed(6)}, {coordinates.longitude.toFixed(6)}
                 </Text>
                 <Text style={styles.coordinateSubtext}>
                   These coordinates will be used for precise map positioning
@@ -609,11 +905,11 @@ export default function CreateStoreScreen({ navigation }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>About Your Store *</Text>
-            <Text style={styles.subtitle}>Tell customers about your store, what you sell, your contact info, and your story...</Text>
+            <Text style={styles.label}>About Your Business *</Text>
+            <Text style={styles.sectionSubtitle}>Tell customers about your business, what you offer, your contact info, and your story...</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Describe your store, products, contact information (phone, email, etc.), and your story..."
+              placeholder="Describe your business, products/services, contact information (phone, email, etc.), and your story..."
               value={description}
               onChangeText={setDescription}
               multiline
@@ -621,10 +917,98 @@ export default function CreateStoreScreen({ navigation }) {
             />
           </View>
 
+          {/* Contact Numbers Section */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Contact Numbers *</Text>
+            <Text style={styles.sectionSubtitle}>Add at least 1 contact number for your business (Mobile, Landline, WhatsApp, etc.)</Text>
+            
+            <View style={styles.contactNumbersContainer}>
+              {contactNumbers.map((contact, index) => (
+                <View key={contact.id} style={styles.contactNumberItem}>
+                  <View style={styles.contactNumberRow}>
+                    {/* Contact Type Selector */}
+                    <View style={styles.contactTypeContainer}>
+                      <View style={[styles.contactTypeIcon, { backgroundColor: getContactColor(contact.type) }]}>
+                        <Ionicons 
+                          name={getContactIcon(contact.type)} 
+                          size={20} 
+                          color="#fff" 
+                        />
+                      </View>
+                      <TouchableOpacity 
+                        style={styles.contactTypeButton}
+                        onPress={() => {
+                          // Show contact type picker
+                          Alert.alert(
+                            'Select Contact Type',
+                            'Choose the type of contact number',
+                            [
+                              { text: 'Mobile', onPress: () => updateContactLabel(contact.id, 'Mobile', 'mobile') },
+                              { text: 'Landline', onPress: () => updateContactLabel(contact.id, 'Landline', 'landline') },
+                              { text: 'WhatsApp', onPress: () => updateContactLabel(contact.id, 'WhatsApp', 'whatsapp') },
+                              { text: 'Viber', onPress: () => updateContactLabel(contact.id, 'Viber', 'viber') },
+                              { text: 'Telegram', onPress: () => updateContactLabel(contact.id, 'Telegram', 'telegram') },
+                              { text: 'Fax', onPress: () => updateContactLabel(contact.id, 'Fax', 'fax') },
+                              { text: 'Cancel', style: 'cancel' }
+                            ]
+                          );
+                        }}
+                      >
+                        <Text style={styles.contactTypeText}>{contact.label}</Text>
+                        <Ionicons name="chevron-down" size={16} color="#7f8c8d" />
+                      </TouchableOpacity>
+                    </View>
+                    
+                    {/* Contact Number Input */}
+                    <TextInput
+                      style={styles.contactNumberInput}
+                      placeholder={`Enter ${contact.label.toLowerCase()} number`}
+                      value={contact.number}
+                      onChangeText={(text) => updateContactNumber(contact.id, text)}
+                      keyboardType="phone-pad"
+                      autoCorrect={false}
+                    />
+                    
+                    {/* Remove Button (only show if more than 1 contact) */}
+                    {contactNumbers.length > 1 && (
+                      <TouchableOpacity 
+                        style={styles.removeContactButton}
+                        onPress={() => removeContactNumber(contact.id)}
+                      >
+                        <Ionicons name="close-circle" size={24} color="#e74c3c" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  
+                  {/* Contact Number Preview */}
+                  {contact.number !== '' && (
+                    <View style={styles.contactPreview}>
+                      <Ionicons name="checkmark-circle" size={16} color="#27ae60" />
+                      <Text style={styles.contactPreviewText}>
+                        {contact.label}: {contact.number}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+              
+              {/* Add Contact Button */}
+              {contactNumbers.length < 3 && (
+                <TouchableOpacity 
+                  style={styles.addContactButton}
+                  onPress={addContactNumber}
+                >
+                  <Ionicons name="add-circle" size={24} color="#3498db" />
+                  <Text style={styles.addContactText}>Add Another Contact Number</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+
           {/* Social Links Section */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Social Links & Online Presence</Text>
-            <Text style={styles.subtitle}>Add up to 4 links to your social media, website, or online stores (Facebook, Instagram, Shopee, etc.)</Text>
+            <Text style={styles.sectionSubtitle}>Add up to 4 links to your social media, website, or online stores (Facebook, Instagram, Shopee, etc.)</Text>
             
             <View style={styles.socialLinksContainer}>
               {socialLinks.map((link, index) => (
@@ -665,22 +1049,15 @@ export default function CreateStoreScreen({ navigation }) {
                 </View>
               ))}
             </View>
-            
-            <View style={styles.socialLinksNote}>
-              <Ionicons name="information-circle" size={16} color="#7f8c8d" />
-              <Text style={styles.noteText}>
-                Platform icons will automatically appear based on your URL. These links will be displayed on your store profile.
-              </Text>
-            </View>
           </View>
 
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleCreateStore}
+            onPress={handleCreateBusinessProfile}
             disabled={loading}
           >
             <Text style={styles.buttonText}>
-              {loading ? 'Creating Store...' : 'Create Store'}
+              {loading ? 'Creating Profile...' : 'Create Business Profile'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -840,42 +1217,57 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   form: {
-    padding: 20,
+    padding: 24,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#2c3e50',
+    fontSize: 28,
+    fontWeight: '800',
+    color: Colors.text.primary,
     marginBottom: 8,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: '#7f8c8d',
-    marginBottom: 30,
+    color: Colors.text.secondary,
+    marginBottom: 32,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: Colors.text.secondary,
+    marginBottom: 12,
+    lineHeight: 20,
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: 28,
   },
   labelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2c3e50',
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text.primary,
+    marginBottom: 8,
   },
   locationButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ecf0f1',
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 6,
+    backgroundColor: Colors.background.card,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: Colors.border.light,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   locationButtonDisabled: {
     backgroundColor: '#f8f9fa',
@@ -885,52 +1277,288 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontSize: 12,
     fontWeight: '600',
-    marginLeft: 4,
+    marginLeft: 6,
   },
   locationButtonTextDisabled: {
     color: '#95a5a6',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 15,
-    borderRadius: 8,
-    backgroundColor: '#fff',
+    borderColor: Colors.border.light,
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: Colors.background.card,
     fontSize: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   textArea: {
     height: 120,
     textAlignVertical: 'top',
   },
-  // Category Selection Styles
-  categoryContainer: {
+  
+  // Category Dropdown Styles
+  categoryDropdownButton: {
+    backgroundColor: Colors.background.card,
+    borderWidth: 1,
+    borderColor: Colors.border.light,
+    borderRadius: 12,
+    marginTop: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  categoryDropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    justifyContent: 'space-between',
+  },
+  categoryDropdownText: {
+    flex: 1,
+    fontSize: 16,
+    color: Colors.text.primary,
+    marginLeft: 12,
+    fontWeight: '500',
+  },
+  categoryDropdownTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.text.primary,
+    flex: 1,
+  },
+  closeDropdownButton: {
+    padding: 4,
+  },
+  categoryDropdownContent: {
+    backgroundColor: Colors.background.card,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border.light,
+    maxHeight: 300,
+  },
+  categoryScrollView: {
+    maxHeight: 240,
+    padding: 16,
+  },
+  categoryGrid: {
+    gap: 8,
+  },
+  categoryGridItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1,
+    borderColor: Colors.border.light,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 8,
+    width: '100%', // Single column
+    position: 'relative',
+  },
+  categoryGridItemSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  categoryGridItemText: {
+    fontSize: 13,
+    color: Colors.text.primary,
+    marginLeft: 8,
+    fontWeight: '500',
+    flex: 1,
+  },
+  categoryGridItemTextSelected: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  categoryCheckmark: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+  },
+  selectedCategoriesContainer: {
+    marginTop: 12,
+    padding: 16,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.primary,
+  },
+  selectedCategoriesLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text.primary,
+    marginBottom: 8,
+  },
+  selectedCategoriesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginTop: 8,
   },
-  categoryButton: {
+  selectedCategoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: Colors.border.light,
+  },
+  selectedCategoryText: {
+    fontSize: 12,
+    color: Colors.text.primary,
+    marginLeft: 6,
+    marginRight: 4,
+    fontWeight: '500',
+  },
+  removeCategoryButton: {
+    marginLeft: 4,
+  },
+
+  // Profile Type Selection Styles
+  profileTypeContainer: {
+    marginTop: 12,
+  },
+  profileTypeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#fff',
     borderWidth: 2,
-    borderColor: '#3498db',
+    borderColor: '#e9ecef',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    width: '100%', // Single column
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  profileTypeButtonSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+    borderWidth: 2,
+    shadowColor: Colors.primary,
+    shadowOpacity: 0.3,
+    elevation: 8,
+  },
+  profileTypeIcon: {
+    marginRight: 12,
+  },
+  profileTypeButtonText: {
+    fontSize: 16,
+    color: '#2c3e50',
+    fontWeight: '600',
+    lineHeight: 20,
+  },
+  profileTypeButtonTextSelected: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+
+  // Primary Type Selection
+  primaryTypeSection: {
+    marginTop: 24,
+    padding: 20,
+    backgroundColor: Colors.background.card,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.primary,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  primaryTypeContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 12,
+  },
+  primaryTypeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1,
+    borderColor: Colors.border.light,
     borderRadius: 8,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    marginBottom: 8,
   },
-  categoryButtonSelected: {
-    backgroundColor: '#3498db',
-    borderColor: '#3498db',
+  primaryTypeButtonSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
-  categoryButtonText: {
+  primaryTypeButtonText: {
     fontSize: 12,
-    color: '#3498db',
+    color: Colors.text.secondary,
     marginLeft: 6,
     fontWeight: '500',
   },
-  categoryButtonTextSelected: {
+  primaryTypeButtonTextSelected: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+
+  // Mobile Service Styles
+  mobileServiceContainer: {
+    marginTop: 10,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  checkboxText: {
+    fontSize: 16,
+    color: '#2c3e50',
+    marginLeft: 10,
+    fontWeight: '500',
+  },
+  radiusContainer: {
+    marginLeft: 34,
+    padding: 12,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+  },
+  radiusLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginBottom: 8,
+  },
+  radiusButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  radiusButton: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  radiusButtonSelected: {
+    backgroundColor: '#27ae60',
+    borderColor: '#27ae60',
+  },
+  radiusButtonText: {
+    fontSize: 12,
+    color: '#7f8c8d',
+    fontWeight: '500',
+  },
+  radiusButtonTextSelected: {
     color: '#fff',
   },
   // Image Selection Styles
@@ -1005,24 +1633,25 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   button: {
-    backgroundColor: '#3498db',
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: Colors.primary,
+    padding: 18,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 20,
+    marginBottom: 10,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   buttonDisabled: {
     backgroundColor: '#95a5a6',
+    shadowOpacity: 0.1,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  testButton: {
-    backgroundColor: '#f39c12',
-    marginTop: 10,
+    fontSize: 18,
+    fontWeight: '700',
   },
   coordinateDisplay: {
     marginTop: 10,
@@ -1042,6 +1671,110 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#7f8c8d',
     fontStyle: 'italic',
+  },
+  
+  // Contact Numbers Styles
+  contactNumbersContainer: {
+    marginTop: 10,
+  },
+  contactNumberItem: {
+    marginBottom: 15,
+  },
+  contactNumberRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  contactTypeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingRight: 8,
+    minWidth: 120,
+  },
+  contactTypeIcon: {
+    width: 40,
+    height: 40,
+    borderTopLeftRadius: 7,
+    borderBottomLeftRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  contactTypeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flex: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+  },
+  contactTypeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2c3e50',
+  },
+  contactNumberInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+  removeContactButton: {
+    padding: 4,
+  },
+  contactPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    marginLeft: 130,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#f0f8ff',
+    borderRadius: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: '#27ae60',
+  },
+  contactPreviewText: {
+    fontSize: 12,
+    color: '#27ae60',
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  addContactButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f8f9fa',
+    borderWidth: 2,
+    borderColor: '#3498db',
+    borderStyle: 'dashed',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 10,
+  },
+  addContactText: {
+    fontSize: 14,
+    color: '#3498db',
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  contactNumbersNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 15,
+    padding: 12,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#e74c3c',
   },
   
   // Social Links Styles
