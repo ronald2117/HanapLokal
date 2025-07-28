@@ -31,6 +31,7 @@ import ReviewCard from '../components/ReviewCard';
 import Toast from '../components/Toast';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { getProfileTypeInfo, getCategoryInfo } from '../config/categories';
 
 export default function StoreDetailsScreen({ route, navigation }) {
   const { store } = route.params;
@@ -635,11 +636,30 @@ export default function StoreDetailsScreen({ route, navigation }) {
           <View style={styles.storeBasicInfo}>
             <Text style={styles.storeName}>{store.name}</Text>
             
+            {/* Profile Type Badge - Highlighted */}
+            {(store.profileType || store.primaryType || (store.profileTypes && store.profileTypes.length > 0)) && (
+              <View style={styles.profileTypeBadgeContainer}>
+                <View style={[
+                  styles.profileTypeBadge,
+                  { backgroundColor: getProfileTypeInfo(store.profileType || store.primaryType || (store.profileTypes && store.profileTypes[0])).color }
+                ]}>
+                  <Ionicons 
+                    name={getProfileTypeInfo(store.profileType || store.primaryType || (store.profileTypes && store.profileTypes[0])).icon} 
+                    size={14} 
+                    color="#fff"
+                  />
+                  <Text style={styles.profileTypeBadgeText}>
+                    {getProfileTypeInfo(store.profileType || store.primaryType || (store.profileTypes && store.profileTypes[0])).name}
+                  </Text>
+                </View>
+              </View>
+            )}
+            
             {/* Category Badge */}
             {store.category && (
               <View style={styles.categoryBadge}>
-                <Ionicons name={getCategoryInfo().icon} size={14} color="#3498db" />
-                <Text style={styles.categoryText}>{getCategoryInfo().name}</Text>
+                <Ionicons name={getCategoryInfo(store.category).icon} size={14} color="#3498db" />
+                <Text style={styles.categoryText}>{getCategoryInfo(store.category).name}</Text>
               </View>
             )}
             
@@ -679,6 +699,97 @@ export default function StoreDetailsScreen({ route, navigation }) {
               <Text style={styles.infoText}>{store.contact}</Text>
             </View>
           )}
+          
+          {store.email && (
+            <View style={styles.infoRow}>
+              <Ionicons name="mail" size={20} color="#3498db" />
+              <Text style={styles.infoText}>{store.email}</Text>
+            </View>
+          )}
+          
+          {store.website && (
+            <TouchableOpacity 
+              style={styles.infoRow}
+              onPress={() => openSocialLink(store.website)}
+            >
+              <Ionicons name="globe" size={20} color="#3498db" />
+              <Text style={[styles.infoText, styles.linkText]}>{store.website}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Business Details Card */}
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Business Details</Text>
+          
+          {/* Profile Type */}
+          {(store.profileType || store.primaryType || (store.profileTypes && store.profileTypes.length > 0)) && (
+            <View style={styles.businessDetailRow}>
+              <Text style={styles.businessDetailLabel}>Business Type:</Text>
+              <View style={styles.businessDetailValue}>
+                <Ionicons 
+                  name={getProfileTypeInfo(store.profileType || store.primaryType || (store.profileTypes && store.profileTypes[0])).icon} 
+                  size={16} 
+                  color={getProfileTypeInfo(store.profileType || store.primaryType || (store.profileTypes && store.profileTypes[0])).color}
+                />
+                <Text style={styles.businessDetailText}>
+                  {getProfileTypeInfo(store.profileType || store.primaryType || (store.profileTypes && store.profileTypes[0])).name}
+                </Text>
+              </View>
+            </View>
+          )}
+          
+          {/* Business Category */}
+          {store.category && (
+            <View style={styles.businessDetailRow}>
+              <Text style={styles.businessDetailLabel}>Category:</Text>
+              <View style={styles.businessDetailValue}>
+                <Ionicons 
+                  name={getCategoryInfo(store.category).icon} 
+                  size={16} 
+                  color="#3498db"
+                />
+                <Text style={styles.businessDetailText}>
+                  {getCategoryInfo(store.category).name}
+                </Text>
+              </View>
+            </View>
+          )}
+          
+          {/* Owner Name */}
+          {store.ownerName && (
+            <View style={styles.businessDetailRow}>
+              <Text style={styles.businessDetailLabel}>Owner:</Text>
+              <View style={styles.businessDetailValue}>
+                <Ionicons name="person" size={16} color="#7f8c8d" />
+                <Text style={styles.businessDetailText}>{store.ownerName}</Text>
+              </View>
+            </View>
+          )}
+          
+          {/* Establishment Date */}
+          {store.establishedDate && (
+            <View style={styles.businessDetailRow}>
+              <Text style={styles.businessDetailLabel}>Established:</Text>
+              <View style={styles.businessDetailValue}>
+                <Ionicons name="calendar" size={16} color="#7f8c8d" />
+                <Text style={styles.businessDetailText}>
+                  {new Date(store.establishedDate).getFullYear()}
+                </Text>
+              </View>
+            </View>
+          )}
+          
+          {/* Business License */}
+          {store.businessLicense && (
+            <View style={styles.businessDetailRow}>
+              <Text style={styles.businessDetailLabel}>License:</Text>
+              <View style={styles.businessDetailValue}>
+                <Ionicons name="document-text" size={16} color="#27ae60" />
+                <Text style={styles.businessDetailText}>Licensed Business</Text>
+              </View>
+            </View>
+          )}
         </View>
 
         {/* About Section */}
@@ -687,34 +798,87 @@ export default function StoreDetailsScreen({ route, navigation }) {
           <Text style={styles.description}>{store.description}</Text>
         </View>
 
-        {/* Social Links Section */}
-        {store.socialLinks && store.socialLinks.length > 0 && (
+        {/* Social Links & Online Presence */}
+        {((store.socialLinks && store.socialLinks.length > 0) || store.website || store.email) && (
           <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>Social Links</Text>
-            <View style={styles.socialLinksGrid}>
-              {store.socialLinks.map((link, index) => {
-                const platform = link.platform || 'link';
-                const platformIcon = getPlatformIcon(platform);
-                const platformColor = getPlatformColor(platform);
-                
-                return (
-                  <TouchableOpacity
-                    key={index}
-                    style={[styles.socialLinkItem, { borderColor: platformColor }]}
-                    onPress={() => openSocialLink(link.url)}
-                  >
-                    <Ionicons
-                      name={platformIcon}
-                      size={18}
-                      color={platformColor}
-                    />
-                    <Text style={[styles.socialLinkText, { color: platformColor }]} numberOfLines={1}>
-                      {link.url.replace(/^https?:\/\//, '')}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            <Text style={styles.sectionTitle}>Connect & Follow</Text>
+            
+            {/* Website Link */}
+            {store.website && (
+              <TouchableOpacity 
+                style={styles.primarySocialLink}
+                onPress={() => openSocialLink(store.website)}
+              >
+                <View style={styles.socialLinkIcon}>
+                  <Ionicons name="globe" size={20} color="#3498db" />
+                </View>
+                <View style={styles.socialLinkContent}>
+                  <Text style={styles.socialLinkTitle}>Website</Text>
+                  <Text style={styles.socialLinkUrl} numberOfLines={1}>
+                    {store.website.replace(/^https?:\/\//, '')}
+                  </Text>
+                </View>
+                <Ionicons name="open-outline" size={16} color="#7f8c8d" />
+              </TouchableOpacity>
+            )}
+            
+            {/* Email Contact */}
+            {store.email && (
+              <TouchableOpacity 
+                style={styles.primarySocialLink}
+                onPress={() => Linking.openURL(`mailto:${store.email}`)}
+              >
+                <View style={styles.socialLinkIcon}>
+                  <Ionicons name="mail" size={20} color="#e74c3c" />
+                </View>
+                <View style={styles.socialLinkContent}>
+                  <Text style={styles.socialLinkTitle}>Email</Text>
+                  <Text style={styles.socialLinkUrl} numberOfLines={1}>
+                    {store.email}
+                  </Text>
+                </View>
+                <Ionicons name="open-outline" size={16} color="#7f8c8d" />
+              </TouchableOpacity>
+            )}
+            
+            {/* Social Media Links */}
+            {store.socialLinks && store.socialLinks.length > 0 && (
+              <>
+                <View style={styles.socialLinksHeader}>
+                  <Text style={styles.socialLinksSubtitle}>Social Media</Text>
+                </View>
+                <View style={styles.socialLinksGrid}>
+                  {store.socialLinks.map((link, index) => {
+                    const platform = link.platform || 'link';
+                    const platformIcon = getPlatformIcon(platform);
+                    const platformColor = getPlatformColor(platform);
+                    const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+                    
+                    return (
+                      <TouchableOpacity
+                        key={index}
+                        style={[styles.socialLinkItem, { borderColor: platformColor }]}
+                        onPress={() => openSocialLink(link.url)}
+                      >
+                        <View style={[styles.socialPlatformIcon, { backgroundColor: platformColor }]}>
+                          <Ionicons
+                            name={platformIcon}
+                            size={16}
+                            color="#fff"
+                          />
+                        </View>
+                        <View style={styles.socialLinkDetails}>
+                          <Text style={styles.socialPlatformName}>{platformName}</Text>
+                          <Text style={[styles.socialLinkText, { color: platformColor }]} numberOfLines={1}>
+                            {link.url.replace(/^https?:\/\//, '').replace(/^www\./, '')}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </>
+            )}
           </View>
         )}
 
@@ -896,6 +1060,22 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     textAlign: 'center',
   },
+  profileTypeBadgeContainer: {
+    marginBottom: 8,
+  },
+  profileTypeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  profileTypeBadgeText: {
+    fontSize: 14,
+    color: '#fff',
+    marginLeft: 6,
+    fontWeight: '600',
+  },
   categoryBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -993,6 +1173,38 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     flex: 1,
   },
+  linkText: {
+    color: '#3498db',
+    textDecorationLine: 'underline',
+  },
+  
+  // Business Details
+  businessDetailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f8f9fa',
+  },
+  businessDetailLabel: {
+    fontSize: 14,
+    color: '#7f8c8d',
+    fontWeight: '500',
+    flex: 1,
+  },
+  businessDetailValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 2,
+    justifyContent: 'flex-end',
+  },
+  businessDetailText: {
+    fontSize: 14,
+    color: '#2c3e50',
+    fontWeight: '600',
+    marginLeft: 8,
+  },
   
   // Section Headers
   sectionHeader: {
@@ -1027,9 +1239,51 @@ const styles = StyleSheet.create({
   },
   
   // Social Links
-  socialLinksGrid: {
+  primarySocialLink: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  socialLinkIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  socialLinkContent: {
+    flex: 1,
+  },
+  socialLinkTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginBottom: 2,
+  },
+  socialLinkUrl: {
+    fontSize: 14,
+    color: '#7f8c8d',
+  },
+  socialLinksHeader: {
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  socialLinksSubtitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#2c3e50',
+  },
+  socialLinksGrid: {
     gap: 12,
   },
   socialLinkItem: {
@@ -1038,17 +1292,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
     borderWidth: 1.5,
     borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    padding: 12,
+  },
+  socialPlatformIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  socialLinkDetails: {
     flex: 1,
-    minWidth: '45%',
-    maxWidth: '48%',
+  },
+  socialPlatformName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginBottom: 2,
   },
   socialLinkText: {
     fontSize: 13,
     fontWeight: '500',
-    marginLeft: 8,
-    flex: 1,
   },
   
   // Reviews
