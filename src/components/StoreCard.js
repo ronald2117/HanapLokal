@@ -64,16 +64,46 @@ export default function StoreCard({
   };
 
   const getDistanceText = () => {
-    if (!userLocation || !store.coordinates || !store.coordinates.latitude || !store.coordinates.longitude) {
+    // Debug: Let's see what location data we have
+    console.log('Location data:', {
+      storeName: store.name,
+      storeLocation: store.location,
+      storeCoordinates: store.coordinates,
+      userLocation: userLocation
+    });
+    
+    if (!userLocation) {
+      console.log('No user location available');
+      return '';
+    }
+    
+    // Check for coordinates in different possible locations
+    let storeLocation = null;
+    
+    // Check new location structure
+    if (store.location && store.location.latitude && store.location.longitude) {
+      storeLocation = store.location;
+      console.log('Using store.location:', storeLocation);
+    }
+    // Check old coordinates structure
+    else if (store.coordinates && store.coordinates.latitude && store.coordinates.longitude) {
+      storeLocation = store.coordinates;
+      console.log('Using store.coordinates:', storeLocation);
+    }
+    
+    if (!storeLocation) {
+      console.log('No store location data found');
       return '';
     }
     
     const distance = calculateDistance(
       userLocation.latitude,
       userLocation.longitude,
-      store.coordinates.latitude,
-      store.coordinates.longitude
+      storeLocation.latitude,
+      storeLocation.longitude
     );
+    
+    console.log('Calculated distance:', distance, 'km');
     
     // Format distance nicely
     if (distance < 1) {
