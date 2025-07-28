@@ -36,8 +36,7 @@ export default function CreateStoreScreen({ navigation }) {
   const [address, setAddress] = useState('');
   const [hours, setHours] = useState('');
   const [description, setDescription] = useState('');
-  const [profileTypes, setProfileTypes] = useState([]); // Multi-select
-  const [primaryType, setPrimaryType] = useState(''); // Main business type
+  const [profileType, setProfileType] = useState(''); // Single selection
   const [categories, setCategories] = useState([]); // Multi-select categories
   const [profileImage, setProfileImage] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
@@ -59,18 +58,11 @@ export default function CreateStoreScreen({ navigation }) {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const { currentUser, isGuestUser } = useAuth();
 
-  // Get available categories based on selected profile types
+  // Get available categories based on selected profile type
   const getAvailableCategories = () => {
-    if (profileTypes.length === 0) return BUSINESS_CATEGORIES;
+    if (!profileType) return BUSINESS_CATEGORIES;
     
-    const availableCategories = new Set();
-    profileTypes.forEach(typeId => {
-      getCategoriesForProfileType(typeId).forEach(cat => {
-        availableCategories.add(cat);
-      });
-    });
-    
-    return Array.from(availableCategories);
+    return getCategoriesForProfileType(profileType);
   };
 
   // Function to detect social platform from URL
@@ -312,18 +304,13 @@ export default function CreateStoreScreen({ navigation }) {
         return;
       }
 
-      if (profileTypes.length === 0) {
-        Alert.alert('Error', 'Please select at least one business type');
+      if (!profileType) {
+        Alert.alert('Error', 'Please select a business type');
         return;
       }
 
       if (categories.length === 0) {
         Alert.alert('Error', 'Please select at least one business category');
-        return;
-      }
-
-      if (profileTypes.length > 1 && !primaryType) {
-        Alert.alert('Error', 'Please select a primary business type');
         return;
       }
 
@@ -344,7 +331,7 @@ export default function CreateStoreScreen({ navigation }) {
         ...businessName.toLowerCase().split(' '),
         ...description.toLowerCase().split(' ').slice(0, 10), // First 10 words
         ...categories.map(cat => getCategoryInfo(cat).name.toLowerCase()),
-        ...profileTypes.map(type => getProfileTypeInfo(type).name.toLowerCase()),
+        getProfileTypeInfo(profileType).name.toLowerCase(),
         address.toLowerCase().split(',')[1]?.trim() || '', // City from address
       ].filter(tag => tag.length > 2); // Remove short words
 
@@ -359,8 +346,7 @@ export default function CreateStoreScreen({ navigation }) {
         } : null,
         
         // Profile Configuration
-        profileTypes: profileTypes,
-        primaryType: primaryType || profileTypes[0],
+        profileType: profileType,
         categories: categories,
         
         // Business Details
@@ -561,40 +547,30 @@ export default function CreateStoreScreen({ navigation }) {
           {/* Business Type Selection */}
           <View style={styles.inputGroup}>
             <Text style={styles.label}>What type of business are you? *</Text>
-            <Text style={styles.sectionSubtitle}>Select all that apply to your business</Text>
+            <Text style={styles.sectionSubtitle}>Select the type that best describes your business</Text>
             <View style={styles.profileTypeContainer}>
               {PROFILE_TYPES.map((type) => (
                 <TouchableOpacity
                   key={type.id}
                   style={[
                     styles.profileTypeButton,
-                    profileTypes.includes(type.id) && styles.profileTypeButtonSelected
+                    profileType === type.id && styles.profileTypeButtonSelected
                   ]}
                   onPress={() => {
-                    if (profileTypes.includes(type.id)) {
-                      setProfileTypes(prev => prev.filter(t => t !== type.id));
-                      if (primaryType === type.id) {
-                        setPrimaryType('');
-                      }
-                    } else {
-                      setProfileTypes(prev => [...prev, type.id]);
-                      if (!primaryType) {
-                        setPrimaryType(type.id);
-                      }
-                    }
+                    setProfileType(profileType === type.id ? '' : type.id);
                   }}
                 >
                   <View style={styles.profileTypeIcon}>
                     <Ionicons 
                       name={type.icon} 
                       size={28} 
-                      color={profileTypes.includes(type.id) ? '#fff' : type.color} 
+                      color={profileType === type.id ? '#fff' : type.color} 
                     />
                   </View>
                   <View style={styles.profileTypeContent}>
                     <Text style={[
                       styles.profileTypeButtonText,
-                      profileTypes.includes(type.id) && styles.profileTypeButtonTextSelected
+                      profileType === type.id && styles.profileTypeButtonTextSelected
                     ]}>
                       {type.name}
                     </Text>
@@ -612,48 +588,13 @@ export default function CreateStoreScreen({ navigation }) {
                       <Ionicons 
                         name="information-circle-outline" 
                         size={20} 
-                        color={profileTypes.includes(type.id) ? 'rgba(255, 255, 255, 0.8)' : '#7f8c8d'} 
+                        color={profileType === type.id ? 'rgba(255, 255, 255, 0.8)' : '#7f8c8d'} 
                       />
                     </TouchableOpacity>
                   </View>
                 </TouchableOpacity>
               ))}
             </View>
-            
-            {/* Primary Type Selection */}
-            {profileTypes.length > 1 && (
-              <View style={styles.primaryTypeSection}>
-                <Text style={styles.label}>Primary Business Type</Text>
-                <Text style={styles.sectionSubtitle}>Which one best describes your main business?</Text>
-                <View style={styles.primaryTypeContainer}>
-                  {profileTypes.map((typeId) => {
-                    const type = getProfileTypeInfo(typeId);
-                    return (
-                      <TouchableOpacity
-                        key={typeId}
-                        style={[
-                          styles.primaryTypeButton,
-                          primaryType === typeId && styles.primaryTypeButtonSelected
-                        ]}
-                        onPress={() => setPrimaryType(typeId)}
-                      >
-                        <Ionicons 
-                          name={type.icon} 
-                          size={16} 
-                          color={primaryType === typeId ? '#fff' : type.color} 
-                        />
-                        <Text style={[
-                          styles.primaryTypeButtonText,
-                          primaryType === typeId && styles.primaryTypeButtonTextSelected
-                        ]}>
-                          {type.name}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-            )}
           </View>
 
           <View style={styles.inputGroup}>
@@ -691,30 +632,6 @@ export default function CreateStoreScreen({ navigation }) {
                 />
               </View>
             </TouchableOpacity>
-            
-            {/* Selected Categories Preview */}
-            {categories.length > 0 && (
-              <View style={styles.selectedCategoriesContainer}>
-                <Text style={styles.selectedCategoriesLabel}>Selected:</Text>
-                <View style={styles.selectedCategoriesGrid}>
-                  {categories.map((catId) => {
-                    const cat = getAvailableCategories().find(c => c.id === catId);
-                    return cat ? (
-                      <View key={catId} style={styles.selectedCategoryChip}>
-                        <Ionicons name={cat.icon} size={14} color={Colors.primary} />
-                        <Text style={styles.selectedCategoryText}>{cat.name}</Text>
-                        <TouchableOpacity
-                          onPress={() => setCategories(prev => prev.filter(c => c !== catId))}
-                          style={styles.removeCategoryButton}
-                        >
-                          <Ionicons name="close" size={14} color="#e74c3c" />
-                        </TouchableOpacity>
-                      </View>
-                    ) : null;
-                  })}
-                </View>
-              </View>
-            )}
             
             {/* Category Dropdown Content */}
             {showCategoryDropdown && (
@@ -817,7 +734,7 @@ export default function CreateStoreScreen({ navigation }) {
           </View>
 
           {/* Service Area & Mobility */}
-          {(profileTypes.includes('service-provider') || profileTypes.includes('freelancer') || profileTypes.includes('informal-worker')) && (
+          {(profileType === 'service-provider' || profileType === 'freelancer' || profileType === 'informal-worker') && (
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Service Options</Text>
               
