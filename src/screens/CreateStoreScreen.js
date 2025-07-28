@@ -719,15 +719,6 @@ export default function CreateStoreScreen({ navigation }) {
             {/* Category Dropdown Content */}
             {showCategoryDropdown && (
               <View style={styles.categoryDropdownContent}>
-                <View style={styles.categoryDropdownHeader}>
-                  <Text style={styles.categoryDropdownTitle}>Available Categories</Text>
-                  <TouchableOpacity 
-                    onPress={() => setShowCategoryDropdown(false)}
-                    style={styles.closeDropdownButton}
-                  >
-                    <Ionicons name="close" size={20} color="#7f8c8d" />
-                  </TouchableOpacity>
-                </View>
                 <ScrollView style={styles.categoryScrollView} nestedScrollEnabled>
                   <View style={styles.categoryGrid}>
                     {getAvailableCategories().map((cat) => (
@@ -1361,10 +1352,11 @@ const styles = StyleSheet.create({
     maxHeight: 300,
   },
   categoryScrollView: {
-    maxHeight: 240,
+    maxHeight: 300,
     padding: 16,
   },
   categoryGrid: {
+    paddingBottom: 20,
     gap: 8,
   },
   categoryGridItem: {
