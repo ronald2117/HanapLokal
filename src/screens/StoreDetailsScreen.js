@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  FlatList,
   Image,
   Linking,
   RefreshControl,
@@ -33,7 +32,6 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { getProfileTypeInfo, getCategoryInfo } from "../config/categories";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-
 import BusinessDetailsTab from "../components/business_tabs/BusinessDetailsTab";
 import BusinessProductsTab from "../components/business_tabs/BusinessProductsTab";
 import BusinessServicesTab from "../components/business_tabs/BusinessServicesTab";
@@ -46,14 +44,10 @@ const Tab = createMaterialTopTabNavigator();
 export default function StoreDetailsScreen({ route, navigation }) {
   const { store } = route.params;
   const [isFavorite, setIsFavorite] = useState(false);
-  const [averageRating, setAverageRating] = useState(0);
-  const [reviewCount, setReviewCount] = useState(0);
   const [chatLoading, setChatLoading] = useState(false);
-  const [reviewsListener, setReviewsListener] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
-  const [previousReviewCount, setPreviousReviewCount] = useState(0);
   const { t } = useLanguage();
   const { currentUser, userProfile, isGuestUser } = useAuth();
 
@@ -116,260 +110,7 @@ export default function StoreDetailsScreen({ route, navigation }) {
     return tabs;
   }
 
-  // Get category information
-  const getCategoryInfo = () => {
-    const categories = {
-      "sari-sari": { name: t("sariSari"), icon: "storefront", emoji: "🏪" },
-      kainan: { name: t("restaurant"), icon: "restaurant", emoji: "🍽️" },
-      laundry: { name: t("laundry"), icon: "shirt", emoji: "👕" },
-      vegetables: { name: t("vegetables"), icon: "leaf", emoji: "🥬" },
-      meat: { name: t("meatShop"), icon: "fish", emoji: "🥩" },
-      bakery: { name: t("bakery"), icon: "cafe", emoji: "🍞" },
-      pharmacy: { name: t("pharmacy"), icon: "medical", emoji: "💊" },
-      hardware: { name: t("hardware"), icon: "hammer", emoji: "🔨" },
-      clothing: { name: t("clothing"), icon: "shirt-outline", emoji: "👔" },
-      electronics: {
-        name: t("electronics"),
-        icon: "phone-portrait",
-        emoji: "📱",
-      },
-      beauty: { name: t("beauty"), icon: "cut", emoji: "✂️" },
-      automotive: { name: t("automotive"), icon: "car", emoji: "🚗" },
-      other: { name: t("other"), icon: "business", emoji: "🏪" },
-    };
-
-    return categories[store.category] || categories["other"];
-  };
-
-  // Function to get platform icon for social links
-  const getPlatformIcon = (platform) => {
-    const icons = {
-      facebook: "logo-facebook",
-      instagram: "logo-instagram",
-      twitter: "logo-twitter",
-      youtube: "logo-youtube",
-      tiktok: "logo-tiktok",
-      linkedin: "logo-linkedin",
-      whatsapp: "logo-whatsapp",
-      telegram: "send",
-      viber: "call",
-      shopee: "storefront",
-      lazada: "bag",
-      link: "link",
-    };
-    return icons[platform] || "link";
-  };
-
-  // Function to get platform color for social links
-  const getPlatformColor = (platform) => {
-    const colors = {
-      facebook: "#1877F2",
-      instagram: "#E4405F",
-      twitter: "#1DA1F2",
-      youtube: "#FF0000",
-      tiktok: "#000000",
-      linkedin: "#0A66C2",
-      whatsapp: "#25D366",
-      telegram: "#0088CC",
-      viber: "#665CAC",
-      shopee: "#FF5722",
-      lazada: "#0F146D",
-      link: "#6B7280",
-    };
-    return colors[platform] || "#6B7280";
-  };
-
-  // Function to open social link
-  const openSocialLink = (url) => {
-    if (url) {
-      // Add https:// if not present
-      const formattedUrl = url.startsWith("http") ? url : `https://${url}`;
-      Linking.openURL(formattedUrl).catch(() => {
-        Alert.alert("Error", "Could not open this link");
-      });
-    }
-  };
-
-  useEffect(() => {
-    fetchProducts();
-    checkIfFavorite();
-    setupReviewsListener();
-
-    // Cleanup listener on unmount
-    return () => {
-      if (reviewsListener) {
-        reviewsListener();
-      }
-    };
-  }, []);
-
-  // Refresh reviews when screen comes into focus
-  useFocusEffect(
-    React.useCallback(() => {
-      // Refresh reviews when returning from review submission
-      fetchReviews();
-    }, [])
-  );
-
-  // Setup real-time listener for reviews
-  const setupReviewsListener = () => {
-    try {
-      const reviewsQuery = query(
-        collection(db, "storeReviews"),
-        where("storeId", "==", store.id),
-        orderBy("createdAt", "desc")
-      );
-
-      const unsubscribe = onSnapshot(reviewsQuery, (snapshot) => {
-        const reviewsData = [];
-        let totalRating = 0;
-        let count = 0;
-        let userReviewed = false;
-
-        snapshot.forEach((doc) => {
-          const reviewData = { id: doc.id, ...doc.data() };
-          reviewsData.push(reviewData);
-          totalRating += reviewData.rating;
-          count++;
-
-          // Check if current user has already reviewed
-          if (currentUser && reviewData.userId === currentUser.uid) {
-            userReviewed = true;
-          }
-        });
-
-        // Show toast notification for new reviews (not on first load)
-        if (previousReviewCount > 0 && count > previousReviewCount) {
-          const newReviews = count - previousReviewCount;
-          setToastMessage(
-            newReviews === 1
-              ? "New review added!"
-              : `${newReviews} new reviews added!`
-          );
-          setShowToast(true);
-        }
-
-        // Show only latest 3 reviews in preview
-        const latestReviews = reviewsData.slice(0, 3);
-
-        setReviews(latestReviews);
-        setReviewCount(count);
-        setAverageRating(count > 0 ? totalRating / count : 0);
-        setUserHasReviewed(userReviewed);
-        setPreviousReviewCount(count);
-      });
-
-      setReviewsListener(() => unsubscribe);
-    } catch (error) {
-      console.error("Error setting up reviews listener:", error);
-      // Fallback to regular fetch if real-time fails
-      fetchReviews();
-    }
-  };
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const productsQuery = query(
-        collection(db, "products"),
-        where("storeId", "==", store.id)
-      );
-      const querySnapshot = await getDocs(productsQuery);
-      const productsData = [];
-
-      querySnapshot.forEach((doc) => {
-        productsData.push({ id: doc.id, ...doc.data() });
-      });
-
-      setProducts(productsData);
-    } catch (error) {
-      Alert.alert("Error", "Failed to fetch products");
-      console.error("Error fetching products:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchReviews = async () => {
-    try {
-      const reviewsQuery = query(
-        collection(db, "storeReviews"),
-        where("storeId", "==", store.id),
-        orderBy("createdAt", "desc"),
-        limit(3) // Show only latest 3 reviews in preview
-      );
-
-      const querySnapshot = await getDocs(reviewsQuery);
-      const reviewsData = [];
-      let totalRating = 0;
-      let count = 0;
-      let userReviewed = false;
-
-      // Get all reviews for average calculation
-      const allReviewsQuery = query(
-        collection(db, "storeReviews"),
-        where("storeId", "==", store.id)
-      );
-      const allReviewsSnapshot = await getDocs(allReviewsQuery);
-
-      allReviewsSnapshot.forEach((doc) => {
-        const reviewData = doc.data();
-        totalRating += reviewData.rating;
-        count++;
-
-        // Check if current user has already reviewed
-        if (currentUser && reviewData.userId === currentUser.uid) {
-          userReviewed = true;
-        }
-      });
-
-      // Get latest reviews for display
-      querySnapshot.forEach((doc) => {
-        reviewsData.push({ id: doc.id, ...doc.data() });
-      });
-
-      setReviews(reviewsData);
-      setReviewCount(count);
-      setAverageRating(count > 0 ? totalRating / count : 0);
-      setUserHasReviewed(userReviewed);
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
-    }
-  };
-
-  // Manual refresh function for pull-to-refresh
-  const onRefresh = async () => {
-    setRefreshing(true);
-    try {
-      await Promise.all([fetchProducts(), fetchReviews(), checkIfFavorite()]);
-    } catch (error) {
-      console.error("Error refreshing data:", error);
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  const renderStars = (rating) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-
-    for (let i = 1; i <= 5; i++) {
-      if (i <= fullStars) {
-        stars.push(<Ionicons key={i} name="star" size={16} color="#FFD700" />);
-      } else if (i === fullStars + 1 && hasHalfStar) {
-        stars.push(
-          <Ionicons key={i} name="star-half" size={16} color="#FFD700" />
-        );
-      } else {
-        stars.push(
-          <Ionicons key={i} name="star-outline" size={16} color="#e0e0e0" />
-        );
-      }
-    }
-    return stars;
-  };
-
+  // Only keep logic for favorite, chat, and report actions here
   const checkIfFavorite = async () => {
     try {
       const favorites = await AsyncStorage.getItem("favorites");
@@ -402,7 +143,6 @@ export default function StoreDetailsScreen({ route, navigation }) {
   };
 
   const startChatWithStore = async () => {
-    // Check if user is guest
     if (isGuestUser()) {
       Alert.alert(
         "Sign Up Required",
@@ -419,14 +159,6 @@ export default function StoreDetailsScreen({ route, navigation }) {
     }
 
     try {
-      console.log(
-        "Starting chat with store:",
-        store.name,
-        "Owner ID:",
-        store.ownerId
-      );
-
-      // Validate store has owner ID
       if (!store.ownerId) {
         Alert.alert(
           "Error",
@@ -435,7 +167,6 @@ export default function StoreDetailsScreen({ route, navigation }) {
         return;
       }
 
-      // Prevent chatting with your own store
       if (store.ownerId === currentUser.uid) {
         Alert.alert("Error", "You cannot chat with your own store.");
         return;
@@ -532,7 +263,6 @@ export default function StoreDetailsScreen({ route, navigation }) {
   };
 
   const handleReportStore = () => {
-    // Check if user is guest
     if (isGuestUser()) {
       Alert.alert(
         "Sign Up Required",
@@ -605,12 +335,21 @@ export default function StoreDetailsScreen({ route, navigation }) {
     }
   };
 
-  const renderProduct = ({ item }) => (
-    <ProductCard
-      product={item}
-      onPress={() => navigation.navigate("ProductDetails", { product: item })}
-    />
-  );
+  useEffect(() => {
+    checkIfFavorite();
+  }, []);
+
+  // Manual refresh function for pull-to-refresh
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await checkIfFavorite();
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const tabs = getTabsForProfile(store);
 
@@ -630,18 +369,14 @@ export default function StoreDetailsScreen({ route, navigation }) {
     >
       {/* Hero Section with Cover and Profile */}
       <View style={styles.heroSection}>
-        {/* Cover Photo */}
         {store.coverImage ? (
           <Image source={{ uri: store.coverImage }} style={styles.coverImage} />
         ) : (
           <View style={styles.coverPlaceholder} />
         )}
 
-        {/* Profile Section Overlay */}
         <View style={styles.profileSection}>
-          {/* Profile and Actions Row */}
           <View style={styles.profileAndActionsContainer}>
-            {/* Profile Picture */}
             <View style={styles.profileContainer}>
               {store.profileImage ? (
                 <Image
@@ -656,12 +391,8 @@ export default function StoreDetailsScreen({ route, navigation }) {
                 </View>
               )}
             </View>
-
-            {/* Action Buttons */}
             <View style={styles.actionButtons}>
-              {/* All Actions in One Row */}
               <View style={styles.horizontalActionsRow}>
-                {/* Report Button */}
                 {store.ownerId !== currentUser?.uid && (
                   <TouchableOpacity
                     style={styles.roundActionButton}
@@ -670,8 +401,6 @@ export default function StoreDetailsScreen({ route, navigation }) {
                     <Ionicons name="flag" size={18} color="#e74c3c" />
                   </TouchableOpacity>
                 )}
-
-                {/* Map Button */}
                 <TouchableOpacity
                   style={styles.roundActionButton}
                   onPress={() =>
@@ -680,8 +409,6 @@ export default function StoreDetailsScreen({ route, navigation }) {
                 >
                   <Ionicons name="map" size={18} color="#27ae60" />
                 </TouchableOpacity>
-
-                {/* Chat Button */}
                 {store.ownerId && store.ownerId !== currentUser?.uid && (
                   <TouchableOpacity
                     style={styles.roundActionButton}
@@ -695,8 +422,6 @@ export default function StoreDetailsScreen({ route, navigation }) {
                     />
                   </TouchableOpacity>
                 )}
-
-                {/* Favorite Button */}
                 <TouchableOpacity
                   style={styles.roundActionButton}
                   onPress={toggleFavorite}
@@ -710,12 +435,8 @@ export default function StoreDetailsScreen({ route, navigation }) {
               </View>
             </View>
           </View>
-
-          {/* Store Basic Info */}
           <View style={styles.storeBasicInfo}>
             <Text style={styles.storeName}>{store.name}</Text>
-
-            {/* Profile Type Badge - Highlighted */}
             {(store.profileType ||
               store.primaryType ||
               (store.profileTypes && store.profileTypes.length > 0)) && (
@@ -755,8 +476,6 @@ export default function StoreDetailsScreen({ route, navigation }) {
                 </View>
               </View>
             )}
-
-            {/* Category Badge */}
             {store.category && (
               <View style={styles.categoryBadge}>
                 <Ionicons
@@ -766,16 +485,6 @@ export default function StoreDetailsScreen({ route, navigation }) {
                 />
                 <Text style={styles.categoryText}>
                   {getCategoryInfo(store.category).name}
-                </Text>
-              </View>
-            )}
-
-            {/* Rating */}
-            {reviewCount > 0 && (
-              <View style={styles.ratingContainer}>
-                <View style={styles.stars}>{renderStars(averageRating)}</View>
-                <Text style={styles.ratingText}>
-                  {averageRating.toFixed(1)} ({reviewCount} reviews)
                 </Text>
               </View>
             )}
@@ -928,20 +637,6 @@ const styles = StyleSheet.create({
     color: "#3498db",
     marginLeft: 6,
     fontWeight: "600",
-  },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 4,
-  },
-  stars: {
-    flexDirection: "row",
-    marginRight: 8,
-  },
-  ratingText: {
-    fontSize: 14,
-    color: "#7f8c8d",
-    fontWeight: "500",
   },
 
   // Action Buttons
