@@ -221,18 +221,59 @@ const BusinessDetailsTab = ({ store, navigation }) => {
               </View>
             </View>
           )}
-          {store.category && (
+          {Array.isArray(store.categories) && store.categories.length > 0 && (
+            <View style={styles.businessDetailRow}>
+              <Text style={styles.businessDetailLabel}>Categories:</Text>
+              <View style={[styles.businessDetailValue, { flexWrap: "wrap", flex: 1 }]}>
+                {store.categories.map((cat) => (
+                  <View
+                    key={cat}
+                    style={{
+                      marginRight: 8,
+                      marginBottom: 4,
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Ionicons
+                      name={getCategoryInfo(cat).icon}
+                      size={14}
+                      color="#3498db"
+                    />
+                    <Text
+                      style={[
+                        styles.businessDetailText,
+                        { flexShrink: 1, flexWrap: "wrap" },
+                      ]}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {getCategoryInfo(cat).name}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+          {/* fallback for single category (if categories array is not present) */}
+          {!Array.isArray(store.categories) && store.category && (
             <View style={styles.businessDetailRow}>
               <Text style={styles.businessDetailLabel}>Category:</Text>
               <View style={styles.businessDetailValue}>
-                <Ionicons
-                  name={getCategoryInfo(store.category).icon}
-                  size={16}
-                  color="#3498db"
-                />
-                <Text style={styles.businessDetailText}>
-                  {getCategoryInfo(store.category).name}
-                </Text>
+                <View
+                  style={[
+                    { marginRight: 8, flexDirection: "row", alignItems: "center" },
+                  ]}
+                >
+                  <Ionicons
+                    name={getCategoryInfo(store.category).icon}
+                    size={14}
+                    color="#3498db"
+                  />
+                  <Text style={styles.businessDetailText}>
+                    {getCategoryInfo(store.category).name}
+                  </Text>
+                </View>
               </View>
             </View>
           )}
