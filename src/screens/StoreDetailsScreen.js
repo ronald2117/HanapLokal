@@ -31,15 +31,12 @@ import Toast from "../components/Toast";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { getProfileTypeInfo, getCategoryInfo } from "../config/categories";
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import BusinessDetailsTab from "../components/business_tabs/BusinessDetailsTab";
 import BusinessProductsTab from "../components/business_tabs/BusinessProductsTab";
 import BusinessServicesTab from "../components/business_tabs/BusinessServicesTab";
 import BusinessBookingsTab from "../components/business_tabs/BusinessBookingsTab";
 import BusinessPortfolioTab from "../components/business_tabs/BusinessPortfolioTab";
 import BusinessLaborTab from "../components/business_tabs/BusinessLaborTab";
-
-const Tab = createMaterialTopTabNavigator();
 
 export default function StoreDetailsScreen({ route, navigation }) {
   const { store } = route.params;
@@ -51,6 +48,7 @@ export default function StoreDetailsScreen({ route, navigation }) {
   const { t } = useLanguage();
   const { currentUser, userProfile, isGuestUser } = useAuth();
 
+  // Build tabs dynamically
   function getTabsForProfile(store) {
     const profileType = getProfileTypeInfo(
       store.profileType || store.primaryType
@@ -58,9 +56,8 @@ export default function StoreDetailsScreen({ route, navigation }) {
     const tabs = [
       {
         key: "details",
-        name: "Details",
-        component: BusinessDetailsTab,
         label: "Details",
+        component: BusinessDetailsTab,
       },
     ];
     if (profileType && profileType.canHave) {
@@ -68,41 +65,36 @@ export default function StoreDetailsScreen({ route, navigation }) {
         if (type === "products") {
           tabs.push({
             key: "products",
-            name: "Products",
-            component: BusinessProductsTab,
             label: "Products",
+            component: BusinessProductsTab,
           });
         }
         if (type === "services") {
           tabs.push({
             key: "services",
-            name: "Services",
-            component: BusinessServicesTab,
             label: "Services",
+            component: BusinessServicesTab,
           });
         }
         if (type === "bookings") {
           tabs.push({
             key: "bookings",
-            name: "Bookings",
-            component: BusinessBookingsTab,
             label: "Bookings",
+            component: BusinessBookingsTab,
           });
         }
         if (type === "portfolio") {
           tabs.push({
             key: "portfolio",
-            name: "Portfolio",
-            component: BusinessPortfolioTab,
             label: "Portfolio",
+            component: BusinessPortfolioTab,
           });
         }
         if (type === "labor") {
           tabs.push({
             key: "labor",
-            name: "Labor",
-            component: BusinessLaborTab,
             label: "Labor",
+            component: BusinessLaborTab,
           });
         }
       });
@@ -352,12 +344,19 @@ export default function StoreDetailsScreen({ route, navigation }) {
   };
 
   const tabs = getTabsForProfile(store);
+  const [activeTab, setActiveTab] = useState(tabs[0].key);
+
+  const renderTabContent = () => {
+    const tab = tabs.find((t) => t.key === activeTab);
+    if (!tab) return null;
+    const TabComponent = tab.component;
+    return <TabComponent store={store} navigation={navigation} />;
+  };
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -367,7 +366,7 @@ export default function StoreDetailsScreen({ route, navigation }) {
         />
       }
     >
-      {/* Hero Section with Cover and Profile */}
+      {/* Hero/Profile Section */}
       <View style={styles.heroSection}>
         {store.coverImage ? (
           <Image source={{ uri: store.coverImage }} style={styles.coverImage} />
@@ -391,6 +390,7 @@ export default function StoreDetailsScreen({ route, navigation }) {
                 </View>
               )}
             </View>
+            {/* --- ACTION BUTTONS (restored) --- */}
             <View style={styles.actionButtons}>
               <View style={styles.horizontalActionsRow}>
                 {store.ownerId !== currentUser?.uid && (
@@ -434,6 +434,7 @@ export default function StoreDetailsScreen({ route, navigation }) {
                 </TouchableOpacity>
               </View>
             </View>
+            {/* --- END ACTION BUTTONS --- */}
           </View>
           <View style={styles.storeBasicInfo}>
             <Text style={styles.storeName}>{store.name}</Text>
@@ -492,24 +493,31 @@ export default function StoreDetailsScreen({ route, navigation }) {
         </View>
       </View>
 
-      {/* Top Tab Navigator */}
-      <Tab.Navigator
-        screenOptions={{
-          tabBarLabelStyle: { fontSize: 14, fontWeight: "bold" },
-          tabBarIndicatorStyle: { backgroundColor: "#3498db" },
-          tabBarStyle: { backgroundColor: "#fff" },
-        }}
-      >
+      {/* Custom Top Tab Bar */}
+      <View style={{ flexDirection: "row", marginTop: 16, marginBottom: 8 }}>
         {tabs.map((tab) => (
-          <Tab.Screen
+          <TouchableOpacity
             key={tab.key}
-            name={tab.name}
-            options={{ tabBarLabel: tab.label }}
+            style={[
+              styles.customTab,
+              activeTab === tab.key && styles.customTabActive,
+            ]}
+            onPress={() => setActiveTab(tab.key)}
           >
-            {(props) => <tab.component {...props} store={store} />}
-          </Tab.Screen>
+            <Text
+              style={[
+                styles.customTabLabel,
+                activeTab === tab.key && styles.customTabLabelActive,
+              ]}
+            >
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
         ))}
-      </Tab.Navigator>
+      </View>
+
+      {/* Tab Content */}
+      <View style={{ flex: 1 }}>{renderTabContent()}</View>
 
       {/* Toast Notification */}
       <Toast
@@ -919,5 +927,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#7f8c8d",
     marginTop: 12,
+  },
+
+  // Custom Tab Styles
+  customTab: {
+    flex: 1,
+    paddingVertical: 12,
+    backgroundColor: "#f8f9fa",
+    alignItems: "center",
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
+  },
+  customTabActive: {
+    borderBottomColor: "#3498db",
+    backgroundColor: "#fff",
+  },
+  customTabLabel: {
+    fontSize: 16,
+    color: "#7f8c8d",
+    fontWeight: "600",
+  },
+  customTabLabelActive: {
+    color: "#3498db",
   },
 });
