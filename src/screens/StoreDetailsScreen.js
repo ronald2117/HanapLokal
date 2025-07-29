@@ -494,7 +494,7 @@ export default function StoreDetailsScreen({ route, navigation }) {
       </View>
 
       {/* Custom Top Tab Bar */}
-      <View style={{ flexDirection: "row", marginTop: 16, marginBottom: 8 }}>
+      <View style={{ flexDirection: "row", marginBottom: 8 }}>
         {tabs.map((tab) => (
           <TouchableOpacity
             key={tab.key}
@@ -563,12 +563,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 30,
     paddingTop: 20,
     paddingHorizontal: 20,
-    paddingBottom: 25,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    paddingBottom: 10,
   },
   profileAndActionsContainer: {
     flexDirection: "row",
