@@ -257,6 +257,11 @@ export default function HomeScreen({ navigation }) {
       });
     }
 
+    // Exclude the current user's own store
+    if (currentUser && currentUser.uid) {
+      filtered = filtered.filter(store => store.ownerId !== currentUser.uid);
+    }
+
     setFilteredStores(filtered);
   };
 
