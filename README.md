@@ -1,4 +1,4 @@
-# 🏪 LocalFind
+# 🏪 HanapLokal
 
 **Tuklasin at Suportahan ang mga Lokal na Negosyo** 🇵🇭
 
@@ -31,7 +31,6 @@ A modern, Filipino-inspired React Native mobile application that connects local 
 ## 🎨 Modern Filipino Design
 
 - **🌅 Sunset Colors**: Inspired by Manila Bay sunset (orange, gold, blue)
-- **🏝️ Cultural Elements**: Filipino emojis and cultural references
 - **📱 Modern Interface**: Clean, intuitive design
 - **🇵🇭 Tagalog Language**: Filipino-first user interface
 - **⚡ Smooth Animations**: Engaging user experience
@@ -80,7 +79,7 @@ Our design celebrates Filipino culture while maintaining modern UX standards:
 1. Clone the repository:
    ```bash
    git clone <repository-url>
-   cd localfind
+   cd hanaplokal
    ```
 
 2. Install dependencies:

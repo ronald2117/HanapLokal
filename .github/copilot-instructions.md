@@ -1,9 +1,8 @@
 <!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
 
-# LocalFind - Local Business & Service Discovery App
-
+# HanapLokal - Local Business & Service Discovery App
 ## Project Overview
-LocalFind is a React Native Expo application that connects local stores and service providers with nearby customers. The app focuses on discovery and basic business/product/service management.
+HanapLokal is a React Native Expo application that connects local stores and service providers with nearby customers. The app focuses on discovery and basic business/product/service management.
 
 ## Technology Stack
 - **Frontend**: React Native Expo (JavaScript)

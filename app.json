@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "LocalFind",
-    "slug": "localfind",
+    "name": "HanapLokal",
+    "slug": "hanaplokal",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/lokalfinds-logo.png",
