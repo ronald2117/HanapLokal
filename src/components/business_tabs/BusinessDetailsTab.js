@@ -35,30 +35,8 @@ const BusinessDetailsTab = ({ store, navigation }) => {
   const { currentUser } = useAuth();
 
   useEffect(() => {
-    fetchProducts();
     fetchReviews();
   }, []);
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const productsQuery = query(
-        collection(db, "products"),
-        where("storeId", "==", store.id)
-      );
-      const querySnapshot = await getDocs(productsQuery);
-      const productsData = [];
-      querySnapshot.forEach((doc) => {
-        productsData.push({ id: doc.id, ...doc.data() });
-      });
-      setProducts(productsData);
-    } catch (error) {
-      Alert.alert("Error", "Failed to fetch products");
-      console.error("Error fetching products:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchReviews = async () => {
     try {
@@ -137,13 +115,6 @@ const BusinessDetailsTab = ({ store, navigation }) => {
     };
     return colors[platform] || "#6B7280";
   };
-
-  const renderProduct = ({ item }) => (
-    <ProductCard
-      product={item}
-      onPress={() => navigation.navigate("ProductDetails", { product: item })}
-    />
-  );
 
   return (
     <View>
