@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   title: {
-    fontSize: Typography.fontSize['4xl'],
+    fontSize: Typography.fontSize['3xl'],
     fontWeight: Typography.fontWeight.extrabold,
     color: Colors.text.white,
     textAlign: 'center',
