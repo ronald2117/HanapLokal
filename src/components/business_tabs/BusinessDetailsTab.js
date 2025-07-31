@@ -24,7 +24,7 @@ import {
   limit,
 } from "firebase/firestore";
 
-const BusinessDetailsTab = ({ store, navigation }) => {
+const BusinessDetailsTab = ({ store, navigation, isMyStore = false }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [reviews, setReviews] = useState([]);
@@ -385,84 +385,88 @@ const BusinessDetailsTab = ({ store, navigation }) => {
         )}
 
         {/* Reviews Section */}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t("reviews")}</Text>
-            {reviewCount > 0 && (
-              <TouchableOpacity
-                style={styles.seeAllButton}
-                onPress={() => navigation.navigate("StoreReviews", { store })}
-              >
-                <Text style={styles.seeAllText}>{t("seeAll")}</Text>
-                <Ionicons name="chevron-forward" size={16} color="#3498db" />
-              </TouchableOpacity>
+        {!isMyStore && (
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t("reviews")}</Text>
+              {reviewCount > 0 && (
+                <TouchableOpacity
+                  style={styles.seeAllButton}
+                  onPress={() => navigation.navigate("StoreReviews", { store })}
+                >
+                  <Text style={styles.seeAllText}>{t("seeAll")}</Text>
+                  <Ionicons name="chevron-forward" size={16} color="#3498db" />
+                </TouchableOpacity>
+              )}
+            </View>
+            {reviewCount > 0 ? (
+              <>
+                <TouchableOpacity
+                  style={styles.writeReviewCard}
+                  onPress={() => navigation.navigate("StoreReview", { store })}
+                >
+                  <Ionicons
+                    name={userHasReviewed ? "create" : "create-outline"}
+                    size={20}
+                    color="#3498db"
+                  />
+                  <Text style={styles.writeReviewText}>
+                    {userHasReviewed ? "Edit Your Review" : "Write a Review"}
+                  </Text>
+                  <Ionicons name="chevron-forward" size={16} color="#3498db" />
+                </TouchableOpacity>
+                <View style={styles.reviewsList}>
+                  {reviews.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
+                </View>
+              </>
+            ) : (
+              <View style={styles.noReviewsContainer}>
+                <Ionicons name="star-outline" size={48} color="#bdc3c7" />
+                <Text style={styles.noReviewsText}>{t("noReviewsYet")}</Text>
+                <Text style={styles.noReviewsSubtext}>
+                  {t("beFirstToReview")}
+                </Text>
+                <TouchableOpacity
+                  style={styles.firstReviewButton}
+                  onPress={() => navigation.navigate("StoreReview", { store })}
+                >
+                  <Text style={styles.firstReviewButtonText}>
+                    {t("writeFirstReview")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             )}
           </View>
-          {reviewCount > 0 ? (
-            <>
-              <TouchableOpacity
-                style={styles.writeReviewCard}
-                onPress={() => navigation.navigate("StoreReview", { store })}
-              >
-                <Ionicons
-                  name={userHasReviewed ? "create" : "create-outline"}
-                  size={20}
-                  color="#3498db"
-                />
-                <Text style={styles.writeReviewText}>
-                  {userHasReviewed ? "Edit Your Review" : "Write a Review"}
-                </Text>
-                <Ionicons name="chevron-forward" size={16} color="#3498db" />
-              </TouchableOpacity>
-              <View style={styles.reviewsList}>
-                {reviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} />
-                ))}
-              </View>
-            </>
-          ) : (
-            <View style={styles.noReviewsContainer}>
-              <Ionicons name="star-outline" size={48} color="#bdc3c7" />
-              <Text style={styles.noReviewsText}>{t("noReviewsYet")}</Text>
-              <Text style={styles.noReviewsSubtext}>
-                {t("beFirstToReview")}
-              </Text>
-              <TouchableOpacity
-                style={styles.firstReviewButton}
-                onPress={() => navigation.navigate("StoreReview", { store })}
-              >
-                <Text style={styles.firstReviewButtonText}>
-                  {t("writeFirstReview")}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
+        )}
 
         {/* Products Section */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>{t("products")}</Text>
-          {loading ? (
-            <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>{t("loadingProducts")}</Text>
-            </View>
-          ) : products.length > 0 ? (
-            <FlatList
-              data={products}
-              renderItem={renderProduct}
-              keyExtractor={(item) => item.id}
-              numColumns={2}
-              scrollEnabled={false}
-              columnWrapperStyle={styles.productRow}
-              contentContainerStyle={styles.productsGrid}
-            />
-          ) : (
-            <View style={styles.emptyProducts}>
-              <Ionicons name="cube-outline" size={48} color="#bdc3c7" />
-              <Text style={styles.emptyText}>{t("noProductsAvailable")}</Text>
-            </View>
-          )}
-        </View>
+        {!isMyStore && (
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>{t("products")}</Text>
+            {loading ? (
+              <View style={styles.loadingContainer}>
+                <Text style={styles.loadingText}>{t("loadingProducts")}</Text>
+              </View>
+            ) : products.length > 0 ? (
+              <FlatList
+                data={products}
+                renderItem={renderProduct}
+                keyExtractor={(item) => item.id}
+                numColumns={2}
+                scrollEnabled={false}
+                columnWrapperStyle={styles.productRow}
+                contentContainerStyle={styles.productsGrid}
+              />
+            ) : (
+              <View style={styles.emptyProducts}>
+                <Ionicons name="cube-outline" size={48} color="#bdc3c7" />
+                <Text style={styles.emptyText}>{t("noProductsAvailable")}</Text>
+              </View>
+            )}
+          </View>
+        )}
       </View>
     </View>
   );

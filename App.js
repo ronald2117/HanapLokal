@@ -41,6 +41,7 @@ import EditStoreScreen from './src/screens/EditStoreScreen';
 import AddProductScreen from './src/screens/AddProductScreen';
 import EditProductScreen from './src/screens/EditProductScreen';
 import StoreSettingsScreen from './src/screens/StoreSettingsScreen';
+import AddServiceScreen from './src/screens/AddServiceScreen';
 
 // Chat Navigation Stack
 import ChatStack from './src/navigation/ChatStack';
@@ -176,6 +177,11 @@ function MyStoreStack() {
         name="StoreSettings" 
         component={StoreSettingsScreen}
         options={getModernHeaderOptions(() => t('storeSettings'), t)}
+      />
+      <Stack.Screen 
+        name="AddService" 
+        component={AddServiceScreen}
+        options={getModernHeaderOptions(() => t('addService'), t)}
       />
     </Stack.Navigator>
   );
