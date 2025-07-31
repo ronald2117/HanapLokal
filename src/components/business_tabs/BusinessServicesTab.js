@@ -6,10 +6,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Image,
+  FlatList,
 } from 'react-native';
-import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
-import { useLanguage } from '../../contexts/LanguageContext'; // Corrected import
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../../styles/theme';
@@ -21,25 +23,23 @@ const BusinessServicesTab = ({ store, navigation, isMyStore = false }) => {
   const { currentUser } = useAuth();
 
   useEffect(() => {
-    fetchServices();
-  }, [store.id]);
+    const servicesQuery = query(
+      collection(db, 'services'),
+      where('storeId', '==', store.id)
+    );
 
-  const fetchServices = async () => {
-    try {
-      const servicesQuery = query(
-        collection(db, 'services'),
-        where('storeId', '==', store.id)
-      );
-      const querySnapshot = await getDocs(servicesQuery);
+    const unsubscribe = onSnapshot(servicesQuery, (querySnapshot) => {
       const servicesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setServices(servicesData);
-    } catch (error) {
+      setLoading(false);
+    }, (error) => {
       console.error("Error fetching services:", error);
       Alert.alert(t('error'), t('failedToFetchServices'));
-    } finally {
       setLoading(false);
-    }
-  };
+    });
+
+    return () => unsubscribe();
+  }, [store.id]);
 
   const handleDelete = (serviceId) => {
     Alert.alert(
@@ -62,6 +62,31 @@ const BusinessServicesTab = ({ store, navigation, isMyStore = false }) => {
       Alert.alert(t('error'), t('failedToDeleteService'));
     }
   };
+
+  const renderServiceCard = ({ item }) => (
+    <View style={styles.serviceCard}>
+      <Image source={{ uri: item.imageUrl }} style={styles.serviceImage} />
+      <View style={styles.serviceInfo}>
+        <Text style={styles.serviceName}>{item.name}</Text>
+        <Text style={styles.serviceDescription}>{item.description}</Text>
+        <View style={styles.priceContainer}>
+          <Text style={styles.priceText}>{`₱${item.price}`}</Text>
+          <Text style={styles.priceFormatText}>{item.priceFormat}</Text>
+        </View>
+        <Text style={styles.serviceArea}>{`Coverage: ${item.serviceArea}`}</Text>
+      </View>
+      {isMyStore && (
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity onPress={() => navigation.navigate('EditService', { service: item })}>
+            <Ionicons name="pencil-outline" size={24} color={Colors.secondary} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleDelete(item.id)}>
+            <Ionicons name="trash-outline" size={24} color={Colors.error} />
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
 
   if (loading) {
     return (
@@ -90,25 +115,12 @@ const BusinessServicesTab = ({ store, navigation, isMyStore = false }) => {
           <Text style={styles.emptyText}>{t('noServicesAvailable')}</Text>
         </View>
       ) : (
-        services.map(item => (
-          <View key={item.id} style={styles.serviceCard}>
-            <View style={styles.serviceInfo}>
-              <Text style={styles.serviceName}>{item.name}</Text>
-              <Text style={styles.serviceDescription}>{item.description}</Text>
-              <Text style={styles.servicePrice}>{item.price}</Text>
-            </View>
-            {isMyStore && (
-              <View style={styles.actionsContainer}>
-                <TouchableOpacity onPress={() => navigation.navigate('EditService', { service: item, storeId: store.id })}>
-                  <Ionicons name="pencil-outline" size={24} color={Colors.secondary} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                  <Ionicons name="trash-outline" size={24} color={Colors.error} />
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        ))
+        <FlatList
+          data={services}
+          renderItem={renderServiceCard}
+          keyExtractor={item => item.id}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        />
       )}
     </View>
   );
@@ -154,9 +166,13 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     marginBottom: Spacing.base,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     ...Shadows.base,
+  },
+  serviceImage: {
+    width: 80,
+    height: 80,
+    borderRadius: BorderRadius.md,
+    marginRight: Spacing.lg,
   },
   serviceInfo: {
     flex: 1,
@@ -171,16 +187,30 @@ const styles = StyleSheet.create({
     color: Colors.text.secondary,
     marginTop: Spacing.xs,
   },
-  servicePrice: {
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: Spacing.sm,
+  },
+  priceText: {
     fontSize: Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.semibold,
     color: Colors.primary,
+  },
+  priceFormatText: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.secondary,
+    marginLeft: Spacing.xs,
+  },
+  serviceArea: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.light,
     marginTop: Spacing.sm,
   },
   actionsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
   },
   emptyContainer: {
     flex: 1,
@@ -195,4 +225,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
