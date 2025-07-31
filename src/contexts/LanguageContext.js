@@ -286,6 +286,8 @@ export const translations = {
     serviceDeletedSuccess: 'Service deleted successfully',
     failedToFetchServices: 'Failed to fetch services',
     failedToDeleteService: 'Failed to delete service',
+    available: 'Available',
+    unavailable: 'Unavailable',
   },
   
   tl: {
@@ -571,6 +573,8 @@ export const translations = {
     serviceDeletedSuccess: 'Matagumpay na natanggal ang serbisyo',
     failedToFetchServices: 'Hindi nakuha ang mga serbisyo',
     failedToDeleteService: 'Hindi natanggal ang serbisyo',
+    available: 'Available',
+    unavailable: 'Hindi Available',
   },
 };
 

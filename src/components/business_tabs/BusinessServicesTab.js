@@ -79,6 +79,10 @@ const BusinessServicesTab = ({ store, navigation, isMyStore = false }) => {
           <Text style={styles.priceFormatText}>{item.priceFormat}</Text>
         </View>
         <Text style={styles.serviceArea}>{`Coverage: ${item.serviceArea}`}</Text>
+        <View style={styles.availabilityContainer}>
+          <View style={[styles.availabilityIndicator, { backgroundColor: item.isAvailable ? Colors.success : Colors.error }]} />
+          <Text style={styles.availabilityText}>{item.isAvailable ? t('available') : t('unavailable')}</Text>
+        </View>
       </View>
       {isMyStore && (
         <View style={styles.actionsContainer}>
@@ -221,6 +225,21 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.sm,
     color: Colors.text.light,
     marginTop: Spacing.sm,
+  },
+  availabilityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: Spacing.sm,
+  },
+  availabilityIndicator: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: Spacing.sm,
+  },
+  availabilityText: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.secondary,
   },
   actionsContainer: {
     flexDirection: 'column',

@@ -10,6 +10,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Switch,
 } from 'react-native';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
@@ -24,6 +25,7 @@ export default function EditServiceScreen({ route, navigation }) {
   const [serviceArea, setServiceArea] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [imagePublicId, setImagePublicId] = useState('');
+  const [isAvailable, setIsAvailable] = useState(true);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -35,6 +37,7 @@ export default function EditServiceScreen({ route, navigation }) {
       setServiceArea(service.serviceArea);
       setImageUrl(service.imageUrl);
       setImagePublicId(service.imagePublicId);
+      setIsAvailable(service.isAvailable);
     }
   }, [service]);
 
@@ -60,6 +63,7 @@ export default function EditServiceScreen({ route, navigation }) {
         serviceArea: serviceArea,
         imageUrl: imageUrl,
         imagePublicId: imagePublicId,
+        isAvailable: isAvailable,
       });
 
       Alert.alert('Success', 'Service updated successfully!', [
@@ -172,6 +176,16 @@ export default function EditServiceScreen({ route, navigation }) {
             />
           </View>
 
+          <View style={styles.switchGroup}>
+            <Text style={styles.label}>Available</Text>
+            <Switch
+              value={isAvailable}
+              onValueChange={setIsAvailable}
+              trackColor={{ false: '#e0e0e0', true: '#27ae60' }}
+              thumbColor={isAvailable ? '#fff' : '#f4f3f4'}
+            />
+          </View>
+
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleUpdateService}
@@ -268,5 +282,16 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  switchGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
 });
