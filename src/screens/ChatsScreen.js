@@ -195,7 +195,7 @@ export default function ChatsScreen({ navigation }) {
               await logoutGuestAndSignup();
             }}
             >
-              <Ionicons name="person-add" size={20} color={Colors.text.white} />
+              <Ionicons name="person-add" size={20} color={Colors.background.secondary} />
               <Text style={styles.signupButtonText}>Sign Up to Chat</Text>
             </TouchableOpacity>
           </View>
