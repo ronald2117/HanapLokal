@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
   collection, 
   query, 
@@ -35,7 +36,7 @@ export default function ChatsScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { currentUser, userProfile, isGuestUser } = useAuth();
+  const { currentUser, userProfile, isGuestUser, logoutGuestAndSignup } = useAuth();
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -193,7 +194,12 @@ export default function ChatsScreen({ navigation }) {
             </Text>
             <TouchableOpacity
               style={styles.signupButton}
-              onPress={() => navigation.navigate('Auth', { screen: 'Signup' })}
+              onPress={async () => {
+              // Set a flag to remember user wants to signup
+              await AsyncStorage.setItem('pendingSignup', 'true');
+              // Logout guest session - this will trigger navigation to AuthStack
+              await logoutGuestAndSignup();
+            }}
             >
               <Ionicons name="person-add" size={20} color={Colors.text.white} />
               <Text style={styles.signupButtonText}>Sign Up to Chat</Text>
