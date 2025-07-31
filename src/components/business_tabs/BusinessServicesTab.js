@@ -64,7 +64,13 @@ const BusinessServicesTab = ({ store, navigation, isMyStore = false }) => {
 
   const renderServiceCard = ({ item }) => (
     <View style={styles.serviceCard}>
-      <Image source={{ uri: item.imageUrl }} style={styles.serviceImage} />
+      {item.imageUrl ? (
+        <Image source={{ uri: item.imageUrl }} style={styles.serviceImage} />
+      ) : (
+        <View style={styles.serviceImagePlaceholder}>
+          <Ionicons name="construct-outline" size={40} color={Colors.text.light} />
+        </View>
+      )}
       <View style={styles.serviceInfo}>
         <Text style={styles.serviceName}>{item.name}</Text>
         <Text style={styles.serviceDescription}>{item.description}</Text>
@@ -172,6 +178,16 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: BorderRadius.md,
     marginRight: Spacing.lg,
+    backgroundColor: Colors.background.secondary,
+  },
+  serviceImagePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: BorderRadius.md,
+    marginRight: Spacing.lg,
+    backgroundColor: Colors.background.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   serviceInfo: {
     flex: 1,
