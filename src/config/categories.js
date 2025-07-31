@@ -6,7 +6,7 @@ export const PROFILE_TYPES = [
   {
     id: 'store',
     name: 'Store/Reseller',
-    description: 'Physical or online store selling products',
+    description: 'Best for businesses with a physical or online storefront that primarily sell tangible goods. This includes sari-sari stores, boutiques, hardware shops, and online resellers.',
     icon: 'storefront',
     canHave: ['products', 'services'],
     color: '#3498db'
@@ -14,7 +14,7 @@ export const PROFILE_TYPES = [
   {
     id: 'service-provider',
     name: 'Service Provider',
-    description: 'Professional services and skilled work',
+    description: 'Ideal for professionals and businesses offering skilled labor or expertise. Examples include repair shops (automotive, electronics), salons, laundry services, and construction contractors.',
     icon: 'construct',
     canHave: ['services', 'bookings'],
     color: '#e74c3c'
@@ -22,7 +22,7 @@ export const PROFILE_TYPES = [
   {
     id: 'freelancer',
     name: 'Freelancer',
-    description: 'Independent contractor offering specialized skills',
+    description: 'For independent professionals offering project-based work or specialized skills. Perfect for graphic designers, writers, photographers, IT consultants, and other remote or on-site experts.',
     icon: 'laptop',
     canHave: ['services', 'portfolio'],
     color: '#9b59b6'
@@ -30,7 +30,7 @@ export const PROFILE_TYPES = [
   {
     id: 'producer',
     name: 'Producer/Manufacturer',
-    description: 'Creates and manufactures products',
+    description: 'Suits businesses that create or manufacture their own products from raw materials. This includes furniture makers, clothing manufacturers, food producers, and artisans who produce in bulk.',
     icon: 'hammer',
     canHave: ['products', 'supplies'],
     color: '#f39c12'
@@ -38,7 +38,7 @@ export const PROFILE_TYPES = [
   {
     id: 'home-seller',
     name: 'Home-Based Seller',
-    description: 'Selling from home, often food or crafts',
+    description: 'For entrepreneurs running their business from home. This is great for home-cooked food sellers, bakers, crafters, and those who manage a small-scale business without a formal storefront.',
     icon: 'home',
     canHave: ['products', 'services'],
     color: '#27ae60'
@@ -46,7 +46,7 @@ export const PROFILE_TYPES = [
   {
     id: 'student',
     name: 'Student/Hobbyist',
-    description: 'Learning while earning, passion projects',
+    description: 'Perfect for students or hobbyists looking to earn from their skills and passion projects. Showcase your talents in tutoring, art commissions, simple repairs, or selling items you create.',
     icon: 'school',
     canHave: ['services', 'products', 'portfolio'],
     color: '#16a085'
@@ -54,10 +54,26 @@ export const PROFILE_TYPES = [
   {
     id: 'informal-worker',
     name: 'Informal Worker',
-    description: 'Flexible work, gigs, and daily services',
+    description: "For individuals offering on-demand services, daily gigs, or flexible labor. This includes roles like delivery riders, household helpers, event staff, and other 'on-call' or temporary work.",
     icon: 'person',
     canHave: ['services', 'labor'],
     color: '#34495e'
+  },
+  {
+    id: 'events-venue',
+    name: 'Events & Venues',
+    description: 'For businesses that host or organize events. This includes function halls, private resorts, party planners, and rental services for event equipment.',
+    icon: 'megaphone',
+    canHave: ['bookings', 'services', 'portfolio'],
+    color: '#008080' // Teal
+  },
+  {
+    id: 'real-estate',
+    name: 'Real Estate & Rentals',
+    description: 'For property owners, agents, or managers offering spaces for rent. This includes apartments, rooms for rent, commercial spaces, and vacation rentals.',
+    icon: 'key',
+    canHave: ['bookings', 'portfolio', 'services'],
+    color: '#795548' // Brown
   }
 ];
 
