@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Alert,
   Image,
-  Linking,
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,21 +15,15 @@ import {
   getDocs,
   query,
   where,
-  orderBy,
-  limit,
   addDoc,
   serverTimestamp,
-  onSnapshot,
 } from "firebase/firestore";
 import { db } from "../services/firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useFocusEffect } from "@react-navigation/native";
-import ProductCard from "../components/ProductCard";
-import ReviewCard from "../components/ReviewCard";
 import Toast from "../components/Toast";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
-import { getProfileTypeInfo, getCategoryInfo } from "../config/categories";
+import { getProfileTypeInfo} from "../config/categories";
 import BusinessDetailsTab from "../components/business_tabs/BusinessDetailsTab";
 import BusinessProductsTab from "../components/business_tabs/BusinessProductsTab";
 import BusinessServicesTab from "../components/business_tabs/BusinessServicesTab";
