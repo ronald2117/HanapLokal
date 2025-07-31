@@ -438,57 +438,6 @@ export default function StoreDetailsScreen({ route, navigation }) {
           </View>
           <View style={styles.storeBasicInfo}>
             <Text style={styles.storeName}>{store.name}</Text>
-            {(store.profileType ||
-              store.primaryType ||
-              (store.profileTypes && store.profileTypes.length > 0)) && (
-              <View style={styles.profileTypeBadgeContainer}>
-                <View
-                  style={[
-                    styles.profileTypeBadge,
-                    {
-                      backgroundColor: getProfileTypeInfo(
-                        store.profileType ||
-                          store.primaryType ||
-                          (store.profileTypes && store.profileTypes[0])
-                      ).color,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={
-                      getProfileTypeInfo(
-                        store.profileType ||
-                          store.primaryType ||
-                          (store.profileTypes && store.profileTypes[0])
-                      ).icon
-                    }
-                    size={14}
-                    color="#fff"
-                  />
-                  <Text style={styles.profileTypeBadgeText}>
-                    {
-                      getProfileTypeInfo(
-                        store.profileType ||
-                          store.primaryType ||
-                          (store.profileTypes && store.profileTypes[0])
-                      ).name
-                    }
-                  </Text>
-                </View>
-              </View>
-            )}
-            {store.category && (
-              <View style={styles.categoryBadge}>
-                <Ionicons
-                  name={getCategoryInfo(store.category).icon}
-                  size={14}
-                  color="#3498db"
-                />
-                <Text style={styles.categoryText}>
-                  {getCategoryInfo(store.category).name}
-                </Text>
-              </View>
-            )}
           </View>
         </View>
       </View>
