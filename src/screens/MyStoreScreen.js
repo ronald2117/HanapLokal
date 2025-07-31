@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  FlatList,
   RefreshControl,
   Image,
 } from "react-native";
@@ -42,22 +41,6 @@ export default function MyStoreScreen({ navigation }) {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState("details");
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (currentUser) {
-        fetchMyBusinessProfile();
-      }
-    }, [currentUser])
-  );
-
-  useEffect(() => {
-    if (myBusinessProfile) {
-      fetchMyProducts();
-      // Reset tab to details when profile changes
-      setActiveTab("details");
-    }
-  }, [myBusinessProfile]);
-
   const fetchMyBusinessProfile = async () => {
     try {
       setLoading(true);
@@ -80,6 +63,21 @@ export default function MyStoreScreen({ navigation }) {
       setLoading(false);
     }
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (currentUser) {
+        fetchMyBusinessProfile();
+      }
+    }, [currentUser])
+  );
+
+  useEffect(() => {
+    if (myBusinessProfile) {
+      // Reset tab to details when profile changes
+      setActiveTab("details");
+    }
+  }, [myBusinessProfile]);
 
   const fetchMyProducts = async () => {
     if (!myBusinessProfile) return;
@@ -106,19 +104,6 @@ export default function MyStoreScreen({ navigation }) {
       await fetchMyBusinessProfile();
     }
     setRefreshing(false);
-  };
-
-  const renderProduct = ({ item }) => (
-    <ProductCard
-      product={item}
-      onPress={() =>
-        navigation.navigate("EditProduct", {
-          product: item,
-          storeId: myBusinessProfile.id,
-        })
-      }
-      showEditIcon={true}
-    />
   );
 
   function getTabsForProfile(store) {
@@ -283,93 +268,90 @@ export default function MyStoreScreen({ navigation }) {
   }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        ListHeaderComponent={
-          <>
-            <View style={styles.heroSection}>
-              {myBusinessProfile.coverImage ? (
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={["#3498db"]}
+          tintColor="#3498db"
+        />
+      }
+    >
+      <View style={styles.heroSection}>
+        {myBusinessProfile.coverImage ? (
+          <Image
+            source={{ uri: myBusinessProfile.coverImage }}
+            style={styles.coverImage}
+          />
+        ) : (
+          <View style={styles.coverPlaceholder} />
+        )}
+
+        <View style={styles.profileSection}>
+          <View style={styles.profileAndActionsContainer}>
+            <View style={styles.profileContainer}>
+              {myBusinessProfile.profileImage ? (
                 <Image
-                  source={{ uri: myBusinessProfile.coverImage }}
-                  style={styles.coverImage}
+                  source={{ uri: myBusinessProfile.profileImage }}
+                  style={styles.profileImage}
                 />
               ) : (
-                <View style={styles.coverPlaceholder} />
-              )}
-
-              <View style={styles.profileSection}>
-                <View style={styles.profileAndActionsContainer}>
-                  <View style={styles.profileContainer}>
-                    {myBusinessProfile.profileImage ? (
-                      <Image
-                        source={{ uri: myBusinessProfile.profileImage }}
-                        style={styles.profileImage}
-                      />
-                    ) : (
-                      <View style={styles.profilePlaceholder}>
-                        <Text style={styles.profileInitial}>
-                          {myBusinessProfile.name
-                            ? myBusinessProfile.name.charAt(0).toUpperCase()
-                            : "?"}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                  <View style={styles.actionButtons}>
-                    <TouchableOpacity
-                      style={styles.settingsButton}
-                      onPress={() =>
-                        navigation.navigate("StoreSettings", {
-                          businessProfile: myBusinessProfile,
-                        })
-                      }
-                    >
-                      <Ionicons name="settings" size={24} color="#2c3e50" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-                <View style={styles.storeBasicInfo}>
-                  <Text style={styles.storeName}>{myBusinessProfile.name}</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={{ flexDirection: "row", marginBottom: 8 }}>
-              {tabs.map((tab) => (
-                <TouchableOpacity
-                  key={tab.key}
-                  style={[
-                    styles.customTab,
-                    activeTab === tab.key && styles.customTabActive,
-                  ]}
-                  onPress={() => setActiveTab(tab.key)}
-                >
-                  <Text
-                    style={[
-                      styles.customTabLabel,
-                      activeTab === tab.key && styles.customTabLabelActive,
-                    ]}
-                  >
-                    {tab.label}
+                <View style={styles.profilePlaceholder}>
+                  <Text style={styles.profileInitial}>
+                    {myBusinessProfile.name
+                      ? myBusinessProfile.name.charAt(0).toUpperCase()
+                      : "?"}
                   </Text>
-                </TouchableOpacity>
-              ))}
+                </View>
+              )}
             </View>
-          </>
-        }
-        data={[{ key: 'content' }]}
-        renderItem={renderTabContent}
-        keyExtractor={(item) => item.key}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={["#3498db"]}
-            tintColor="#3498db"
-          />
-        }
-      />
-    </View>
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={styles.settingsButton}
+                onPress={() =>
+                  navigation.navigate("StoreSettings", {
+                    businessProfile: myBusinessProfile,
+                  })
+                }
+              >
+                <Ionicons name="settings" size={24} color="#2c3e50" />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View style={styles.storeBasicInfo}>
+            <Text style={styles.storeName}>{myBusinessProfile.name}</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={{ flexDirection: "row", marginBottom: 8 }}>
+        {tabs.map((tab) => (
+          <TouchableOpacity
+            key={tab.key}
+            style={[
+              styles.customTab,
+              activeTab === tab.key && styles.customTabActive,
+            ]}
+            onPress={() => setActiveTab(tab.key)}
+          >
+            <Text
+              style={[
+                styles.customTabLabel,
+                activeTab === tab.key && styles.customTabLabelActive,
+              ]}
+            >
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Tab Content */}
+      <View>{renderTabContent()}</View>
+    </ScrollView>
   );
 }
 
@@ -639,4 +621,3 @@ const styles = StyleSheet.create({
     color: "#3498db",
   },
 });
-
