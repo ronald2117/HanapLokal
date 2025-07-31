@@ -12,22 +12,27 @@ import {
 } from 'react-native';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
+import ImageUploader from '../components/ImageUploader';
 
 export default function AddServiceScreen({ route, navigation }) {
   const { storeId } = route.params;
   const [serviceName, setServiceName] = useState('');
-  const [rate, setRate] = useState('');
   const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [priceFormat, setPriceFormat] = useState('Fixed Fee');
+  const [serviceArea, setServiceArea] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [imagePublicId, setImagePublicId] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleAddService = async () => {
-    if (!serviceName || !rate || !description) {
-      Alert.alert('Error', 'Please fill in all fields');
+    if (!serviceName || !price || !description || !serviceArea) {
+      Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
 
-    if (isNaN(rate) || parseFloat(rate) < 0) {
-      Alert.alert('Error', 'Please enter a valid rate');
+    if (isNaN(price) || parseFloat(price) < 0) {
+      Alert.alert('Error', 'Please enter a valid price');
       return;
     }
 
@@ -35,9 +40,13 @@ export default function AddServiceScreen({ route, navigation }) {
       setLoading(true);
       await addDoc(collection(db, 'services'), {
         name: serviceName,
-        rate: parseFloat(rate),
         description: description,
+        price: parseFloat(price),
+        priceFormat: priceFormat,
+        serviceArea: serviceArea,
         storeId: storeId,
+        imageUrl: imageUrl || 'https://via.placeholder.com/300x300?text=No+Image',
+        imagePublicId: imagePublicId || null,
         createdAt: new Date(),
       });
 
@@ -50,6 +59,38 @@ export default function AddServiceScreen({ route, navigation }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleImageUploaded = (url, publicId) => {
+    setImageUrl(url);
+    setImagePublicId(publicId);
+  };
+
+  const renderPriceFormatSelector = () => {
+    const formats = ["Fixed Fee", "/hour", "Starts at"];
+    return (
+      <View style={styles.priceFormatContainer}>
+        {formats.map((format) => (
+          <TouchableOpacity
+            key={format}
+            style={[
+              styles.priceFormatButton,
+              priceFormat === format && styles.priceFormatButtonSelected,
+            ]}
+            onPress={() => setPriceFormat(format)}
+          >
+            <Text
+              style={[
+                styles.priceFormatButtonText,
+                priceFormat === format && styles.priceFormatButtonTextSelected,
+              ]}
+            >
+              {format}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
   };
 
   return (
@@ -68,36 +109,57 @@ export default function AddServiceScreen({ route, navigation }) {
             Add a service to your store offerings
           </Text>
 
+          <ImageUploader
+            onImageUploaded={handleImageUploaded}
+            placeholder="Add Service Image or Icon"
+          />
+
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Service Name *</Text>
+            <Text style={styles.label}>Service Title *</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter service name"
+              placeholder="e.g., Faucet Repair"
               value={serviceName}
               onChangeText={setServiceName}
             />
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Rate ($/hr) *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="0.00"
-              value={rate}
-              onChangeText={setRate}
-              keyboardType="decimal-pad"
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Description *</Text>
+            <Text style={styles.label}>Short Description *</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Describe your service..."
+              placeholder="e.g., Includes labor and basic tools"
               value={description}
               onChangeText={setDescription}
               multiline
               numberOfLines={4}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Price Format *</Text>
+            {renderPriceFormatSelector()}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Price (₱) *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g., 500"
+              value={price}
+              onChangeText={setPrice}
+              keyboardType="decimal-pad"
+            />
+          </View>
+
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Service Area / Coverage *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="e.g., Marikina, Pasig"
+              value={serviceArea}
+              onChangeText={setServiceArea}
             />
           </View>
 
@@ -161,6 +223,32 @@ const styles = StyleSheet.create({
   textArea: {
     height: 100,
     textAlignVertical: 'top',
+  },
+  priceFormatContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  priceFormatButton: {
+    flex: 1,
+    padding: 15,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  priceFormatButtonSelected: {
+    backgroundColor: '#27ae60',
+    borderColor: '#27ae60',
+  },
+  priceFormatButtonText: {
+    fontSize: 16,
+    color: '#2c3e50',
+  },
+  priceFormatButtonTextSelected: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   button: {
     backgroundColor: '#27ae60',
