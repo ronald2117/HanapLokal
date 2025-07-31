@@ -173,7 +173,7 @@ export default function ChatsScreen({ navigation }) {
 
   if (isGuestUser()) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <LinearGradient
           colors={[Colors.primary, Colors.primaryLight]}
           style={styles.guestGradient}
@@ -200,7 +200,7 @@ export default function ChatsScreen({ navigation }) {
             </TouchableOpacity>
           </View>
         </LinearGradient>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -521,6 +521,7 @@ const styles = StyleSheet.create({
   guestContainer: {
     flex: 1,
     justifyContent: 'center',
+    paddingBottom: 100,
     alignItems: 'center',
     paddingHorizontal: Spacing.xl,
   },
