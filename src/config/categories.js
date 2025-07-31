@@ -74,8 +74,25 @@ export const PROFILE_TYPES = [
     icon: 'key',
     canHave: ['bookings', 'portfolio', 'services'],
     color: '#795548' // Brown
+  },
+  {
+    id: 'non-profit',
+    name: 'Community Organization',
+    description: 'For NGOs, youth groups, churches, or volunteer-led organizations promoting social good or offering community-based services and events.',
+    icon: 'people', // Ionicons valid icon
+    canHave: ['services', 'portfolio', 'bookings'],
+    color: '#6a1b9a'
+  },
+  {
+    id: 'transport',
+    name: 'Transport Service',
+    description: 'For drivers or businesses offering mobility and delivery services such as tricycles, vans, jeeps, or motorbike delivery.',
+    icon: 'car', // Ionicons
+    canHave: ['services', 'bookings'],
+    color: '#2c3e50'
   }
 ];
+
 
 // 📦 LISTING TYPES (what can be offered)
 export const LISTING_TYPES = [
@@ -159,7 +176,8 @@ export const BUSINESS_CATEGORIES = [
   // 🏭 PRODUCTION & SUPPLY
   { id: 'manufacturing', name: 'Manufacturing & Production', icon: 'cog', types: ['producer'] },
   { id: 'agriculture', name: 'Agriculture & Farming', icon: 'leaf', types: ['producer', 'home-seller'] },
-  { id: 'food-production', name: 'Food Production & Catering', icon: 'restaurant', types: ['producer', 'home-seller', 'events-venue'] },
+  { id: 'food-production', name: 'Food Production', icon: 'nutrition', types: ['producer', 'home-seller'] },
+  { id: 'catering', name: 'Catering Services', icon: 'people', types: ['food-business', 'events-venue', 'service-provider'] },
   { id: 'wholesale', name: 'Wholesale & Supply', icon: 'layers', types: ['producer', 'store'] },
   
   // 🎯 SPECIALIZED
@@ -170,7 +188,14 @@ export const BUSINESS_CATEGORIES = [
   { id: 'equipment-rental', name: 'Equipment Rental', icon: 'build', types: ['events-venue', 'service-provider'] },
   { id: 'property-rental', name: 'Property Rental', icon: 'home', types: ['real-estate'] },
   { id: 'real-estate-services', name: 'Real Estate Services', icon: 'key', types: ['real-estate', 'freelancer'] },
-  { id: 'other', name: 'Other Services', icon: 'business', types: ['store', 'service-provider', 'freelancer', 'producer', 'home-seller', 'student', 'informal-worker', 'events-venue', 'real-estate'] }
+  { id: 'other', name: 'Other Services', icon: 'business', types: ['store', 'service-provider', 'freelancer', 'producer', 'home-seller', 'student', 'informal-worker', 'events-venue', 'real-estate'] },
+
+  // 🚐 TRANSPORT & MOBILITY
+  { id: 'transport-service', name: 'Transport & Delivery', icon: 'car', types: ['transport', 'informal-worker', 'service-provider'] },
+
+  // 🌱 SOCIAL & COMMUNITY
+  { id: 'community', name: 'Community & Non-Profit', icon: 'people', types: ['non-profit'] },
+
 ];
 
 // 🔍 HELPER FUNCTIONS
