@@ -31,6 +31,7 @@ import BusinessServicesTab from "../components/business_tabs/BusinessServicesTab
 import BusinessBookingsTab from "../components/business_tabs/BusinessBookingsTab";
 import BusinessPortfolioTab from "../components/business_tabs/BusinessPortfolioTab";
 import BusinessLaborTab from "../components/business_tabs/BusinessLaborTab";
+import BusinessProductsTab from "../components/business_tabs/BusinessProductsTab";
 
 export default function MyStoreScreen({ navigation }) {
   const [myBusinessProfile, setMyBusinessProfile] = useState(null);
@@ -137,7 +138,7 @@ export default function MyStoreScreen({ navigation }) {
           tabs.push({
             key: "products",
             label: "Products",
-            component: null, // Custom render
+            component: BusinessProductsTab,
           });
         }
         if (type === "services") {
@@ -175,49 +176,9 @@ export default function MyStoreScreen({ navigation }) {
 
   const tabs = myBusinessProfile ? getTabsForProfile(myBusinessProfile) : [];
 
-  const renderMyProductsTab = () => (
-    <View style={styles.productsSection}>
-      <View style={styles.productsHeader}>
-        <Text style={styles.sectionTitle}>
-          {t("myProducts")} ({products.length})
-        </Text>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() =>
-            navigation.navigate("AddProduct", { storeId: myBusinessProfile.id })
-          }
-        >
-          <Ionicons name="add" size={20} color="#fff" />
-          <Text style={styles.addButtonText}>{t("addProduct")}</Text>
-        </TouchableOpacity>
-      </View>
-
-      {products.length > 0 ? (
-        <FlatList
-          data={products}
-          renderItem={renderProduct}
-          keyExtractor={(item) => item.id}
-          numColumns={2}
-          scrollEnabled={false}
-          columnWrapperStyle={styles.productRow}
-        />
-      ) : (
-        <View style={styles.emptyProducts}>
-          <Ionicons name="cube-outline" size={48} color="#bdc3c7" />
-          <Text style={styles.emptyText}>{t("noProductsYet")}</Text>
-          <Text style={styles.emptySubtext}>{t("addFirstProduct")}</Text>
-        </View>
-      )}
-    </View>
-  );
-
   const renderTabContent = () => {
     const tab = tabs.find((t) => t.key === activeTab);
     if (!tab) return null;
-
-    if (tab.key === "products") {
-      return renderMyProductsTab();
-    }
 
     const TabComponent = tab.component;
     if (!TabComponent) return null;

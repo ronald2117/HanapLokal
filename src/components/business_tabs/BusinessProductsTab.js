@@ -1,69 +1,91 @@
+
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, FlatList } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ProductCard from "../ProductCard";
 import { db } from "../../services/firebaseConfig";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { Colors, Typography, Spacing, BorderRadius, Shadows } from "../../styles/theme";
 
-const BusinessProductsTab = ({ store, navigation }) => {
+const BusinessProductsTab = ({ store, navigation, isMyStore = false }) => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { t } = useLanguage();
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    const productsQuery = query(
+      collection(db, "products"),
+      where("storeId", "==", store.id)
+    );
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const productsQuery = query(
-        collection(db, "products"),
-        where("storeId", "==", store.id)
-      );
-      const querySnapshot = await getDocs(productsQuery);
-      const productsData = [];
-      querySnapshot.forEach((doc) => {
-        productsData.push({ id: doc.id, ...doc.data() });
-      });
+    const unsubscribe = onSnapshot(productsQuery, (querySnapshot) => {
+      const productsData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setProducts(productsData);
-    } catch (error) {
-      // Optionally handle error
-      console.error("Error fetching products:", error);
-    } finally {
       setLoading(false);
-    }
-  };
+    });
+
+    return () => unsubscribe();
+  }, [store.id]);
 
   const renderProduct = ({ item }) => (
     <ProductCard
       product={item}
-      onPress={() => navigation?.navigate("ProductDetails", { product: item })}
+      onPress={() =>
+        navigation?.navigate(isMyStore ? "EditProduct" : "ProductDetails", {
+          product: item,
+          storeId: store.id,
+        })
+      }
+      showEditIcon={isMyStore}
     />
   );
 
+  if (loading) {
+    return (
+      <View style={styles.centeredContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+        <Text style={styles.loadingText}>{t("loadingProducts")}</Text>
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.sectionCard}>
-      <Text style={styles.sectionTitle}>{t("products") || "Products"}</Text>
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>{t("loadingProducts") || "Loading products..."}</Text>
-        </View>
-      ) : products.length > 0 ? (
+    <View style={styles.container}>
+      {isMyStore && (
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() =>
+            navigation.navigate("AddProduct", { storeId: store.id })
+          }
+        >
+          <Ionicons name="add-circle-outline" size={24} color={Colors.background.primary} />
+          <Text style={styles.addButtonText}>{t("addProduct")}</Text>
+        </TouchableOpacity>
+      )}
+      {products.length > 0 ? (
         <FlatList
           data={products}
           renderItem={renderProduct}
           keyExtractor={(item) => item.id}
           numColumns={2}
-          scrollEnabled={false}
           columnWrapperStyle={styles.productRow}
-          contentContainerStyle={styles.productsGrid}
+          contentContainerStyle={{ paddingBottom: 100 }}
         />
       ) : (
-        <View style={styles.emptyProducts}>
-          <Ionicons name="cube-outline" size={48} color="#bdc3c7" />
-          <Text style={styles.emptyText}>{t("noProductsAvailable") || "No products available."}</Text>
+        <View style={styles.emptyContainer}>
+          <Ionicons name="cube-outline" size={64} color={Colors.text.light} />
+          <Text style={styles.emptyText}>{t("noProductsAvailable")}</Text>
         </View>
       )}
     </View>
@@ -73,44 +95,50 @@ const BusinessProductsTab = ({ store, navigation }) => {
 export default BusinessProductsTab;
 
 const styles = StyleSheet.create({
-  sectionCard: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    elevation: 2,
+  container: {
+    flex: 1,
+    padding: Spacing.base,
+    backgroundColor: Colors.background.secondary,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 12,
-    color: "#333",
-  },
-  loadingContainer: {
+  centeredContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 32,
   },
   loadingText: {
-    fontSize: 16,
-    color: "#777",
+    marginTop: Spacing.sm,
+    fontSize: Typography.fontSize.base,
+    color: Colors.text.secondary,
   },
-  emptyProducts: {
+  addButton: {
+    flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 32,
+    justifyContent: "center",
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.lg,
+    ...Shadows.base,
   },
-  emptyText: {
-    fontSize: 16,
-    color: "#777",
-    marginTop: 8,
+  addButtonText: {
+    color: Colors.text.white,
+    marginLeft: Spacing.sm,
+    fontSize: Typography.fontSize.lg,
+    fontWeight: Typography.fontWeight.bold,
   },
   productRow: {
     justifyContent: "space-between",
-    marginBottom: 16,
   },
-  productsGrid: {
-    paddingBottom: 16,
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: Spacing.xl,
+  },
+  emptyText: {
+    fontSize: Typography.fontSize.lg,
+    color: Colors.text.light,
+    marginTop: Spacing.md,
+    textAlign: "center",
   },
 });
