@@ -104,7 +104,7 @@ export default function MyStoreScreen({ navigation }) {
       await fetchMyBusinessProfile();
     }
     setRefreshing(false);
-  );
+  };
 
   function getTabsForProfile(store) {
     const profileType = getProfileTypeInfo(
