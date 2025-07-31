@@ -280,6 +280,12 @@ export const translations = {
     noPortfolioImagesAvailable: 'The portfolio is empty.',
     addLabor: 'Add Labor',
     noLaborsAvailable: 'No labor services available yet.',
+    editService: 'Edit Service',
+    deleteService: 'Delete Service',
+    areYouSureDeleteService: 'Are you sure you want to delete this service?',
+    serviceDeletedSuccess: 'Service deleted successfully',
+    failedToFetchServices: 'Failed to fetch services',
+    failedToDeleteService: 'Failed to delete service',
   },
   
   tl: {
@@ -559,7 +565,13 @@ export const translations = {
     noPortfolioImagesAvailable: 'Walang laman ang portfolio.',
     addLabor: 'Magdagdag ng Trabaho',
     noLaborsAvailable: 'Wala pang available na serbisyo sa paggawa.',
-  }
+    editService: 'I-edit ang Serbisyo',
+    deleteService: 'Tanggalin ang Serbisyo',
+    areYouSureDeleteService: 'Sigurado ka bang gusto mong tanggalin ang serbisyong ito?',
+    serviceDeletedSuccess: 'Matagumpay na natanggal ang serbisyo',
+    failedToFetchServices: 'Hindi nakuha ang mga serbisyo',
+    failedToDeleteService: 'Hindi natanggal ang serbisyo',
+  },
 };
 
 export function LanguageProvider({ children }) {
