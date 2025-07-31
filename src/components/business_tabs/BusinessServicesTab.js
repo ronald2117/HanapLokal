@@ -55,7 +55,6 @@ const BusinessServicesTab = ({ store, navigation, isMyStore = false }) => {
   const deleteService = async (serviceId) => {
     try {
       await deleteDoc(doc(db, 'services', serviceId));
-      fetchServices(); // Refresh the list
       Alert.alert(t('success'), t('serviceDeletedSuccess'));
     } catch (error) {
       console.error("Error deleting service:", error);
