@@ -20,6 +20,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useFocusEffect } from '@react-navigation/native';
 import ProductCard from '../components/ProductCard';
 import { PROFILE_TYPES, BUSINESS_CATEGORIES } from '../config/categories';
+import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
 
 export default function MyStoreScreen({ navigation }) {
   const [myBusinessProfile, setMyBusinessProfile] = useState(null);
@@ -640,7 +641,7 @@ const styles = StyleSheet.create({
   guestTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FF6B35',
+    color: Colors.primary,
     marginBottom: 15,
     textAlign: 'center',
   },
@@ -679,7 +680,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   signupButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: Colors.primary,
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',

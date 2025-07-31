@@ -175,15 +175,9 @@ export default function ChatsScreen({ navigation }) {
   if (isGuestUser()) {
     return (
       <View style={styles.container}>
-        <LinearGradient
-          colors={[Colors.primary, Colors.primaryLight]}
-          style={styles.guestGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
           <View style={styles.guestContainer}>
             <View style={styles.guestIconContainer}>
-              <Ionicons name="chatbubbles" size={80} color="rgba(255, 255, 255, 0.8)" />
+              <Ionicons name="chatbubbles" size={80} color={Colors.primary} style={{marginBottom: 20}}/>
             </View>
             <Text style={styles.guestTitle}>Chat with Stores</Text>
             <Text style={styles.guestSubtitle}>
@@ -205,7 +199,6 @@ export default function ChatsScreen({ navigation }) {
               <Text style={styles.signupButtonText}>Sign Up to Chat</Text>
             </TouchableOpacity>
           </View>
-        </LinearGradient>
       </View>
     );
   }
@@ -531,30 +524,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.xl,
   },
-  
-  guestIconContainer: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.xl,
-    borderWidth: 3,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  
+
   guestTitle: {
     fontSize: Typography.fontSize['3xl'],
-    fontWeight: Typography.fontWeight.extrabold,
-    color: Colors.text.white,
+    fontWeight: 'bold',
+    color: Colors.primary,
     textAlign: 'center',
     marginBottom: Spacing.lg,
   },
   
   guestSubtitle: {
     fontSize: Typography.fontSize.lg,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: Colors.text.secondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: Spacing.md,
@@ -562,7 +543,7 @@ const styles = StyleSheet.create({
   
   guestDescription: {
     fontSize: Typography.fontSize.base,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: Colors.text.secondary,
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: Spacing.xl,
@@ -571,15 +552,16 @@ const styles = StyleSheet.create({
   signupButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.accent,
+    backgroundColor: Colors.primary,
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.lg,
     borderRadius: BorderRadius.lg,
     ...Shadows.base,
+    marginTop: 40,
   },
   
   signupButtonText: {
-    color: Colors.text.white,
+    color: 'white',
     fontSize: Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.bold,
     marginLeft: Spacing.sm,
