@@ -31,6 +31,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
 
 const { width } = Dimensions.get('window');
@@ -43,6 +44,7 @@ export default function ChatDetailScreen({ route, navigation }) {
   const [sending, setSending] = useState(false);
   const flatListRef = useRef(null);
   const { currentUser, userProfile } = useAuth();
+  const { sendChatNotification } = useNotifications();
 
   useEffect(() => {
     const messagesRef = collection(db, 'conversations', conversationId, 'messages');
@@ -109,6 +111,21 @@ export default function ChatDetailScreen({ route, navigation }) {
       });
 
       await batch.commit();
+      
+      // Send push notification to the other participant
+      try {
+        await sendChatNotification({
+          recipientId: otherParticipant.uid,
+          senderName: userProfile?.firstName ? `${userProfile.firstName} ${userProfile.lastName || ''}`.trim() : currentUser.email,
+          senderProfileImage: userProfile?.profileImage || '',
+          conversationId,
+          message,
+          isStore: userProfile?.isStore || false,
+        });
+      } catch (notificationError) {
+        console.warn('Failed to send notification:', notificationError);
+        // Don't fail the message send if notification fails
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       Alert.alert('Error', 'Failed to send message. Please try again.');

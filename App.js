@@ -14,6 +14,7 @@ import { Colors, Typography, Spacing, BorderRadius } from './src/styles/theme';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { LocationProvider } from './src/contexts/LocationContext';
 import { LanguageProvider, useLanguage } from './src/contexts/LanguageContext';
+import { NotificationProvider } from './src/contexts/NotificationContext';
 
 // Auth Screens
 import LoginScreen from './src/screens/LoginScreen_new';
@@ -34,6 +35,7 @@ import ReviewScreen from './src/screens/ReviewScreen';
 import LanguageSettingsScreen from './src/screens/LanguageSettingsScreen';
 import StoreReviewScreen from './src/screens/StoreReviewScreen';
 import StoreReviewsScreen from './src/screens/StoreReviewsScreen';
+import NotificationsScreen from './src/screens/NotificationsScreen';
 
 // Store Management Screens
 import CreateStoreScreen from './src/screens/CreateStoreScreen';
@@ -323,6 +325,14 @@ function MainTabs() {
         options={{ title: t('favorites') }}
       />
       <Tab.Screen 
+        name="Notifications" 
+        component={NotificationsScreen}
+        options={{ 
+          title: t('notifications'),
+          ...getModernHeaderOptions(t('notifications'), t)
+        }}
+      />
+      <Tab.Screen 
         name="Profile" 
         component={ProfileStack}
         options={{ title: t('profile') }}
@@ -348,8 +358,10 @@ export default function App() {
       <LanguageProvider>
         <AuthProvider>
           <LocationProvider>
-            <AppNavigator />
-            <StatusBar style="light" backgroundColor={Colors.primary} />
+            <NotificationProvider>
+              <AppNavigator />
+              <StatusBar style="light" backgroundColor={Colors.primary} />
+            </NotificationProvider>
           </LocationProvider>
         </AuthProvider>
       </LanguageProvider>

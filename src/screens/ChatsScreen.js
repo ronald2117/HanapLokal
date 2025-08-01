@@ -29,6 +29,7 @@ import {
 import { db } from '../services/firebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/theme';
 
 export default function ChatsScreen({ navigation }) {
