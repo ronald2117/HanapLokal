@@ -9,7 +9,8 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Image
+  Image,
+  FlatList
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -548,10 +549,12 @@ export default function CreateStoreScreen({ navigation }) {
           <View style={styles.inputGroup}>
             <Text style={styles.label}>What type of business are you? *</Text>
             <Text style={styles.sectionSubtitle}>Select the type that best describes your business</Text>
-            <View style={styles.profileTypeContainer}>
-              {PROFILE_TYPES.map((type) => (
+            <FlatList
+              data={PROFILE_TYPES}
+              numColumns={3}
+              contentContainerStyle={styles.profileTypeGrid}
+              renderItem={({ item: type }) => (
                 <TouchableOpacity
-                  key={type.id}
                   style={[
                     styles.profileTypeButton,
                     profileType === type.id && styles.profileTypeButtonSelected
@@ -563,21 +566,20 @@ export default function CreateStoreScreen({ navigation }) {
                   <View style={styles.profileTypeIcon}>
                     <Ionicons 
                       name={type.icon} 
-                      size={28} 
+                      size={24} 
                       color={profileType === type.id ? '#fff' : type.color} 
                     />
                   </View>
-                  <View style={styles.profileTypeContent}>
-                    <Text style={[
-                      styles.profileTypeButtonText,
-                      profileType === type.id && styles.profileTypeButtonTextSelected
-                    ]}>
-                      {type.name}
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.infoButton}
-                      onPress={() => {
-                        Alert.alert(
+                  <Text style={[
+                    styles.profileTypeButtonText,
+                    profileType === type.id && styles.profileTypeButtonTextSelected
+                  ]}>
+                    {type.name}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.infoButton}
+                    onPress={() => {
+                      Alert.alert(
                           type.name,
                           type.description,
                           [{ text: 'OK', style: 'default' }]
@@ -587,14 +589,14 @@ export default function CreateStoreScreen({ navigation }) {
                     >
                       <Ionicons 
                         name="information-circle-outline" 
-                        size={20} 
+                        size={18} 
                         color={profileType === type.id ? 'rgba(255, 255, 255, 0.8)' : '#7f8c8d'} 
                       />
                     </TouchableOpacity>
-                  </View>
                 </TouchableOpacity>
-              ))}
-            </View>
+              )}
+              keyExtractor={(item) => item.id}
+            />
           </View>
 
           <View style={styles.inputGroup}>
@@ -1350,20 +1352,21 @@ const styles = StyleSheet.create({
   },
 
   // Profile Type Selection Styles
-  profileTypeContainer: {
-    marginTop: 12,
+  profileTypeGrid: {
+    paddingTop: 12,
   },
   profileTypeButton: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     backgroundColor: '#fff',
     borderWidth: 2,
     borderColor: '#e9ecef',
     borderRadius: 12,
     paddingVertical: 16,
-    paddingHorizontal: 16,
-    width: '100%', // Single column
-    marginBottom: 12,
+    paddingHorizontal: 8,
+    flex: 1,
+    margin: 4,
+    minHeight: 120,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -1379,7 +1382,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   profileTypeIcon: {
-    marginRight: 12,
+    marginBottom: 8,
   },
   profileTypeContent: {
     flex: 1,
@@ -1388,18 +1391,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   profileTypeButtonText: {
-    fontSize: 16,
+    fontSize: 12,
     color: '#2c3e50',
     fontWeight: '600',
-    lineHeight: 20,
-    flex: 1,
+    textAlign: 'center',
+    lineHeight: 16,
+    marginBottom: 4,
   },
   profileTypeButtonTextSelected: {
     color: '#fff',
     fontWeight: '700',
   },
   infoButton: {
-    marginLeft: 8,
+    position: 'absolute',
+    top: 8,
+    right: 8,
     padding: 4,
   },
 
