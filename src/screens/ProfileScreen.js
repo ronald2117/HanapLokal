@@ -56,6 +56,24 @@ export default function ProfileScreen({ navigation }) {
       <View style={styles.menuSection}>
         <TouchableOpacity
           style={styles.menuItem}
+          onPress={() => navigation.navigate('MyBusiness')}
+        >
+          <Ionicons name="storefront" size={24} color="#e67e22" />
+          <Text style={styles.menuText}>{t('myBusiness')}</Text>
+          <Ionicons name="chevron-forward" size={20} color="#bdc3c7" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('Favorites')}
+        >
+          <Ionicons name="heart" size={24} color="#e74c3c" />
+          <Text style={styles.menuText}>{t('favorites')}</Text>
+          <Ionicons name="chevron-forward" size={20} color="#bdc3c7" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
           onPress={() => navigation.navigate('ReviewScreen')}
         >
           <Ionicons name="star" size={24} color="#f39c12" />

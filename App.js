@@ -141,7 +141,7 @@ function HomeStack() {
   );
 }
 
-function MyStoreStack() {
+function ProfileStack() {
   const { t } = useLanguage();
   
   return (
@@ -152,10 +152,31 @@ function MyStoreStack() {
       }}
     >
       <Stack.Screen 
-        name="MyStoreMain" 
-        component={MyStoreScreen}
-        options={getModernHeaderOptions(() => t('myStore'), t)}
+        name="ProfileMain" 
+        component={ProfileScreen}
+        options={getModernHeaderOptions(() => t('profile'), t)}
       />
+      <Stack.Screen 
+        name="MyBusiness" 
+        component={MyStoreScreen}
+        options={getModernHeaderOptions(() => t('myBusiness'), t)}
+      />
+      <Stack.Screen 
+        name="Favorites" 
+        component={FavoritesScreen}
+        options={getModernHeaderOptions(() => t('favorites'), t)}
+      />
+      <Stack.Screen 
+        name="ReviewScreen" 
+        component={ReviewScreen}
+        options={getModernHeaderOptions(() => t('reviews'), t)}
+      />
+      <Stack.Screen 
+        name="LanguageSettings" 
+        component={LanguageSettingsScreen}
+        options={getModernHeaderOptions(() => t('languageSettings'), t)}
+      />
+      {/* Store Management Screens */}
       <Stack.Screen 
         name="CreateStore" 
         component={CreateStoreScreen}
@@ -191,25 +212,7 @@ function MyStoreStack() {
         component={EditServiceScreen}
         options={getModernHeaderOptions(() => t('editService'), t)}
       />
-    </Stack.Navigator>
-  );
-}
-
-function FavoritesStack() {
-  const { t } = useLanguage();
-  
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        ...getModernHeaderOptions('', t),
-        headerShown: true,
-      }}
-    >
-      <Stack.Screen 
-        name="FavoritesMain" 
-        component={FavoritesScreen}
-        options={getModernHeaderOptions(() => t('favorites'), t)}
-      />
+      {/* Favorites-related screens */}
       <Stack.Screen 
         name="StoreDetails" 
         component={StoreDetailsScreen}
@@ -229,35 +232,6 @@ function FavoritesStack() {
   );
 }
 
-function ProfileStack() {
-  const { t } = useLanguage();
-  
-  return (
-    <Stack.Navigator
-      screenOptions={{
-        ...getModernHeaderOptions('', t),
-        headerShown: true,
-      }}
-    >
-      <Stack.Screen 
-        name="ProfileMain" 
-        component={ProfileScreen}
-        options={getModernHeaderOptions(() => t('profile'), t)}
-      />
-      <Stack.Screen 
-        name="ReviewScreen" 
-        component={ReviewScreen}
-        options={getModernHeaderOptions(() => t('reviews'), t)}
-      />
-      <Stack.Screen 
-        name="LanguageSettings" 
-        component={LanguageSettingsScreen}
-        options={getModernHeaderOptions(() => t('languageSettings'), t)}
-      />
-    </Stack.Navigator>
-  );
-}
-
 function MainTabs() {
   const { t } = useLanguage();
   
@@ -269,12 +243,10 @@ function MainTabs() {
 
           if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'MyStore') {
-            iconName = focused ? 'storefront' : 'storefront-outline';
           } else if (route.name === 'Chats') {
             iconName = focused ? 'chatbubbles' : 'chatbubbles-outline';
-          } else if (route.name === 'Favorites') {
-            iconName = focused ? 'heart' : 'heart-outline';
+          } else if (route.name === 'Notifications') {
+            iconName = focused ? 'notifications' : 'notifications-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
           }
@@ -310,19 +282,9 @@ function MainTabs() {
         options={{ title: t('home') }}
       />
       <Tab.Screen 
-        name="MyStore" 
-        component={MyStoreStack}
-        options={{ title: t('myStore') }}
-      />
-      <Tab.Screen 
         name="Chats" 
         component={ChatStack}
         options={{ title: t('chats'), headerShown: false }}
-      />
-      <Tab.Screen 
-        name="Favorites" 
-        component={FavoritesStack}
-        options={{ title: t('favorites') }}
       />
       <Tab.Screen 
         name="Notifications" 

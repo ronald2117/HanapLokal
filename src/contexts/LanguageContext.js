@@ -200,7 +200,7 @@ export const translations = {
     
     // Navigation
     home: 'Home',
-    myStore: 'My Store',
+    myBusiness: 'My Business',
     chats: 'Chats',
     notifications: 'Notifications',
     startNewChat: 'Start New Chat',
@@ -488,7 +488,7 @@ export const translations = {
     
     // Navigation
     home: 'Simula',
-    myStore: 'Aking Tindahan',
+    myBusiness: 'Aking Negosyo',
     chats: 'Mga Usapan',
     notifications: 'Mga Abiso',
     startNewChat: 'Bagong Usapan',
