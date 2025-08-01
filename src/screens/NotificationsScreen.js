@@ -227,14 +227,14 @@ export default function NotificationsScreen({ navigation }) {
         </View>
 
         {/* Category Tabs */}
-        <FlatList
+        {/* <FlatList
           data={categories}
           renderItem={renderCategoryTab}
           keyExtractor={(item) => item.id}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryTabs}
-        />
+        /> */}
       </LinearGradient>
 
       {/* Notifications List */}
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing.lg,
+    paddingTop: 40,
     paddingBottom: Spacing.md,
   },
   
