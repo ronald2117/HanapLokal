@@ -9,8 +9,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Image,
-  FlatList
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -549,12 +548,10 @@ export default function CreateStoreScreen({ navigation }) {
           <View style={styles.inputGroup}>
             <Text style={styles.label}>What type of business are you? *</Text>
             <Text style={styles.sectionSubtitle}>Select the type that best describes your business</Text>
-            <FlatList
-              data={PROFILE_TYPES}
-              numColumns={3}
-              contentContainerStyle={styles.profileTypeGrid}
-              renderItem={({ item: type }) => (
+            <View style={styles.profileTypeGrid}>
+              {PROFILE_TYPES.map((type) => (
                 <TouchableOpacity
+                  key={type.id}
                   style={[
                     styles.profileTypeButton,
                     profileType === type.id && styles.profileTypeButtonSelected
@@ -594,9 +591,8 @@ export default function CreateStoreScreen({ navigation }) {
                       />
                     </TouchableOpacity>
                 </TouchableOpacity>
-              )}
-              keyExtractor={(item) => item.id}
-            />
+              ))}
+            </View>
           </View>
 
           <View style={styles.inputGroup}>
@@ -1353,6 +1349,9 @@ const styles = StyleSheet.create({
 
   // Profile Type Selection Styles
   profileTypeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     paddingTop: 12,
   },
   profileTypeButton: {
@@ -1364,8 +1363,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 8,
-    flex: 1,
-    margin: 4,
+    width: '31%', // 3 columns with some margin
+    marginBottom: 12,
     minHeight: 120,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
