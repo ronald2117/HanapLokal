@@ -6,10 +6,13 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  ScrollView,
+  Modal,
+  TextInput,
 } from 'react-native';
-import { collection, query, where, getDocs, addDoc, serverTimestamp, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, serverTimestamp, deleteDoc, doc, updateDoc, orderBy } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
-import { useLanguage } from '../../contexts/LanguageContext'; // Corrected import
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../../styles/theme';
@@ -17,21 +20,41 @@ import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../../styles
 const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState({
+    service: '',
+    date: '',
+    time: '',
+    notes: '',
+  });
   const { t } = useLanguage();
   const { currentUser } = useAuth();
 
   useEffect(() => {
-    fetchBookings();
-  }, [store.id]);
+    if (store?.id) {
+      fetchBookings();
+    }
+  }, [store.id, currentUser.uid]);
 
   const fetchBookings = async () => {
+    setLoading(true);
     try {
-      const bookingsQuery = query(
+      const q = query(
         collection(db, 'bookings'),
-        where(isMyStore ? 'storeId' : 'userId', '==', isMyStore ? store.id : currentUser.uid)
+        where('storeId', '==', store.id),
+        ...(isMyStore ? [] : [where('userId', '==', currentUser.uid)]),
+        orderBy('createdAt', 'desc')
       );
-      const querySnapshot = await getDocs(bookingsQuery);
-      const bookingsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      const querySnapshot = await getDocs(q);
+      const bookingsData = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate()?.toLocaleString() ?? 'N/A',
+        };
+      });
       setBookings(bookingsData);
     } catch (error) {
       console.error("Error fetching bookings:", error);
@@ -42,21 +65,45 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
   };
 
   const handleBookAppointment = async () => {
+    if (!bookingDetails.service || !bookingDetails.date) {
+      Alert.alert(t('error'), 'Please provide a service and desired date.');
+      return;
+    }
     try {
       await addDoc(collection(db, 'bookings'), {
         storeId: store.id,
+        storeName: store.name,
         userId: currentUser.uid,
+        customerName: currentUser.displayName || 'Customer',
         status: 'pending',
+        service: bookingDetails.service,
+        requestedDate: bookingDetails.date,
+        requestedTime: bookingDetails.time,
+        notes: bookingDetails.notes,
         createdAt: serverTimestamp(),
       });
       Alert.alert(t('success'), t('bookingRequestSent'));
+      setModalVisible(false);
+      setBookingDetails({ service: '', date: '', time: '', notes: '' });
       fetchBookings();
     } catch (error) {
       console.error("Error booking appointment:", error);
       Alert.alert(t('error'), t('failedToBook'));
     }
   };
-  
+
+  const updateBookingStatus = async (bookingId, status) => {
+    try {
+      const bookingRef = doc(db, 'bookings', bookingId);
+      await updateDoc(bookingRef, { status });
+      Alert.alert(t('success'), `Booking has been ${status}.`);
+      fetchBookings();
+    } catch (error) {
+      console.error(`Error updating booking to ${status}:`, error);
+      Alert.alert(t('error'), `Failed to update booking.`);
+    }
+  };
+
   const handleDelete = (bookingId) => {
     Alert.alert(
       t('deleteBooking'),
@@ -71,7 +118,7 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
   const deleteBooking = async (bookingId) => {
     try {
       await deleteDoc(doc(db, 'bookings', bookingId));
-      fetchBookings(); // Refresh the list
+      fetchBookings();
       Alert.alert(t('success'), t('bookingDeletedSuccess'));
     } catch (error) {
       console.error("Error deleting booking:", error);
@@ -88,14 +135,57 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
     );
   }
 
+  const renderBookingCard = (item) => {
+    const statusColors = {
+      pending: Colors.warning,
+      confirmed: Colors.success,
+      cancelled: Colors.error,
+      completed: Colors.info,
+    };
+    const statusColor = statusColors[item.status] || Colors.text.light;
+
+    return (
+      <View key={item.id} style={[styles.bookingCard, { borderLeftColor: statusColor }]}>
+        <View style={styles.bookingInfo}>
+          <Text style={styles.bookingService}>{item.service}</Text>
+          <Text style={styles.bookingText}>
+            {isMyStore ? `Customer: ${item.customerName}` : `Store: ${item.storeName}`}
+          </Text>
+          <Text style={styles.bookingText}>Date: {item.requestedDate} at {item.requestedTime || 'any time'}</Text>
+          {item.notes ? <Text style={styles.bookingNotes}>Notes: {item.notes}</Text> : null}
+          <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
+            <Text style={styles.statusText}>{item.status?.toUpperCase()}</Text>
+          </View>
+        </View>
+        {isMyStore && (
+          <View style={styles.actionsContainer}>
+            {item.status === 'pending' && (
+              <>
+                <TouchableOpacity style={styles.actionButton} onPress={() => updateBookingStatus(item.id, 'confirmed')}>
+                  <Ionicons name="checkmark-circle-outline" size={28} color={Colors.success} />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.actionButton} onPress={() => updateBookingStatus(item.id, 'cancelled')}>
+                  <Ionicons name="close-circle-outline" size={28} color={Colors.error} />
+                </TouchableOpacity>
+              </>
+            )}
+            <TouchableOpacity style={styles.actionButton} onPress={() => handleDelete(item.id)}>
+              <Ionicons name="trash-outline" size={24} color={Colors.text.light} />
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {!isMyStore && (
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.addButton}
-          onPress={handleBookAppointment}
+          onPress={() => setModalVisible(true)}
         >
-          <Ionicons name="calendar-outline" size={24} color={Colors.background.primary} />
+          <Ionicons name="calendar-outline" size={24} color={Colors.text.white} />
           <Text style={styles.addButtonText}>{t('bookAppointment')}</Text>
         </TouchableOpacity>
       )}
@@ -106,26 +196,53 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
           <Text style={styles.emptyText}>{t('noBookingsAvailable')}</Text>
         </View>
       ) : (
-        bookings.map(item => (
-          <View key={item.id} style={styles.bookingCard}>
-            <View style={styles.bookingInfo}>
-              <Text style={styles.bookingText}>{isMyStore ? `Booking from: ${item.userId}` : `Booking with: ${store.name}`}</Text>
-              <Text style={styles.bookingStatus}>{`Status: ${item.status}`}</Text>
-            </View>
-            {isMyStore && (
-              <View style={styles.actionsContainer}>
-                <TouchableOpacity onPress={() => navigation.navigate('EditBooking', { booking: item, storeId: store.id })}>
-                  <Ionicons name="pencil-outline" size={24} color={Colors.secondary} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                  <Ionicons name="trash-outline" size={24} color={Colors.error} />
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-        ))
+        bookings.map(renderBookingCard)
       )}
-    </View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>New Booking Request</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Service Required (e.g., Haircut) *"
+              value={bookingDetails.service}
+              onChangeText={(text) => setBookingDetails({ ...bookingDetails, service: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Requested Date (e.g., MM/DD/YYYY) *"
+              value={bookingDetails.date}
+              onChangeText={(text) => setBookingDetails({ ...bookingDetails, date: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Requested Time (e.g., 3:00 PM)"
+              value={bookingDetails.time}
+              onChangeText={(text) => setBookingDetails({ ...bookingDetails, time: text })}
+            />
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Additional Notes"
+              multiline
+              value={bookingDetails.notes}
+              onChangeText={(text) => setBookingDetails({ ...bookingDetails, notes: text })}
+            />
+            <TouchableOpacity style={styles.modalButton} onPress={handleBookAppointment}>
+              <Text style={styles.modalButtonText}>Send Request</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.modalButton, styles.modalCancelButton]} onPress={() => setModalVisible(false)}>
+              <Text style={styles.modalButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </ScrollView>
   );
 };
 
@@ -172,24 +289,48 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     ...Shadows.base,
+    borderLeftWidth: 5,
   },
   bookingInfo: {
     flex: 1,
+    marginRight: Spacing.md,
+  },
+  bookingService: {
+    fontSize: Typography.fontSize.lg,
+    fontWeight: 'bold',
+    color: Colors.text.primary,
+    marginBottom: Spacing.sm,
   },
   bookingText: {
     fontSize: Typography.fontSize.base,
-    color: Colors.text.primary,
+    color: Colors.text.secondary,
+    marginBottom: Spacing.xs,
   },
-  bookingStatus: {
-    fontSize: Typography.fontSize.base,
-    fontWeight: Typography.fontWeight.semibold,
-    color: Colors.primary,
+  bookingNotes: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.light,
+    fontStyle: 'italic',
     marginTop: Spacing.sm,
   },
+  statusBadge: {
+    alignSelf: 'flex-start',
+    marginTop: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.pill,
+  },
+  statusText: {
+    color: Colors.text.white,
+    fontSize: Typography.fontSize.sm,
+    fontWeight: 'bold',
+  },
   actionsContainer: {
-    flexDirection: 'row',
+    flexDirection: 'column',
+    justifyContent: 'space-around',
     alignItems: 'center',
-    gap: Spacing.md,
+  },
+  actionButton: {
+    padding: Spacing.sm,
   },
   emptyContainer: {
     flex: 1,
@@ -202,6 +343,55 @@ const styles = StyleSheet.create({
     color: Colors.text.light,
     marginTop: Spacing.md,
     textAlign: 'center',
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  modalContent: {
+    width: '90%',
+    backgroundColor: Colors.background.card,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    ...Shadows.lg,
+  },
+  modalTitle: {
+    fontSize: Typography.fontSize.xl,
+    fontWeight: 'bold',
+    color: Colors.text.primary,
+    marginBottom: Spacing.lg,
+    textAlign: 'center',
+  },
+  input: {
+    backgroundColor: Colors.background.secondary,
+    borderWidth: 1,
+    borderColor: Colors.border.light,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    fontSize: Typography.fontSize.base,
+    marginBottom: Spacing.md,
+  },
+  textArea: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  modalButton: {
+    backgroundColor: Colors.primary,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+    marginTop: Spacing.sm,
+  },
+  modalCancelButton: {
+    backgroundColor: Colors.text.light,
+  },
+  modalButtonText: {
+    color: Colors.text.white,
+    fontSize: Typography.fontSize.lg,
+    fontWeight: 'bold',
   },
 });
 
