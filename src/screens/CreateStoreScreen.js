@@ -56,6 +56,7 @@ export default function CreateStoreScreen({ navigation }) {
     { id: 2, number: '', label: 'Landline', type: 'landline' }
   ]);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [showProfileTypeDropdown, setShowProfileTypeDropdown] = useState(false);
   const { currentUser, isGuestUser } = useAuth();
 
   // Get available categories based on selected profile type
@@ -548,51 +549,79 @@ export default function CreateStoreScreen({ navigation }) {
           <View style={styles.inputGroup}>
             <Text style={styles.label}>What type of business are you? *</Text>
             <Text style={styles.sectionSubtitle}>Select the type that best describes your business</Text>
-            <View style={styles.profileTypeGrid}>
-              {PROFILE_TYPES.map((type) => (
-                <TouchableOpacity
-                  key={type.id}
-                  style={[
-                    styles.profileTypeButton,
-                    profileType === type.id && styles.profileTypeButtonSelected
-                  ]}
-                  onPress={() => {
-                    setProfileType(profileType === type.id ? '' : type.id);
-                  }}
-                >
-                  <View style={styles.profileTypeIcon}>
-                    <Ionicons 
-                      name={type.icon} 
-                      size={24} 
-                      color={profileType === type.id ? '#fff' : type.color} 
-                    />
+            
+            {/* Profile Type Dropdown */}
+            <TouchableOpacity 
+              style={styles.profileTypeDropdownButton}
+              onPress={() => setShowProfileTypeDropdown(!showProfileTypeDropdown)}
+            >
+              <View style={styles.profileTypeDropdownHeader}>
+                <Ionicons 
+                  name={profileType ? getProfileTypeInfo(profileType).icon : "business"} 
+                  size={20} 
+                  color={profileType ? getProfileTypeInfo(profileType).color : Colors.primary} 
+                />
+                <Text style={styles.profileTypeDropdownText}>
+                  {profileType 
+                    ? getProfileTypeInfo(profileType).name
+                    : 'Select your business type'
+                  }
+                </Text>
+                <Ionicons 
+                  name={showProfileTypeDropdown ? "chevron-up" : "chevron-down"} 
+                  size={20} 
+                  color="#7f8c8d" 
+                />
+              </View>
+            </TouchableOpacity>
+            
+            {/* Profile Type Dropdown Content */}
+            {showProfileTypeDropdown && (
+              <View style={styles.profileTypeDropdownContent}>
+                <ScrollView style={styles.profileTypeScrollView} nestedScrollEnabled>
+                  <View style={styles.profileTypeList}>
+                    {PROFILE_TYPES.map((type) => (
+                      <TouchableOpacity
+                        key={type.id}
+                        style={[
+                          styles.profileTypeItem,
+                          profileType === type.id && styles.profileTypeItemSelected
+                        ]}
+                        onPress={() => {
+                          setProfileType(type.id);
+                          setShowProfileTypeDropdown(false);
+                        }}
+                      >
+                        <View style={styles.profileTypeItemIcon}>
+                          <Ionicons 
+                            name={type.icon} 
+                            size={24} 
+                            color={profileType === type.id ? '#fff' : type.color} 
+                          />
+                        </View>
+                        <View style={styles.profileTypeItemContent}>
+                          <Text style={[
+                            styles.profileTypeItemText,
+                            profileType === type.id && styles.profileTypeItemTextSelected
+                          ]}>
+                            {type.name}
+                          </Text>
+                          <Text style={[
+                            styles.profileTypeItemDescription,
+                            profileType === type.id && styles.profileTypeItemDescriptionSelected
+                          ]}>
+                            {type.description}
+                          </Text>
+                        </View>
+                        {profileType === type.id && (
+                          <Ionicons name="checkmark-circle" size={20} color="#fff" />
+                        )}
+                      </TouchableOpacity>
+                    ))}
                   </View>
-                  <Text style={[
-                    styles.profileTypeButtonText,
-                    profileType === type.id && styles.profileTypeButtonTextSelected
-                  ]}>
-                    {type.name}
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.infoButton}
-                    onPress={() => {
-                      Alert.alert(
-                          type.name,
-                          type.description,
-                          [{ text: 'OK', style: 'default' }]
-                        );
-                      }}
-                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                    >
-                      <Ionicons 
-                        name="information-circle-outline" 
-                        size={18} 
-                        color={profileType === type.id ? 'rgba(255, 255, 255, 0.8)' : '#7f8c8d'} 
-                      />
-                    </TouchableOpacity>
-                </TouchableOpacity>
-              ))}
-            </View>
+                </ScrollView>
+              </View>
+            )}
           </View>
 
           <View style={styles.inputGroup}>
@@ -1348,64 +1377,90 @@ const styles = StyleSheet.create({
   },
 
   // Profile Type Selection Styles
-  profileTypeGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingTop: 12,
-  },
-  profileTypeButton: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#e9ecef',
+  profileTypeDropdownButton: {
+    backgroundColor: Colors.background.card,
+    borderWidth: 1,
+    borderColor: Colors.border.light,
     borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 8,
-    width: '31%', // 3 columns with some margin
-    marginBottom: 12,
-    minHeight: 120,
+    marginTop: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 2,
   },
-  profileTypeButtonSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-    borderWidth: 2,
-    shadowColor: Colors.primary,
-    shadowOpacity: 0.3,
-    elevation: 8,
-  },
-  profileTypeIcon: {
-    marginBottom: 8,
-  },
-  profileTypeContent: {
-    flex: 1,
+  profileTypeDropdownHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 16,
     justifyContent: 'space-between',
   },
-  profileTypeButtonText: {
-    fontSize: 12,
-    color: '#2c3e50',
+  profileTypeDropdownText: {
+    flex: 1,
+    fontSize: 16,
+    color: Colors.text.primary,
+    marginLeft: 12,
+    fontWeight: '500',
+  },
+  profileTypeDropdownContent: {
+    backgroundColor: Colors.background.card,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border.light,
+    maxHeight: 400,
+  },
+  profileTypeScrollView: {
+    maxHeight: 400,
+    padding: 16,
+  },
+  profileTypeList: {
+    paddingBottom: 20,
+  },
+  profileTypeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1,
+    borderColor: Colors.border.light,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  profileTypeItemSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowOpacity: 0.3,
+    elevation: 6,
+  },
+  profileTypeItemIcon: {
+    marginRight: 16,
+  },
+  profileTypeItemContent: {
+    flex: 1,
+  },
+  profileTypeItemText: {
+    fontSize: 16,
+    color: Colors.text.primary,
     fontWeight: '600',
-    textAlign: 'center',
-    lineHeight: 16,
     marginBottom: 4,
   },
-  profileTypeButtonTextSelected: {
+  profileTypeItemTextSelected: {
     color: '#fff',
     fontWeight: '700',
   },
-  infoButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    padding: 4,
+  profileTypeItemDescription: {
+    fontSize: 13,
+    color: Colors.text.secondary,
+    lineHeight: 18,
+  },
+  profileTypeItemDescriptionSelected: {
+    color: 'rgba(255, 255, 255, 0.9)',
   },
 
   // Mobile Service Styles
