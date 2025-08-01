@@ -16,19 +16,31 @@ import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
+import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { BUSINESS_CATEGORIES, PROFILE_TYPES } from '../config/categories';
+import { Colors, Typography, Spacing, BorderRadius } from '../styles/theme';
 
 export default function EditStoreScreen({ route, navigation }) {
   const { store } = route.params;
-  const [storeName, setStoreName] = useState(store.name);
+  const { currentUser, isGuestUser } = useAuth();
+  const { t } = useLanguage();
+  
+  const [businessName, setBusinessName] = useState(store.name);
   const [address, setAddress] = useState(store.address);
   const [hours, setHours] = useState(store.hours);
   const [description, setDescription] = useState(store.description);
-  const [category, setCategory] = useState(store.category || '');
+  const [profileType, setProfileType] = useState(store.profileType || '');
+  const [categories, setCategories] = useState(Array.isArray(store.categories) ? store.categories : []);
   const [profileImage, setProfileImage] = useState(store.profileImage || null);
   const [coverImage, setCoverImage] = useState(store.coverImage || null);
+  const [coordinates, setCoordinates] = useState(store.coordinates || null);
   const [loading, setLoading] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
-  const [storeCoordinates, setStoreCoordinates] = useState(store.coordinates || null);
+  const [isMobile, setIsMobile] = useState(store.isMobile || false);
+  const [serviceRadius, setServiceRadius] = useState(store.serviceRadius || 5);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [showProfileTypeDropdown, setShowProfileTypeDropdown] = useState(false);
   const [socialLinks, setSocialLinks] = useState(() => {
     // Initialize with existing social links or empty ones
     const existingLinks = store.socialLinks || [];
@@ -45,24 +57,37 @@ export default function EditStoreScreen({ route, navigation }) {
     
     return links;
   });
+  const [contactNumbers, setContactNumbers] = useState(() => {
+    // Initialize with existing contact numbers or defaults
+    const existingContacts = store.contactNumbers || [];
+    const contacts = [];
+    
+    // Fill with existing contacts
+    for (let i = 0; i < 2; i++) {
+      if (i < existingContacts.length) {
+        contacts.push(existingContacts[i]);
+      } else {
+        contacts.push({ 
+          id: i + 1, 
+          number: '', 
+          label: i === 0 ? 'Mobile' : 'Landline', 
+          type: i === 0 ? 'mobile' : 'landline' 
+        });
+      }
+    }
+    
+    return contacts;
+  });
 
-  // Store categories
-  const storeCategories = [
-    { id: 'sari-sari', name: 'Sari-sari Store', icon: 'storefront' },
-    { id: 'kainan', name: 'Kainan/Restaurant', icon: 'restaurant' },
-    { id: 'laundry', name: 'Laundry Shop', icon: 'shirt' },
-    { id: 'vegetables', name: 'Vegetable Store', icon: 'leaf' },
-    { id: 'meat', name: 'Meat Shop', icon: 'fish' },
-    { id: 'bakery', name: 'Bakery', icon: 'cafe' },
-    { id: 'pharmacy', name: 'Pharmacy', icon: 'medical' },
-    { id: 'hardware', name: 'Hardware Store', icon: 'hammer' },
-    { id: 'clothing', name: 'Clothing Store', icon: 'shirt-outline' },
-    { id: 'electronics', name: 'Electronics', icon: 'phone-portrait' },
-    { id: 'beauty', name: 'Beauty Salon', icon: 'cut' },
-    { id: 'automotive', name: 'Automotive Shop', icon: 'car' },
-    { id: 'other', name: 'Other', icon: 'business' },
-  ];
+  // Get available categories based on selected profile type
+  const getAvailableCategories = () => {
+    if (!profileType) return [];
+    return BUSINESS_CATEGORIES.filter(category => 
+      category.types.includes(profileType)
+    );
+  };
 
+  
   // Function to detect social platform from URL
   const detectPlatform = (url) => {
     if (!url) return 'link';
@@ -145,42 +170,108 @@ export default function EditStoreScreen({ route, navigation }) {
     );
   };
 
+  // Contact Number Management Functions
+  const updateContactNumber = (id, number) => {
+    setContactNumbers(prev => 
+      prev.map(contact => 
+        contact.id === id 
+          ? { ...contact, number: number.trim() }
+          : contact
+      )
+    );
+  };
+
+  const updateContactLabel = (id, label, type) => {
+    setContactNumbers(prev => 
+      prev.map(contact => 
+        contact.id === id 
+          ? { ...contact, label, type }
+          : contact
+      )
+    );
+  };
+
+  const addContactNumber = () => {
+    const newId = Math.max(...contactNumbers.map(c => c.id)) + 1;
+    setContactNumbers(prev => [...prev, {
+      id: newId,
+      number: '',
+      label: 'Mobile',
+      type: 'mobile'
+    }]);
+  };
+
+  const removeContactNumber = (id) => {
+    if (contactNumbers.length > 1) {
+      setContactNumbers(prev => prev.filter(contact => contact.id !== id));
+    }
+  };
+
+  const getContactIcon = (type) => {
+    const icons = {
+      mobile: 'phone-portrait',
+      landline: 'call',
+      whatsapp: 'logo-whatsapp',
+      telegram: 'send',
+      viber: 'call-outline',
+      other: 'chatbubble'
+    };
+    return icons[type] || 'call';
+  };
+
+  const getContactColor = (type) => {
+    const colors = {
+      mobile: '#27ae60',
+      landline: '#3498db',
+      whatsapp: '#25D366',
+      telegram: '#0088CC',
+      viber: '#665CAC',
+      other: '#95a5a6'
+    };
+    return colors[type] || '#95a5a6';
+  };
+
   const handleUpdateStore = async () => {
-    if (!storeName || !address || !hours || !description || !category) {
-      Alert.alert('Error', 'Please fill in all fields including store category');
+    if (!businessName || !address || !hours || !description || !profileType || (categories || []).length === 0) {
+      Alert.alert('Error', 'Please fill in all required fields including profile type and categories');
       return;
     }
 
     try {
       setLoading(true);
       
-      // Filter out empty social links
+      // Filter out empty social links and contact numbers
       const validSocialLinks = socialLinks.filter(link => link.url.trim() !== '');
+      const validContactNumbers = contactNumbers.filter(contact => contact.number.trim() !== '');
       
       const businessProfileRef = doc(db, 'businessProfiles', store.id);
       await updateDoc(businessProfileRef, {
-        name: storeName,
+        name: businessName,
+        profileType: profileType,
+        categories: categories,
         address: address,
         hours: hours,
         description: description,
-        categories: categories, // Update to use new categories array
         profileImage: profileImage || '',
         coverImage: coverImage || '',
-        location: storeCoordinates ? {
-          latitude: storeCoordinates.latitude,
-          longitude: storeCoordinates.longitude,
+        coordinates: coordinates ? {
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude,
           accuracy: 10
         } : null,
         socialLinks: validSocialLinks,
+        contactNumbers: validContactNumbers,
+        isMobile: isMobile,
+        serviceRadius: isMobile ? serviceRadius : null,
         updatedAt: new Date()
       });
 
-      Alert.alert('Success', 'Store updated successfully!', [
+      Alert.alert('Success', 'Business profile updated successfully!', [
         { text: 'OK', onPress: () => navigation.goBack() }
       ]);
     } catch (error) {
-      Alert.alert('Error', 'Failed to update store');
-      console.error('Error updating store:', error);
+      Alert.alert('Error', 'Failed to update business profile');
+      console.error('Error updating business profile:', error);
     } finally {
       setLoading(false);
     }
@@ -264,11 +355,11 @@ export default function EditStoreScreen({ route, navigation }) {
       });
 
       // Store coordinates for the store
-      const coordinates = {
+      const newCoordinates = {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
       };
-      setStoreCoordinates(coordinates);
+      setCoordinates(newCoordinates);
 
       // Reverse geocode to get address
       const addresses = await Location.reverseGeocodeAsync({
@@ -295,7 +386,7 @@ export default function EditStoreScreen({ route, navigation }) {
           setAddress(formattedAddress);
           Alert.alert(
             'Location Updated!', 
-            `Address: ${formattedAddress}\n\nCoordinates: ${coordinates.latitude.toFixed(6)}, ${coordinates.longitude.toFixed(6)}\nAccuracy: ${Math.round(location.coords.accuracy)}m`
+            `Address: ${formattedAddress}\n\nCoordinates: ${newCoordinates.latitude.toFixed(6)}, ${newCoordinates.longitude.toFixed(6)}\nAccuracy: ${Math.round(location.coords.accuracy)}m`
           );
         } else {
           throw new Error('Could not format address');
@@ -332,7 +423,7 @@ export default function EditStoreScreen({ route, navigation }) {
             try {
               const [lat, lng] = input.split(',').map(coord => parseFloat(coord.trim()));
               if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
-                setStoreCoordinates({ latitude: lat, longitude: lng });
+                setCoordinates({ latitude: lat, longitude: lng });
                 Alert.alert(
                   'Test Coordinates Updated!', 
                   `Latitude: ${lat}\nLongitude: ${lng}\n\nNote: This is for testing only.`
@@ -347,7 +438,7 @@ export default function EditStoreScreen({ route, navigation }) {
         },
       ],
       'plain-text',
-      storeCoordinates ? `${storeCoordinates.latitude},${storeCoordinates.longitude}` : '14.5995,120.9842'
+      coordinates ? `${coordinates.latitude},${coordinates.longitude}` : '14.5995,120.9842'
     );
   };
 
@@ -364,47 +455,339 @@ export default function EditStoreScreen({ route, navigation }) {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <View style={styles.form}>
-          <Text style={styles.title}>Edit Store</Text>
+          <Text style={styles.title}>{t('editStore')}</Text>
           <Text style={styles.subtitle}>
-            Update your store information
+            {t('updateStoreInformation')}
           </Text>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Store Name *</Text>
+            <Text style={styles.label}>{t('businessName')} *</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter your store name"
-              value={storeName}
-              onChangeText={setStoreName}
+              placeholder={t('enterBusinessName')}
+              value={businessName}
+              onChangeText={setBusinessName}
             />
           </View>
 
+          {/* Profile Type Selection */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Store Category *</Text>
-            <Text style={styles.subtitle}>Select what type of store you have</Text>
-            <View style={styles.categoryContainer}>
-              {storeCategories.map((cat) => (
-                <TouchableOpacity
-                  key={cat.id}
-                  style={[
-                    styles.categoryButton,
-                    category === cat.id && styles.categoryButtonSelected
-                  ]}
-                  onPress={() => setCategory(cat.id)}
+            <Text style={styles.label}>{t('profileType')} *</Text>
+            <Text style={styles.sectionSubtitle}>
+              {t('selectProfileTypeDescription')}
+            </Text>
+            
+            <TouchableOpacity
+              style={styles.profileTypeDropdownButton}
+              onPress={() => setShowProfileTypeDropdown(!showProfileTypeDropdown)}
+            >
+              <View style={styles.profileTypeDropdownHeader}>
+                <Ionicons 
+                  name={profileType ? PROFILE_TYPES.find(p => p.id === profileType)?.icon : 'business'} 
+                  size={20} 
+                  color={Colors.primary} 
+                />
+                <Text style={styles.profileTypeDropdownText}>
+                  {profileType ? PROFILE_TYPES.find(p => p.id === profileType)?.name : t('selectProfileType')}
+                </Text>
+                <Ionicons 
+                  name={showProfileTypeDropdown ? "chevron-up" : "chevron-down"} 
+                  size={20} 
+                  color={Colors.text.secondary} 
+                />
+              </View>
+              
+              {showProfileTypeDropdown && (
+                <View style={styles.profileTypeDropdownContent}>
+                  <ScrollView 
+                    style={styles.profileTypeScrollView}
+                    nestedScrollEnabled={true}
+                    showsVerticalScrollIndicator={true}
+                  >
+                    <View style={styles.profileTypeList}>
+                      {PROFILE_TYPES.map((type) => (
+                        <TouchableOpacity
+                          key={type.id}
+                          style={[
+                            styles.profileTypeItem,
+                            profileType === type.id && styles.profileTypeItemSelected
+                          ]}
+                          onPress={() => {
+                            setProfileType(type.id);
+                            setCategories([]); // Reset categories when profile type changes
+                            setShowProfileTypeDropdown(false);
+                          }}
+                        >
+                          <Ionicons 
+                            name={type.icon} 
+                            size={24} 
+                            color={profileType === type.id ? '#fff' : Colors.primary}
+                            style={styles.profileTypeItemIcon}
+                          />
+                          <View style={styles.profileTypeItemContent}>
+                            <Text style={[
+                              styles.profileTypeItemText,
+                              profileType === type.id && styles.profileTypeItemTextSelected
+                            ]}>
+                              {type.name}
+                            </Text>
+                            <Text style={[
+                              styles.profileTypeItemDescription,
+                              profileType === type.id && styles.profileTypeItemDescriptionSelected
+                            ]}>
+                              {type.description}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </ScrollView>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Categories Selection */}
+          {profileType && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>{t('categories')} *</Text>
+              <Text style={styles.sectionSubtitle}>
+                {t('selectCategoriesDescription')}
+              </Text>
+              
+              <TouchableOpacity
+                style={styles.categoryDropdownButton}
+                onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+              >
+                <View style={styles.categoryDropdownHeader}>
+                  <Ionicons name="grid" size={20} color={Colors.primary} />
+                  <Text style={styles.categoryDropdownTitle}>
+                    {(categories || []).length > 0 ? `${(categories || []).length} ${t('categoriesSelected')}` : t('selectCategories')}
+                  </Text>
+                  <TouchableOpacity 
+                    style={styles.closeDropdownButton}
+                    onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                  >
+                    <Ionicons 
+                      name={showCategoryDropdown ? "chevron-up" : "chevron-down"} 
+                      size={20} 
+                      color={Colors.text.secondary} 
+                    />
+                  </TouchableOpacity>
+                </View>
+                
+                {showCategoryDropdown && (
+                  <View style={styles.categoryDropdownContent}>
+                    <ScrollView 
+                      style={styles.categoryScrollView}
+                      nestedScrollEnabled={true}
+                      showsVerticalScrollIndicator={true}
+                    >
+                      <View style={styles.categoryGrid}>
+                        {getAvailableCategories().map((category) => (
+                          <TouchableOpacity
+                            key={category.id}
+                            style={[
+                              styles.categoryGridItem,
+                              (categories || []).includes(category.id) && styles.categoryGridItemSelected
+                            ]}
+                            onPress={() => {
+                              const currentCategories = categories || [];
+                              if (currentCategories.includes(category.id)) {
+                                setCategories(prev => (prev || []).filter(id => id !== category.id));
+                              } else {
+                                setCategories(prev => [...(prev || []), category.id]);
+                              }
+                            }}
+                          >
+                            <Ionicons 
+                              name={category.icon} 
+                              size={16} 
+                              color={(categories || []).includes(category.id) ? '#fff' : Colors.primary}
+                            />
+                            <Text style={[
+                              styles.categoryGridItemText,
+                              (categories || []).includes(category.id) && styles.categoryGridItemTextSelected
+                            ]}>
+                              {category.name}
+                            </Text>
+                            {(categories || []).includes(category.id) && (
+                              <Ionicons 
+                                name="checkmark-circle" 
+                                size={16} 
+                                color="#fff"
+                                style={styles.categoryCheckmark}
+                              />
+                            )}
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </ScrollView>
+                  </View>
+                )}
+              </TouchableOpacity>
+              
+              {/* Selected Categories Display */}
+              {(categories || []).length > 0 && (
+                <View style={styles.selectedCategoriesContainer}>
+                  <Text style={styles.selectedCategoriesLabel}>{t('selectedCategories')}:</Text>
+                  <View style={styles.selectedCategoriesGrid}>
+                    {(categories || []).map((categoryId) => {
+                      const category = BUSINESS_CATEGORIES.find(cat => cat.id === categoryId);
+                      return (
+                        <View key={categoryId} style={styles.selectedCategoryChip}>
+                          <Ionicons name={category?.icon} size={12} color={Colors.primary} />
+                          <Text style={styles.selectedCategoryText}>{category?.name}</Text>
+                          <TouchableOpacity 
+                            onPress={() => setCategories(prev => (prev || []).filter(id => id !== categoryId))}
+                            style={styles.removeCategoryButton}
+                          >
+                            <Ionicons name="close" size={12} color={Colors.text.secondary} />
+                          </TouchableOpacity>
+                        </View>
+                      );
+                    })}
+                  </View>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Mobile Service Section */}
+          {profileType === 'service-provider' && (
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>{t('serviceType')}</Text>
+              <Text style={styles.sectionSubtitle}>
+                {t('serviceTypeDescription')}
+              </Text>
+              
+              <View style={styles.mobileServiceContainer}>
+                <TouchableOpacity 
+                  style={styles.checkboxContainer}
+                  onPress={() => setIsMobile(!isMobile)}
                 >
                   <Ionicons 
-                    name={cat.icon} 
-                    size={20} 
-                    color={category === cat.id ? '#fff' : '#3498db'} 
+                    name={isMobile ? "checkbox" : "square-outline"} 
+                    size={24} 
+                    color={isMobile ? Colors.primary : Colors.text.secondary} 
                   />
-                  <Text style={[
-                    styles.categoryButtonText,
-                    category === cat.id && styles.categoryButtonTextSelected
-                  ]}>
-                    {cat.name}
-                  </Text>
+                  <Text style={styles.checkboxText}>{t('mobileService')}</Text>
                 </TouchableOpacity>
+                
+                {isMobile && (
+                  <View style={styles.radiusContainer}>
+                    <Text style={styles.radiusLabel}>{t('serviceRadius')}</Text>
+                    <View style={styles.radiusButtons}>
+                      {[1, 3, 5, 10, 15, 20].map((radius) => (
+                        <TouchableOpacity
+                          key={radius}
+                          style={[
+                            styles.radiusButton,
+                            serviceRadius === radius && styles.radiusButtonSelected
+                          ]}
+                          onPress={() => setServiceRadius(radius)}
+                        >
+                          <Text style={[
+                            styles.radiusButtonText,
+                            serviceRadius === radius && styles.radiusButtonTextSelected
+                          ]}>
+                            {radius}km
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* Contact Numbers Section */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('contactNumbers')}</Text>
+            <Text style={styles.sectionSubtitle}>
+              {t('contactNumbersDescription')}
+            </Text>
+            
+            <View style={styles.contactNumbersContainer}>
+              {contactNumbers.map((contact, index) => (
+                <View key={contact.id} style={styles.contactNumberItem}>
+                  <View style={styles.contactNumberRow}>
+                    <View style={styles.contactTypeContainer}>
+                      <View style={[styles.contactTypeIcon, { backgroundColor: getContactColor(contact.type) }]}>
+                        <Ionicons 
+                          name={getContactIcon(contact.type)} 
+                          size={20} 
+                          color="#fff" 
+                        />
+                      </View>
+                      <TouchableOpacity 
+                        style={styles.contactTypeButton}
+                        onPress={() => {
+                          Alert.alert(
+                            t('selectContactType'),
+                            '',
+                            [
+                              { text: 'Mobile', onPress: () => updateContactLabel(contact.id, 'Mobile', 'mobile') },
+                              { text: 'Landline', onPress: () => updateContactLabel(contact.id, 'Landline', 'landline') },
+                              { text: 'WhatsApp', onPress: () => updateContactLabel(contact.id, 'WhatsApp', 'whatsapp') },
+                              { text: 'Telegram', onPress: () => updateContactLabel(contact.id, 'Telegram', 'telegram') },
+                              { text: 'Viber', onPress: () => updateContactLabel(contact.id, 'Viber', 'viber') },
+                              { text: t('cancel'), style: 'cancel' }
+                            ]
+                          );
+                        }}
+                      >
+                        <Text style={styles.contactTypeText}>{contact.label}</Text>
+                        <Ionicons name="chevron-down" size={12} color={Colors.text.secondary} />
+                      </TouchableOpacity>
+                    </View>
+                    
+                    <TextInput
+                      style={styles.contactNumberInput}
+                      placeholder={t('enterContactNumber')}
+                      value={contact.number}
+                      onChangeText={(text) => updateContactNumber(contact.id, text)}
+                      keyboardType="phone-pad"
+                    />
+                    
+                    {contactNumbers.length > 1 && (
+                      <TouchableOpacity 
+                        onPress={() => removeContactNumber(contact.id)}
+                        style={styles.removeContactButton}
+                      >
+                        <Ionicons name="trash" size={20} color="#e74c3c" />
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                  
+                  {contact.number.trim() && (
+                    <View style={styles.contactPreview}>
+                      <Ionicons name="checkmark-circle" size={16} color="#27ae60" />
+                      <Text style={styles.contactPreviewText}>
+                        {contact.label}: {contact.number}
+                      </Text>
+                    </View>
+                  )}
+                </View>
               ))}
+              
+              {contactNumbers.length < 5 && (
+                <TouchableOpacity 
+                  style={styles.addContactButton}
+                  onPress={addContactNumber}
+                >
+                  <Ionicons name="add" size={20} color={Colors.primary} />
+                  <Text style={styles.addContactText}>{t('addContactNumber')}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            
+            <View style={styles.contactNumbersNote}>
+              <Ionicons name="information-circle" size={16} color="#e74c3c" />
+              <Text style={styles.noteText}>
+                {t('contactNumbersNote')}
+              </Text>
             </View>
           </View>
 
@@ -501,10 +884,10 @@ export default function EditStoreScreen({ route, navigation }) {
             </TouchableOpacity>
             
             {/* Display current coordinates */}
-            {storeCoordinates && (
+            {coordinates && (
               <View style={styles.coordinateDisplay}>
                 <Text style={styles.coordinateText}>
-                  📍 GPS Coordinates: {storeCoordinates.latitude.toFixed(6)}, {storeCoordinates.longitude.toFixed(6)}
+                  📍 GPS Coordinates: {coordinates.latitude.toFixed(6)}, {coordinates.longitude.toFixed(6)}
                 </Text>
                 <Text style={styles.coordinateSubtext}>
                   These coordinates will be used for precise map positioning
@@ -876,5 +1259,377 @@ const styles = StyleSheet.create({
     color: '#7f8c8d',
     marginLeft: 8,
     lineHeight: 16,
+  },
+  
+  // Profile Type Dropdown Styles
+  profileTypeDropdownButton: {
+    backgroundColor: Colors.background.card,
+    borderWidth: 1,
+    borderColor: Colors.border.light,
+    borderRadius: 12,
+    marginTop: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  profileTypeDropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    justifyContent: 'space-between',
+  },
+  profileTypeDropdownText: {
+    flex: 1,
+    fontSize: 16,
+    color: Colors.text.primary,
+    marginLeft: 12,
+    fontWeight: '500',
+  },
+  profileTypeDropdownContent: {
+    backgroundColor: Colors.background.card,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border.light,
+    maxHeight: 400,
+  },
+  profileTypeScrollView: {
+    maxHeight: 400,
+    padding: 16,
+  },
+  profileTypeList: {
+    paddingBottom: 20,
+  },
+  profileTypeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1,
+    borderColor: Colors.border.light,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  profileTypeItemSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowOpacity: 0.3,
+    elevation: 6,
+  },
+  profileTypeItemIcon: {
+    marginRight: 16,
+  },
+  profileTypeItemContent: {
+    flex: 1,
+  },
+  profileTypeItemText: {
+    fontSize: 16,
+    color: Colors.text.primary,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  profileTypeItemTextSelected: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  profileTypeItemDescription: {
+    fontSize: 13,
+    color: Colors.text.secondary,
+    lineHeight: 18,
+  },
+  profileTypeItemDescriptionSelected: {
+    color: 'rgba(255, 255, 255, 0.9)',
+  },
+  
+  // Category Dropdown Styles
+  categoryDropdownButton: {
+    backgroundColor: Colors.background.card,
+    borderWidth: 1,
+    borderColor: Colors.border.light,
+    borderRadius: 12,
+    marginTop: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  categoryDropdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    justifyContent: 'space-between',
+  },
+  categoryDropdownText: {
+    flex: 1,
+    fontSize: 16,
+    color: Colors.text.primary,
+    marginLeft: 12,
+    fontWeight: '500',
+  },
+  categoryDropdownTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.text.primary,
+    flex: 1,
+  },
+  closeDropdownButton: {
+    padding: 4,
+  },
+  categoryDropdownContent: {
+    backgroundColor: Colors.background.card,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border.light,
+    maxHeight: 300,
+  },
+  categoryScrollView: {
+    maxHeight: 300,
+    padding: 16,
+  },
+  categoryGrid: {
+    paddingBottom: 20,
+    gap: 8,
+  },
+  categoryGridItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+    borderWidth: 1,
+    borderColor: Colors.border.light,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 8,
+    width: '100%',
+    position: 'relative',
+  },
+  categoryGridItemSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  categoryGridItemText: {
+    fontSize: 13,
+    color: Colors.text.primary,
+    marginLeft: 8,
+    fontWeight: '500',
+    flex: 1,
+  },
+  categoryGridItemTextSelected: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  categoryCheckmark: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+  },
+  selectedCategoriesContainer: {
+    marginTop: 12,
+    padding: 16,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.primary,
+  },
+  selectedCategoriesLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text.primary,
+    marginBottom: 8,
+  },
+  selectedCategoriesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  selectedCategoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: Colors.border.light,
+  },
+  selectedCategoryText: {
+    fontSize: 12,
+    color: Colors.text.primary,
+    marginLeft: 6,
+    marginRight: 4,
+    fontWeight: '500',
+  },
+  removeCategoryButton: {
+    marginLeft: 4,
+  },
+  
+  // Mobile Service Styles
+  mobileServiceContainer: {
+    marginTop: 10,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  checkboxText: {
+    fontSize: 16,
+    color: '#2c3e50',
+    marginLeft: 10,
+    fontWeight: '500',
+  },
+  radiusContainer: {
+    marginLeft: 34,
+    padding: 12,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+  },
+  radiusLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2c3e50',
+    marginBottom: 8,
+  },
+  radiusButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  radiusButton: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  radiusButtonSelected: {
+    backgroundColor: '#27ae60',
+    borderColor: '#27ae60',
+  },
+  radiusButtonText: {
+    fontSize: 12,
+    color: '#7f8c8d',
+    fontWeight: '500',
+  },
+  radiusButtonTextSelected: {
+    color: '#fff',
+  },
+  
+  // Contact Numbers Styles
+  contactNumbersContainer: {
+    marginTop: 10,
+  },
+  contactNumberItem: {
+    marginBottom: 15,
+  },
+  contactNumberRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  contactTypeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingRight: 8,
+    minWidth: 120,
+  },
+  contactTypeIcon: {
+    width: 40,
+    height: 40,
+    borderTopLeftRadius: 7,
+    borderBottomLeftRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  contactTypeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flex: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+  },
+  contactTypeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#2c3e50',
+  },
+  contactNumberInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+  removeContactButton: {
+    padding: 4,
+  },
+  contactPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    marginLeft: 130,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#f0f8ff',
+    borderRadius: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: '#27ae60',
+  },
+  contactPreviewText: {
+    fontSize: 12,
+    color: '#27ae60',
+    fontWeight: '600',
+    marginLeft: 6,
+  },
+  addContactButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f8f9fa',
+    borderWidth: 2,
+    borderColor: '#3498db',
+    borderStyle: 'dashed',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 10,
+  },
+  addContactText: {
+    fontSize: 14,
+    color: '#3498db',
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  contactNumbersNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 15,
+    padding: 12,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#e74c3c',
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: Colors.text.secondary,
+    marginBottom: 12,
+    lineHeight: 20,
   },
 });
