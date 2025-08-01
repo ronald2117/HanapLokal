@@ -7,11 +7,11 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  ScrollView,
 } from 'react-native';
-import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, deleteDoc, doc, orderBy } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
-import { useLanguage } from '../../contexts/LanguageContext'; // Corrected import
-import { useAuth } from '../../contexts/AuthContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../../styles/theme';
 
@@ -21,14 +21,18 @@ const BusinessPortfolioTab = ({ store, navigation, isMyStore = false }) => {
   const { t } = useLanguage();
 
   useEffect(() => {
-    fetchPortfolio();
+    if (store?.id) {
+      fetchPortfolio();
+    }
   }, [store.id]);
 
   const fetchPortfolio = async () => {
+    setLoading(true);
     try {
       const portfolioQuery = query(
         collection(db, 'portfolio'),
-        where('storeId', '==', store.id)
+        where('storeId', '==', store.id),
+        orderBy('createdAt', 'desc')
       );
       const querySnapshot = await getDocs(portfolioQuery);
       const portfolioData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -73,13 +77,13 @@ const BusinessPortfolioTab = ({ store, navigation, isMyStore = false }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {isMyStore && (
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.addButton}
-          onPress={() => navigation.navigate('AddPortfolioImage', { storeId: store.id })}
+          onPress={() => navigation.navigate('AddPortfolioImage', { storeId: store.id, onGoBack: fetchPortfolio })}
         >
-          <Ionicons name="add-circle-outline" size={24} color={Colors.background.primary} />
+          <Ionicons name="add-circle-outline" size={24} color={Colors.text.white} />
           <Text style={styles.addButtonText}>{t('addPortfolioImage')}</Text>
         </TouchableOpacity>
       )}
@@ -90,23 +94,25 @@ const BusinessPortfolioTab = ({ store, navigation, isMyStore = false }) => {
           <Text style={styles.emptyText}>{t('noPortfolioImagesAvailable')}</Text>
         </View>
       ) : (
-        <View style={styles.portfolioGrid}>
-          {portfolio.map(item => (
-            <View key={item.id} style={styles.portfolioItemContainer}>
-              <Image source={{ uri: item.imageUrl }} style={styles.portfolioImage} />
-              {isMyStore && (
-                <TouchableOpacity 
-                  style={styles.deleteButton}
-                  onPress={() => handleDelete(item.id)}
-                >
-                  <Ionicons name="trash-outline" size={22} color={Colors.text.white} />
-                </TouchableOpacity>
-              )}
+        portfolio.map(item => (
+          <View key={item.id} style={styles.portfolioItemCard}>
+            <Image source={{ uri: item.imageUrl }} style={styles.portfolioImage} />
+            <View style={styles.portfolioTextContainer}>
+              {item.title && <Text style={styles.portfolioTitle}>{item.title}</Text>}
+              {item.description && <Text style={styles.portfolioDescription}>{item.description}</Text>}
             </View>
-          ))}
-        </View>
+            {isMyStore && (
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDelete(item.id)}
+              >
+                <Ionicons name="trash-outline" size={22} color={Colors.error} />
+              </TouchableOpacity>
+            )}
+          </View>
+        ))
       )}
-    </View>
+    </ScrollView>
   );
 };
 
@@ -144,28 +150,37 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.bold,
   },
-  portfolioGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  portfolioItemContainer: {
-    width: '32%',
-    marginBottom: Spacing.sm,
-    position: 'relative',
+  portfolioItemCard: {
+    backgroundColor: Colors.background.card,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.lg,
+    ...Shadows.base,
+    overflow: 'hidden', // Ensures image corners are rounded
   },
   portfolioImage: {
     width: '100%',
-    height: 120,
-    borderRadius: BorderRadius.lg,
+    height: 200,
+  },
+  portfolioTextContainer: {
+    padding: Spacing.lg,
+  },
+  portfolioTitle: {
+    fontSize: Typography.fontSize.lg,
+    fontWeight: 'bold',
+    color: Colors.text.primary,
+    marginBottom: Spacing.sm,
+  },
+  portfolioDescription: {
+    fontSize: Typography.fontSize.base,
+    color: Colors.text.secondary,
   },
   deleteButton: {
     position: 'absolute',
-    top: Spacing.sm,
-    right: Spacing.sm,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    top: Spacing.md,
+    right: Spacing.md,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: BorderRadius.full,
-    padding: Spacing.xs,
+    padding: Spacing.sm,
   },
   emptyContainer: {
     flex: 1,

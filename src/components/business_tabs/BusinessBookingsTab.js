@@ -21,6 +21,7 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingDetails, setBookingDetails] = useState({
     service: '',
     date: '',
@@ -65,11 +66,30 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
   };
 
   const handleBookAppointment = async () => {
+    if (isSubmitting) return;
+
     if (!bookingDetails.service || !bookingDetails.date) {
       Alert.alert(t('error'), 'Please provide a service and desired date.');
       return;
     }
+
+    setIsSubmitting(true);
+
     try {
+      // Check for existing pending booking to prevent spam
+      const q = query(
+        collection(db, 'bookings'),
+        where('storeId', '==', store.id),
+        where('userId', '==', currentUser.uid),
+        where('status', '==', 'pending')
+      );
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        Alert.alert(t('error'), 'You already have a pending booking with this business.');
+        setIsSubmitting(false);
+        return;
+      }
+
       await addDoc(collection(db, 'bookings'), {
         storeId: store.id,
         storeName: store.name,
@@ -89,6 +109,8 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
     } catch (error) {
       console.error("Error booking appointment:", error);
       Alert.alert(t('error'), t('failedToBook'));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -233,10 +255,10 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
               value={bookingDetails.notes}
               onChangeText={(text) => setBookingDetails({ ...bookingDetails, notes: text })}
             />
-            <TouchableOpacity style={styles.modalButton} onPress={handleBookAppointment}>
-              <Text style={styles.modalButtonText}>Send Request</Text>
+            <TouchableOpacity style={[styles.modalButton, isSubmitting && styles.disabledButton]} onPress={handleBookAppointment} disabled={isSubmitting}>
+              <Text style={styles.modalButtonText}>{isSubmitting ? 'Submitting...' : 'Send Request'}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.modalButton, styles.modalCancelButton]} onPress={() => setModalVisible(false)}>
+            <TouchableOpacity style={[styles.modalButton, styles.modalCancelButton]} onPress={() => setModalVisible(false)} disabled={isSubmitting}>
               <Text style={styles.modalButtonText}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -392,6 +414,9 @@ const styles = StyleSheet.create({
     color: Colors.text.white,
     fontSize: Typography.fontSize.lg,
     fontWeight: 'bold',
+  },
+  disabledButton: {
+    backgroundColor: Colors.text.light,
   },
 });
 
