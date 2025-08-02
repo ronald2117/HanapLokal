@@ -309,16 +309,26 @@ export default function MyStoreScreen({ navigation }) {
               )}
             </View>
             <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={styles.settingsButton}
-                onPress={() =>
-                  navigation.navigate("StoreSettings", {
-                    businessProfile: myBusinessProfile,
-                  })
-                }
-              >
-                <Ionicons name="settings" size={24} color="#2c3e50" />
-              </TouchableOpacity>
+              <View style={styles.horizontalActionsRow}>
+                <TouchableOpacity
+                  style={styles.roundActionButton}
+                  onPress={() =>
+                    navigation.navigate("StoreMap", { stores: [myBusinessProfile] })
+                  }
+                >
+                  <Ionicons name="map" size={18} color="#27ae60" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.settingsButton}
+                  onPress={() =>
+                    navigation.navigate("StoreSettings", {
+                      businessProfile: myBusinessProfile,
+                    })
+                  }
+                >
+                  <Ionicons name="settings" size={24} color="#2c3e50" />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
           <View style={styles.storeBasicInfo}>
@@ -470,6 +480,26 @@ const styles = StyleSheet.create({
   actionButtons: {
     marginTop: -20,
     paddingLeft: 10,
+  },
+  horizontalActionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 13,
+  },
+  roundActionButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: "#f8f9fa",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#e9ecef",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   settingsButton: {
     width: 50,
