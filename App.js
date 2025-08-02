@@ -46,6 +46,8 @@ import EditProductScreen from './src/screens/EditProductScreen';
 import StoreSettingsScreen from './src/screens/StoreSettingsScreen';
 import AddServiceScreen from './src/screens/AddServiceScreen';
 import EditServiceScreen from './src/screens/EditServiceScreen';
+import AddPortfolioImageScreen from './src/screens/AddPortfolioImageScreen';
+import EditPortfolioImageScreen from './src/screens/EditPortfolioImageScreen';
 
 // Chat Navigation Stack
 import ChatStack from './src/navigation/ChatStack';
@@ -217,6 +219,16 @@ function ProfileStack() {
         name="EditService" 
         component={EditServiceScreen}
         options={getModernHeaderOptions(() => t('editService'), t)}
+      />
+      <Stack.Screen 
+        name="AddPortfolioImage" 
+        component={AddPortfolioImageScreen}
+        options={getModernHeaderOptions(() => t('addPortfolioImage'), t)}
+      />
+      <Stack.Screen 
+        name="EditPortfolioImage" 
+        component={EditPortfolioImageScreen}
+        options={getModernHeaderOptions(() => t('editPortfolioImage'), t)}
       />
       {/* Favorites-related screens */}
       <Stack.Screen 

@@ -9,7 +9,7 @@ import {
   Image,
   ScrollView,
 } from 'react-native';
-import { collection, query, where, getDocs, deleteDoc, doc, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,29 +21,25 @@ const BusinessPortfolioTab = ({ store, navigation, isMyStore = false }) => {
   const { t } = useLanguage();
 
   useEffect(() => {
-    if (store?.id) {
-      fetchPortfolio();
-    }
-  }, [store.id]);
+    const portfolioQuery = query(
+      collection(db, 'portfolio'),
+      where('storeId', '==', store.id)
+    );
 
-  const fetchPortfolio = async () => {
-    setLoading(true);
-    try {
-      const portfolioQuery = query(
-        collection(db, 'portfolio'),
-        where('storeId', '==', store.id),
-        orderBy('createdAt', 'desc')
-      );
-      const querySnapshot = await getDocs(portfolioQuery);
+    const unsubscribe = onSnapshot(portfolioQuery, (querySnapshot) => {
       const portfolioData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // Sort by createdAt descending
+      portfolioData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setPortfolio(portfolioData);
-    } catch (error) {
-      console.error("Error fetching portfolio:", error);
-      Alert.alert(t('error'), t('failedToFetchPortfolio'));
-    } finally {
       setLoading(false);
-    }
-  };
+    }, (error) => {
+      console.error("Error fetching portfolio:", error);
+      Alert.alert(t('error'), 'Failed to load portfolio images');
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [store.id]);
 
   const handleDelete = (imageId) => {
     Alert.alert(
@@ -59,13 +55,39 @@ const BusinessPortfolioTab = ({ store, navigation, isMyStore = false }) => {
   const deleteImage = async (imageId) => {
     try {
       await deleteDoc(doc(db, 'portfolio', imageId));
-      fetchPortfolio(); // Refresh the list
-      Alert.alert(t('success'), t('imageDeletedSuccess'));
+      Alert.alert(t('success'), 'Image deleted successfully');
     } catch (error) {
       console.error("Error deleting image:", error);
-      Alert.alert(t('error'), t('failedToDeleteImage'));
+      Alert.alert(t('error'), 'Failed to delete image');
     }
   };
+
+  const renderPortfolioCard = (item) => (
+    <View key={item.id} style={styles.portfolioCard}>
+      <Image source={{ uri: item.imageUrl }} style={styles.portfolioImage} />
+      <View style={styles.portfolioInfo}>
+        {item.title && <Text style={styles.portfolioTitle}>{item.title}</Text>}
+        <Text style={styles.portfolioDescription} numberOfLines={2}>
+          {item.description || 'No description'}
+        </Text>
+        <View style={styles.portfolioMeta}>
+          <Text style={styles.portfolioDate}>
+            {new Date(item.createdAt).toLocaleDateString()}
+          </Text>
+        </View>
+      </View>
+      {isMyStore && (
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity onPress={() => navigation.navigate('EditPortfolioImage', { portfolio: item })}>
+            <Ionicons name="pencil-outline" size={24} color={Colors.secondary} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleDelete(item.id)}>
+            <Ionicons name="trash-outline" size={24} color={Colors.error} />
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
 
   if (loading) {
     return (
@@ -77,42 +99,28 @@ const BusinessPortfolioTab = ({ store, navigation, isMyStore = false }) => {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       {isMyStore && (
-        <TouchableOpacity
+        <TouchableOpacity 
           style={styles.addButton}
-          onPress={() => navigation.navigate('AddPortfolioImage', { storeId: store.id, onGoBack: fetchPortfolio })}
+          onPress={() => navigation.navigate('AddPortfolioImage', { storeId: store.id })}
         >
           <Ionicons name="add-circle-outline" size={24} color={Colors.text.white} />
           <Text style={styles.addButtonText}>{t('addPortfolioImage')}</Text>
         </TouchableOpacity>
       )}
-
+      
       {portfolio.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="images-outline" size={64} color={Colors.text.light} />
           <Text style={styles.emptyText}>{t('noPortfolioImagesAvailable')}</Text>
         </View>
       ) : (
-        portfolio.map(item => (
-          <View key={item.id} style={styles.portfolioItemCard}>
-            <Image source={{ uri: item.imageUrl }} style={styles.portfolioImage} />
-            <View style={styles.portfolioTextContainer}>
-              {item.title && <Text style={styles.portfolioTitle}>{item.title}</Text>}
-              {item.description && <Text style={styles.portfolioDescription}>{item.description}</Text>}
-            </View>
-            {isMyStore && (
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => handleDelete(item.id)}
-              >
-                <Ionicons name="trash-outline" size={22} color={Colors.error} />
-              </TouchableOpacity>
-            )}
-          </View>
-        ))
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {portfolio.map(item => renderPortfolioCard(item))}
+        </ScrollView>
       )}
-    </ScrollView>
+    </View>
   );
 };
 
@@ -150,37 +158,47 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.lg,
     fontWeight: Typography.fontWeight.bold,
   },
-  portfolioItemCard: {
+  portfolioCard: {
     backgroundColor: Colors.background.card,
     borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.base,
+    flexDirection: 'row',
     ...Shadows.base,
-    overflow: 'hidden', // Ensures image corners are rounded
   },
   portfolioImage: {
-    width: '100%',
-    height: 200,
+    width: 80,
+    height: 80,
+    borderRadius: BorderRadius.md,
+    marginRight: Spacing.lg,
+    backgroundColor: Colors.background.secondary,
   },
-  portfolioTextContainer: {
-    padding: Spacing.lg,
+  portfolioInfo: {
+    flex: 1,
   },
   portfolioTitle: {
-    fontSize: Typography.fontSize.lg,
-    fontWeight: 'bold',
+    fontSize: Typography.fontSize.xl,
+    fontWeight: Typography.fontWeight.bold,
     color: Colors.text.primary,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.xs,
   },
   portfolioDescription: {
     fontSize: Typography.fontSize.base,
     color: Colors.text.secondary,
+    marginTop: Spacing.xs,
+    lineHeight: 20,
   },
-  deleteButton: {
-    position: 'absolute',
-    top: Spacing.md,
-    right: Spacing.md,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderRadius: BorderRadius.full,
-    padding: Spacing.sm,
+  portfolioMeta: {
+    marginTop: Spacing.sm,
+  },
+  portfolioDate: {
+    fontSize: Typography.fontSize.sm,
+    color: Colors.text.light,
+  },
+  actionsContainer: {
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
   },
   emptyContainer: {
     flex: 1,
