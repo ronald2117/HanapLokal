@@ -66,6 +66,15 @@ export default function CreateStoreScreen({ navigation }) {
     return getCategoriesForProfileType(profileType);
   };
 
+  // Function to show description in alert
+  const showDescriptionAlert = (type) => {
+    Alert.alert(
+      type.name,
+      type.description,
+      [{ text: 'OK' }]
+    );
+  };
+
   // Function to detect social platform from URL
   const detectPlatform = (url) => {
     if (!url) return 'link';
@@ -600,18 +609,27 @@ export default function CreateStoreScreen({ navigation }) {
                           />
                         </View>
                         <View style={styles.profileTypeItemContent}>
-                          <Text style={[
-                            styles.profileTypeItemText,
-                            profileType === type.id && styles.profileTypeItemTextSelected
-                          ]}>
-                            {type.name}
-                          </Text>
-                          <Text style={[
-                            styles.profileTypeItemDescription,
-                            profileType === type.id && styles.profileTypeItemDescriptionSelected
-                          ]}>
-                            {type.description}
-                          </Text>
+                          <View style={styles.profileTypeHeader}>
+                            <Text style={[
+                              styles.profileTypeItemText,
+                              profileType === type.id && styles.profileTypeItemTextSelected
+                            ]}>
+                              {type.name}
+                            </Text>
+                            <TouchableOpacity
+                              style={styles.questionMarkButton}
+                              onPress={(e) => {
+                                e.stopPropagation();
+                                showDescriptionAlert(type);
+                              }}
+                            >
+                              <Ionicons 
+                                name="help-circle" 
+                                size={28} 
+                                color={profileType === type.id ? 'rgba(255, 255, 255, 0.8)' : '#7f8c8d'} 
+                              />
+                            </TouchableOpacity>
+                          </View>
                         </View>
                         {profileType === type.id && (
                           <Ionicons name="checkmark-circle" size={20} color="#fff" />
@@ -1444,11 +1462,20 @@ const styles = StyleSheet.create({
   profileTypeItemContent: {
     flex: 1,
   },
+  profileTypeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  questionMarkButton: {
+    padding: 4,
+    marginLeft: 8,
+  },
   profileTypeItemText: {
     fontSize: 16,
     color: Colors.text.primary,
     fontWeight: '600',
-    marginBottom: 4,
+    flex: 1,
   },
   profileTypeItemTextSelected: {
     color: '#fff',
@@ -1458,6 +1485,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.text.secondary,
     lineHeight: 18,
+    marginTop: 8,
   },
   profileTypeItemDescriptionSelected: {
     color: 'rgba(255, 255, 255, 0.9)',
