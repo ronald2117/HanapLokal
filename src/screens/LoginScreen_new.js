@@ -140,7 +140,6 @@ export default function LoginScreen({ navigation }) {
         end={{ x: 1, y: 1 }}
       >
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
         >
           <ScrollView
