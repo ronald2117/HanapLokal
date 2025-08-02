@@ -9,6 +9,7 @@ import {
   ScrollView,
   Modal,
   TextInput,
+  Platform,
 } from 'react-native';
 import { collection, query, where, getDocs, addDoc, serverTimestamp, deleteDoc, doc, updateDoc, orderBy } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
@@ -16,6 +17,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../../styles/theme';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
   const [bookings, setBookings] = useState([]);
@@ -24,10 +26,11 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingDetails, setBookingDetails] = useState({
     service: '',
-    date: '',
-    time: '',
     notes: '',
   });
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
   const { t } = useLanguage();
   const { currentUser } = useAuth();
 
@@ -68,8 +71,8 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
   const handleBookAppointment = async () => {
     if (isSubmitting) return;
 
-    if (!bookingDetails.service || !bookingDetails.date) {
-      Alert.alert(t('error'), 'Please provide a service and desired date.');
+    if (!bookingDetails.service) {
+      Alert.alert(t('error'), 'Please provide a service.');
       return;
     }
 
@@ -97,14 +100,14 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
         customerName: currentUser.displayName || 'Customer',
         status: 'pending',
         service: bookingDetails.service,
-        requestedDate: bookingDetails.date,
-        requestedTime: bookingDetails.time,
+        requestedDate: date.toLocaleDateString(),
+        requestedTime: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         notes: bookingDetails.notes,
         createdAt: serverTimestamp(),
       });
       Alert.alert(t('success'), t('bookingRequestSent'));
       setModalVisible(false);
-      setBookingDetails({ service: '', date: '', time: '', notes: '' });
+      setBookingDetails({ service: '', notes: '' });
       fetchBookings();
     } catch (error) {
       console.error("Error booking appointment:", error);
@@ -112,6 +115,12 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const onDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShowDatePicker(Platform.OS === 'ios');
+    setDate(currentDate);
   };
 
   const updateBookingStatus = async (bookingId, status) => {
@@ -236,18 +245,25 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
               value={bookingDetails.service}
               onChangeText={(text) => setBookingDetails({ ...bookingDetails, service: text })}
             />
-            <TextInput
-              style={styles.input}
-              placeholder="Requested Date (e.g., MM/DD/YYYY) *"
-              value={bookingDetails.date}
-              onChangeText={(text) => setBookingDetails({ ...bookingDetails, date: text })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Requested Time (e.g., 3:00 PM)"
-              value={bookingDetails.time}
-              onChangeText={(text) => setBookingDetails({ ...bookingDetails, time: text })}
-            />
+
+            <Text style={styles.inputLabel}>Date & Time</Text>
+            <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowDatePicker(true)}>
+              <Ionicons name="calendar-outline" size={20} color={Colors.primary} />
+              <Text style={styles.datePickerText}>{date.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</Text>
+            </TouchableOpacity>
+
+            {showDatePicker && (
+              <DateTimePicker
+                testID="dateTimePicker"
+                value={date}
+                mode="datetime"
+                is24Hour={false}
+                display="default"
+                onChange={onDateChange}
+                minimumDate={new Date()}
+              />
+            )}
+
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="Additional Notes"
@@ -395,6 +411,27 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     fontSize: Typography.fontSize.base,
     marginBottom: Spacing.md,
+  },
+  inputLabel: {
+    fontSize: Typography.fontSize.base,
+    fontWeight: '600',
+    color: Colors.text.secondary,
+    marginBottom: Spacing.sm,
+  },
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.background.secondary,
+    borderWidth: 1,
+    borderColor: Colors.border.light,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  datePickerText: {
+    fontSize: Typography.fontSize.base,
+    marginLeft: Spacing.sm,
+    color: Colors.text.primary,
   },
   textArea: {
     height: 100,
