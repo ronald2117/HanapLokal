@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
-  FlatList,
+  ScrollView,
 } from 'react-native';
 import { collection, query, where, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../services/firebaseConfig';
@@ -62,8 +62,8 @@ const BusinessServicesTab = ({ store, navigation, isMyStore = false }) => {
     }
   };
 
-  const renderServiceCard = ({ item }) => (
-    <View style={styles.serviceCard}>
+  const renderServiceCard = (item) => (
+    <View key={item.id} style={styles.serviceCard}>
       {item.imageUrl ? (
         <Image source={{ uri: item.imageUrl }} style={styles.serviceImage} />
       ) : (
@@ -113,7 +113,7 @@ const BusinessServicesTab = ({ store, navigation, isMyStore = false }) => {
           style={styles.addButton}
           onPress={() => navigation.navigate('AddService', { storeId: store.id })}
         >
-          <Ionicons name="add-circle-outline" size={24} color={Colors.background.primary} />
+          <Ionicons name="add-circle-outline" size={24} color={Colors.text.white} />
           <Text style={styles.addButtonText}>{t('addService')}</Text>
         </TouchableOpacity>
       )}
@@ -124,12 +124,9 @@ const BusinessServicesTab = ({ store, navigation, isMyStore = false }) => {
           <Text style={styles.emptyText}>{t('noServicesAvailable')}</Text>
         </View>
       ) : (
-        <FlatList
-          data={services}
-          renderItem={renderServiceCard}
-          keyExtractor={item => item.id}
-          contentContainerStyle={{ paddingBottom: 100 }}
-        />
+        <View>
+          {services.map(item => renderServiceCard(item))}
+        </View>
       )}
     </View>
   );

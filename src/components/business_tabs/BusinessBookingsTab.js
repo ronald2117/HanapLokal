@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  ScrollView,
   Modal,
   TextInput,
   Platform,
@@ -210,7 +209,7 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       {!isMyStore && (
         <TouchableOpacity
           style={styles.addButton}
@@ -280,7 +279,7 @@ const BusinessBookingsTab = ({ store, navigation, isMyStore = false }) => {
           </View>
         </View>
       </Modal>
-    </ScrollView>
+    </View>
   );
 };
 
