@@ -56,7 +56,7 @@ export default function ProfileScreen({ navigation }) {
       <View style={styles.menuSection}>
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => navigation.navigate('MyBusiness')}
+          onPress={() => navigation.navigate('MyStoreMain')}
         >
           <Ionicons name="storefront" size={24} color="#e67e22" />
           <Text style={styles.menuText}>{t('myBusiness')}</Text>

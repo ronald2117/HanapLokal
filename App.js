@@ -158,7 +158,7 @@ function ProfileStack() {
         options={getModernHeaderOptions(() => t('profile'), t)}
       />
       <Stack.Screen 
-        name="MyBusiness" 
+        name="MyStoreMain" 
         component={MyStoreScreen}
         options={getModernHeaderOptions(() => t('myBusiness'), t)}
       />
