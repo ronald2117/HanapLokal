@@ -127,6 +127,45 @@ export function AuthProvider({ children }) {
     return sendPasswordResetEmail(auth, email);
   }
 
+  // Function to update user profile
+  async function updateUserProfile(updates) {
+    if (!currentUser || currentUser.isAnonymous) {
+      throw new Error('User must be authenticated to update profile');
+    }
+
+    try {
+      const sanitizedFirstName = updates.firstName ? sanitizeInput(updates.firstName) : userProfile?.firstName || '';
+      const sanitizedLastName = updates.lastName ? sanitizeInput(updates.lastName) : userProfile?.lastName || '';
+
+      if (!validateName(sanitizedFirstName) || !validateName(sanitizedLastName)) {
+        throw new Error('Names can only contain letters, spaces, hyphens, and apostrophes');
+      }
+
+      const displayName = `${sanitizedFirstName} ${sanitizedLastName}`.trim();
+      
+      // Update Firebase Auth profile
+      await updateProfile(currentUser, { displayName });
+
+      // Update Firestore document
+      const updatedProfile = {
+        ...userProfile,
+        firstName: sanitizedFirstName,
+        lastName: sanitizedLastName,
+        displayName,
+        updatedAt: new Date().toISOString(),
+        ...updates
+      };
+
+      await setDoc(doc(db, 'users', currentUser.uid), updatedProfile);
+      setUserProfile(updatedProfile);
+
+      return updatedProfile;
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  }
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
@@ -154,7 +193,9 @@ export function AuthProvider({ children }) {
     isGuestUser,
     logoutGuestAndSignup,
     resetPassword,
-    fetchUserProfile
+    fetchUserProfile,
+    updateUserProfile,
+    loading
   };
 
   return (

@@ -36,6 +36,7 @@ import LanguageSettingsScreen from './src/screens/LanguageSettingsScreen';
 import StoreReviewScreen from './src/screens/StoreReviewScreen';
 import StoreReviewsScreen from './src/screens/StoreReviewsScreen';
 import NotificationsScreen from './src/screens/NotificationsScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 
 // Store Management Screens
 import CreateStoreScreen from './src/screens/CreateStoreScreen';
@@ -175,6 +176,11 @@ function ProfileStack() {
         name="LanguageSettings" 
         component={LanguageSettingsScreen}
         options={getModernHeaderOptions(() => t('languageSettings'), t)}
+      />
+      <Stack.Screen 
+        name="Settings" 
+        component={SettingsScreen}
+        options={getModernHeaderOptions(() => t('settings'), t)}
       />
       {/* Store Management Screens */}
       <Stack.Screen 
